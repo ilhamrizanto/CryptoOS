@@ -1,0 +1,39 @@
+import dotenv from 'dotenv';
+import path from 'path';
+import { z } from 'zod';
+
+// Load .env from root or local backend
+dotenv.config({ path: path.resolve(process.cwd(), '../.env') });
+dotenv.config(); // fallback to backend/.env
+
+const envSchema = z.object({
+  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+  PORT: z.coerce.number().default(3001),
+  DATABASE_PATH: z.string().default('./data/cryptoos.db'),
+  CORS_ORIGIN: z.string().default('http://localhost:5173'),
+  JWT_SECRET: z.string().default('cryptoos-dev-insecure-secret-key-change-in-production-12345'),
+  MASTER_PASSWORD_HASH: z.string().optional(),
+  
+  // Exchange API credentials (optional)
+  BINANCE_API_KEY: z.string().optional().default(''),
+  BINANCE_API_SECRET: z.string().optional().default(''),
+  BYBIT_API_KEY: z.string().optional().default(''),
+  BYBIT_API_SECRET: z.string().optional().default(''),
+  OKX_API_KEY: z.string().optional().default(''),
+  OKX_API_SECRET: z.string().optional().default(''),
+  OKX_PASSPHRASE: z.string().optional().default(''),
+  
+  // Market APIs (optional)
+  FRED_API_KEY: z.string().optional().default(''),
+  ALPHA_VANTAGE_KEY: z.string().optional().default(''),
+  EXCHANGERATE_API_KEY: z.string().optional().default(''),
+});
+
+const parsedEnv = envSchema.safeParse(process.env);
+
+if (!parsedEnv.success) {
+  console.error('❌ Invalid environment variables:', parsedEnv.error.format());
+  process.exit(1);
+}
+
+export const env = parsedEnv.data;

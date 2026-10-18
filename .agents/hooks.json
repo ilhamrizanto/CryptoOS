@@ -1,0 +1,52 @@
+{
+  "architecture-quality-reminder": {
+    "enabled": true,
+    "PreInvocation": [
+      {
+        "type": "command",
+        "command": "node .agents/scripts/pre-invocation-guard.js",
+        "timeout": 5
+      }
+    ]
+  },
+  "enterprise-security-gate": {
+    "enabled": true,
+    "PreToolUse": [
+      {
+        "matcher": "run_command|write_to_file",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .agents/scripts/security-gate.js",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  },
+  "clean-code-and-audit-pipeline": {
+    "enabled": true,
+    "PostToolUse": [
+      {
+        "matcher": "write_to_file|replace_file_content",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .agents/scripts/post-tool-pipeline.js",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  },
+  "quality-stop-gatekeeper": {
+    "enabled": true,
+    "Stop": [
+      {
+        "type": "command",
+        "command": "node .agents/scripts/stop-gatekeeper.js",
+        "timeout": 5
+      }
+    ]
+  }
+}
