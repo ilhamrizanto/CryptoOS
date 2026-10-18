@@ -10,6 +10,7 @@ import {
   RotateCcw,
   Sparkles,
 } from 'lucide-react';
+import { GlobalIntelligencePanel } from '../components/features/intelligence/GlobalIntelligencePanel';
 
 export const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
@@ -48,6 +49,9 @@ export const DashboardPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Global Intelligence Panel (Milestone 2) */}
+      <GlobalIntelligencePanel />
 
       {/* Main Grid: Left Main Intelligence + Right Sidebar Panel (Exact Layout from Reference Image) */}
       <div

@@ -6,6 +6,7 @@ import { initializeDatabase } from './db/init.js';
 import { sqliteClient } from './db/index.js';
 import { errorHandler } from './middleware/error.middleware.js';
 import { authRouter } from './modules/auth/auth.router.js';
+import { marketRouter } from './modules/market/market.router.js';
 
 const app = express();
 
@@ -55,6 +56,9 @@ app.get('/api', (_req, res) => {
 
 // Authentication Router (Milestone 1)
 app.use('/api/auth', authRouter);
+
+// Market Intelligence Router (Milestone 2)
+app.use('/api/market', marketRouter);
 
 // Central Error Handler
 app.use(errorHandler);
