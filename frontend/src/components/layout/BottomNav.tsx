@@ -49,6 +49,7 @@ export const BottomNav: React.FC = () => {
               width: '20%',
               height: '100%',
               userSelect: 'none',
+              transition: 'color var(--transition-fast), transform var(--transition-fast)',
             })}
           >
             <Icon size={20} />
@@ -61,6 +62,9 @@ export const BottomNav: React.FC = () => {
         @media (max-width: 768px) {
           .mobile-bottom-nav {
             display: flex !important;
+          }
+          .mobile-bottom-nav a:active {
+            transform: scale(0.92);
           }
         }
       `}</style>

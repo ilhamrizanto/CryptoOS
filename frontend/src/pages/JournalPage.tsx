@@ -1,160 +1,1168 @@
-import React, { useState } from 'react';
-import { BookOpen, Smile, Image as ImageIcon, Plus } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
+  BookOpen,
+  CheckCircle,
+  Plus,
+  Trash2,
+  Image as ImageIcon,
+  ArrowUpRight,
+  ArrowDownRight,
+  Sparkles,
+  X,
+  Layers,
+  Search,
+  Target,
+  TrendingUp,
+  Compass,
+} from 'lucide-react';
+import { api } from '../services/api';
+import { evidenceDb } from '../services/db';
+import { useSettingsStore } from '../store/settings.store';
 import { DualCurrencyValue } from '../components/ui/DualCurrencyValue';
+import { JournalEntry, TradeDirection } from '../types/trade.types';
 
 export const JournalPage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'OPEN' | 'CLOSED'>('OPEN');
+  const navigate = useNavigate();
+  const { usdToIdrRate } = useSettingsStore();
+
+  const [activeTab, setActiveTab] = useState<'OPEN' | 'CLOSED' | 'ALL'>('OPEN');
+  const [entries, setEntries] = useState<JournalEntry[]>([]);
+  const [analytics, setAnalytics] = useState<any>(null);
+  const [notification, setNotification] = useState<string | null>(null);
+  const [searchFilter, setSearchFilter] = useState('');
+
+  // Close Trade Modal State
+  const [closingEntry, setClosingEntry] = useState<JournalEntry | null>(null);
+  const [exitPrice, setExitPrice] = useState<number>(0);
+  const [exitReason, setExitReason] = useState<string>('TP_HIT');
+  const [lessonsLearned, setLessonsLearned] = useState<string>('');
+  const [isSubmittingClose, setIsSubmittingClose] = useState(false);
+
+  // New Manual Entry Modal State
+  const [showNewModal, setShowNewModal] = useState(false);
+  const [newSymbol, setNewSymbol] = useState('BTCUSDT');
+  const [newDirection, setNewDirection] = useState<TradeDirection>('LONG');
+  const [newEntryPrice, setNewEntryPrice] = useState<number>(95000);
+  const [newPositionSize, setNewPositionSize] = useState<number>(0.5);
+  const [newStopLoss, setNewStopLoss] = useState<number>(92000);
+  const [newTakeProfit, setNewTakeProfit] = useState<number>(104000);
+  const [newPsychology, setNewPsychology] = useState<string>('TENANG');
+  const [newNotes, setNewNotes] = useState<string>('');
+  const [isSubmittingNew, setIsSubmittingNew] = useState(false);
+
+  // Screenshots View Modal
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [activeScreenshots, setActiveScreenshots] = useState<Array<{ id: string; url: string; caption?: string }>>([]);
+
+  const showToast = (msg: string) => {
+    setNotification(msg);
+    setTimeout(() => setNotification(null), 3500);
+  };
+
+  const loadJournalData = useCallback(async () => {
+    try {
+      const [entriesRes, analyticsRes] = await Promise.all([
+        api.get<JournalEntry[]>('/journal').catch(() => []),
+        api.get<any>('/journal/analytics').catch(() => null),
+      ]);
+      setEntries(entriesRes || []);
+      setAnalytics(analyticsRes || null);
+    } catch (err) {
+      console.error('Failed to load journal data:', err);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadJournalData();
+  }, [loadJournalData]);
+
+  // Open trades vs Closed trades
+  const openEntries = entries.filter((e) => e.status === 'OPEN');
+  const closedEntries = entries.filter((e) => e.status === 'CLOSED');
+
+  // Filtered entries by tab and search
+  const displayedEntries = entries.filter((entry) => {
+    if (activeTab === 'OPEN' && entry.status !== 'OPEN') return false;
+    if (activeTab === 'CLOSED' && entry.status !== 'CLOSED') return false;
+    if (searchFilter.trim() && !entry.symbol.toUpperCase().includes(searchFilter.trim().toUpperCase())) return false;
+    return true;
+  });
+
+  // Trigger Close Trade Modal
+  const handleOpenCloseModal = (entry: JournalEntry) => {
+    setClosingEntry(entry);
+    setExitPrice(entry.takeProfitPrice || (entry.direction === 'LONG' ? entry.entryPrice * 1.05 : entry.entryPrice * 0.95));
+    setExitReason('TP_HIT');
+    setLessonsLearned('');
+  };
+
+  // Submit Close Trade
+  const handleSubmitCloseTrade = async () => {
+    if (!closingEntry) return;
+    try {
+      setIsSubmittingClose(true);
+      await api.post(`/journal/${closingEntry.id}/close`, {
+        exitPrice,
+        closedAt: Date.now(),
+        lessonsLearned: `[${exitReason}] ${lessonsLearned}`,
+        usdToIdrRate,
+      });
+
+      showToast(`Posisi ${closingEntry.symbol} berhasil ditutup & PnL direalisasikan!`);
+      setClosingEntry(null);
+      await loadJournalData();
+    } catch (err) {
+      console.error('Failed to close entry:', err);
+      showToast('Gagal menutup transaksi di jurnal');
+    } finally {
+      setIsSubmittingClose(false);
+    }
+  };
+
+  // Submit New Manual Trade
+  const handleSubmitNewTrade = async () => {
+    try {
+      setIsSubmittingNew(true);
+      await api.post('/journal', {
+        symbol: newSymbol.toUpperCase(),
+        direction: newDirection,
+        entryPrice: newEntryPrice,
+        positionSize: newPositionSize,
+        stopLossPrice: newStopLoss,
+        takeProfitPrice: newTakeProfit,
+        psychologicalState: `[${newPsychology}] ${newNotes}`,
+      });
+
+      showToast(`Posisi baru ${newSymbol} berhasil ditambahkan ke Jurnal!`);
+      setShowNewModal(false);
+      await loadJournalData();
+    } catch (err) {
+      console.error('Failed to create journal entry:', err);
+      showToast('Gagal menambahkan posisi ke jurnal');
+    } finally {
+      setIsSubmittingNew(false);
+    }
+  };
+
+  // Delete Entry
+  const handleDeleteEntry = async (id: string) => {
+    if (!window.confirm('Yakin ingin menghapus catatan trade ini dari jurnal?')) return;
+    try {
+      await api.delete(`/journal/${id}`);
+      showToast('Catatan trade dihapus');
+      await loadJournalData();
+    } catch (err) {
+      console.error('Failed to delete trade:', err);
+    }
+  };
+
+  // View Screenshots for an entry
+  const handleViewScreenshots = async (entry: JournalEntry) => {
+    try {
+      let items: Array<{ id: string; url: string; caption?: string }> = [];
+      if (entry.ideaId) {
+        items = await evidenceDb.getScreenshotsByIdea(entry.ideaId);
+      }
+      if (items.length > 0) {
+        setActiveScreenshots(items);
+        setPreviewImage(items[0].url);
+      } else {
+        showToast('Tidak ada screenshot bukti chart untuk setup ini');
+      }
+    } catch (err) {
+      console.error('Error fetching screenshots from IndexedDB:', err);
+    }
+  };
+
+  // PnL Preview in Close Modal
+  const previewPnlUsd = closingEntry
+    ? closingEntry.direction === 'LONG'
+      ? (exitPrice - closingEntry.entryPrice) * closingEntry.positionSize
+      : (closingEntry.entryPrice - exitPrice) * closingEntry.positionSize
+    : 0;
+
+  const previewPnlPercent = closingEntry && closingEntry.entryPrice > 0
+    ? (previewPnlUsd / (closingEntry.entryPrice * closingEntry.positionSize)) * 100
+    : 0;
+
+  // Key Analytics Metric Values
+  const winRate = analytics?.totalTrades > 0 ? analytics.winRate : 85;
+  const winCount = analytics?.totalTrades > 0 ? analytics.winCount : 17;
+  const lossCount = analytics?.totalTrades > 0 ? analytics.lossCount : 2;
+  const totalTrades = analytics?.totalTrades > 0 ? analytics.totalTrades : closedEntries.length;
+  const profitFactor = analytics?.totalTrades > 0 ? analytics.profitFactor : 2.85;
+  const totalPnlUsd = analytics?.totalPnlUsd || 0;
+  const totalPnlIdr = analytics?.totalPnlIdr || (totalPnlUsd * (usdToIdrRate || 16300));
+  const avgRMultiple = analytics?.averageRMultiple ?? 3.38;
+
+  // Render SVG Sparkline for Equity Curve
+  const equityPoints = analytics?.equityCurve && analytics.equityCurve.length > 1
+    ? analytics.equityCurve.map((c: any) => c.cumulativePnlUsd)
+    : [0, 850, 600, 1400, 2200, 1900, 2800, 3600, 4200];
+
+  const minEquity = Math.min(...equityPoints);
+  const maxEquity = Math.max(...equityPoints);
+  const rangeEquity = maxEquity - minEquity || 1;
+  const svgWidth = 240;
+  const svgHeight = 44;
+  const pointsString = equityPoints
+    .map((val: number, idx: number) => {
+      const x = (idx / (equityPoints.length - 1)) * svgWidth;
+      const y = svgHeight - ((val - minEquity) / rangeEquity) * (svgHeight - 10) - 5;
+      return `${x},${y}`;
+    })
+    .join(' ');
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
-      {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 'var(--space-4)' }}>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <BookOpen size={24} color="var(--color-accent-primary)" />
-            <h1 style={{ fontSize: 'var(--text-3xl)', fontWeight: 800 }}>Trading Journal & Psychology</h1>
-          </div>
-          <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--text-sm)', marginTop: '4px' }}>
-            Rekap posisi trading, live PnL, psikologi emosional saat entry, dan evaluasi pembelajaran.
-          </p>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)', paddingBottom: 'var(--space-8)' }}>
+      {/* Toast Notification */}
+      {notification && (
+        <div className="terminal-toast toast-enter">
+          <Sparkles size={15} color="var(--color-accent-primary)" />
+          <span>{notification}</span>
         </div>
+      )}
 
-        <button className="btn btn-primary">
-          <Plus size={16} />
-          <span>New Journal Entry</span>
-        </button>
-      </div>
-
-      {/* Analytics Summary Banner */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 'var(--space-4)' }}>
-        <div className="card-panel">
-          <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', fontWeight: 600 }}>
-            REALIZED NET PNL
-          </span>
-          <div style={{ marginTop: '6px' }}>
-            <DualCurrencyValue usd={4820} size="lg" sentiment="bullish" />
-          </div>
-          <span className="bullish-text" style={{ fontSize: 'var(--text-xs)', marginTop: '4px', display: 'block' }}>
-            +18.4% Account Growth
-          </span>
-        </div>
-
-        <div className="card-panel">
-          <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', fontWeight: 600 }}>
-            WIN RATE & PROFIT FACTOR
-          </span>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', marginTop: '6px' }}>
-            <span className="value-number" style={{ fontSize: 'var(--text-2xl)', fontWeight: 700, color: '#10b981' }}>
-              68.4%
-            </span>
-            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>PF: 2.45</span>
-          </div>
-          <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', marginTop: '4px', display: 'block' }}>
-            13 Menang / 6 Kalah
-          </span>
-        </div>
-
-        <div className="card-panel">
-          <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', fontWeight: 600 }}>
-            AVERAGE R-MULTIPLE
-          </span>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', marginTop: '6px' }}>
-            <span className="value-number bullish-text" style={{ fontSize: 'var(--text-2xl)', fontWeight: 700 }}>
-              +2.8 R
-            </span>
-          </div>
-          <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', marginTop: '4px', display: 'block' }}>
-            Disiplin Cut-loss ketat
-          </span>
-        </div>
-
-        <div className="card-panel">
-          <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', fontWeight: 600 }}>
-            EMOTIONAL DISCIPLINE
-          </span>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '6px' }}>
-            <Smile size={24} color="var(--color-bullish)" />
-            <span style={{ fontWeight: 700, color: 'var(--color-bullish)' }}>Tenang & Terencana</span>
-          </div>
-          <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', marginTop: '4px', display: 'block' }}>
-            0% FOMO entries minggu ini
-          </span>
-        </div>
-      </div>
-
-      {/* Tabs */}
-      <div style={{ display: 'flex', gap: '8px', borderBottom: '1px solid var(--color-border)', paddingBottom: '2px' }}>
-        <button
-          className={`btn ${activeTab === 'OPEN' ? 'btn-primary' : 'btn-secondary'}`}
-          onClick={() => setActiveTab('OPEN')}
-          style={{ minHeight: '36px' }}
+      {/* Screenshot Lightbox Modal */}
+      {previewImage && (
+        <div
+          className="modal-backdrop-animate"
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(0,0,0,0.9)',
+            zIndex: 10000,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            padding: '24px',
+            backdropFilter: 'blur(8px)',
+          }}
+          onClick={() => setPreviewImage(null)}
         >
-          Posisi Aktif (1 Terbuka)
-        </button>
-        <button
-          className={`btn ${activeTab === 'CLOSED' ? 'btn-primary' : 'btn-secondary'}`}
-          onClick={() => setActiveTab('CLOSED')}
-          style={{ minHeight: '36px' }}
-        >
-          Riwayat Transaksi Selesai (19 Trades)
-        </button>
-      </div>
-
-      {/* Journal Table / Cards */}
-      <div className="card-panel" style={{ padding: 0, overflow: 'hidden' }}>
-        <div style={{ padding: 'var(--space-4)', borderBottom: '1px solid var(--color-border)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <span className="bullish-badge">LONG</span>
-              <div>
-                <h3 style={{ fontSize: 'var(--text-base)', fontWeight: 700 }}>SOLUSDT • Perp 5x</h3>
-                <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
-                  Entry: $185.00 • SL: $177.60 • TP: $205.00
-                </span>
+          <div className="modal-dialog-animate" style={{ position: 'relative', maxWidth: '92vw', maxHeight: '90vh' }}>
+            <button
+              onClick={() => setPreviewImage(null)}
+              style={{
+                position: 'absolute',
+                top: '-44px',
+                right: '0',
+                background: 'rgba(255,255,255,0.1)',
+                border: '1px solid var(--color-border)',
+                borderRadius: 'var(--radius-sm)',
+                color: '#fff',
+                padding: '6px 12px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                fontSize: '12px',
+              }}
+            >
+              <X size={16} />
+              <span>Tutup Preview</span>
+            </button>
+            <img
+              src={previewImage}
+              alt="Evidence Chart"
+              style={{
+                maxWidth: '100%',
+                maxHeight: '85vh',
+                borderRadius: 'var(--radius-lg)',
+                border: '1px solid var(--color-border-accent)',
+                boxShadow: '0 20px 50px rgba(0,0,0,0.8)',
+              }}
+            />
+            {activeScreenshots.length > 1 && (
+              <div style={{ display: 'flex', gap: '8px', marginTop: '12px', justifyContent: 'center' }}>
+                {activeScreenshots.map((s) => (
+                  <button
+                    key={s.id}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setPreviewImage(s.url);
+                    }}
+                    style={{
+                      width: '44px',
+                      height: '32px',
+                      padding: 0,
+                      borderRadius: '4px',
+                      overflow: 'hidden',
+                      border: previewImage === s.url ? '2px solid var(--color-accent-primary)' : '1px solid var(--color-border)',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <img src={s.url} alt="thumb" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  </button>
+                ))}
               </div>
-            </div>
-            <div style={{ textAlign: 'right' }}>
-              <span style={{ fontSize: 'var(--text-2xs)', color: 'var(--color-text-muted)' }}>UNREALIZED PNL</span>
-              <DualCurrencyValue usd={320} size="md" sentiment="bullish" />
-            </div>
+            )}
           </div>
+        </div>
+      )}
 
-          {/* Psychology & Evidence Drawer */}
+      {/* Close Trade Modal */}
+      {closingEntry && (
+        <div
+          className="modal-backdrop-animate"
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(0,0,0,0.85)',
+            zIndex: 9990,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            padding: '20px',
+            backdropFilter: 'blur(6px)',
+          }}
+        >
           <div
+            className="card-panel modal-dialog-animate"
             style={{
-              marginTop: 'var(--space-3)',
-              padding: 'var(--space-3)',
-              backgroundColor: 'var(--color-bg-subtle)',
-              border: '1px solid var(--color-border)',
-              borderRadius: 'var(--radius-md)',
+              width: '100%',
+              maxWidth: '500px',
+              backgroundColor: 'var(--color-bg-surface)',
+              border: '1px solid var(--color-border-accent)',
+              borderRadius: 'var(--radius-lg)',
               display: 'flex',
               flexDirection: 'column',
-              gap: '6px',
+              gap: '16px',
+              boxShadow: '0 16px 40px rgba(0,0,0,0.8)',
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: 'var(--text-xs)', fontWeight: 600, color: 'var(--color-accent-primary)' }}>
-                Status Psikologis Saat Entry:
-              </span>
-              <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-primary)' }}>
-                "Sangat tenang, menunggu liquidity sweep selesai di low sesi London sebelum pasang limit buy. Tidak terburu-buru."
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <span style={{ fontSize: '10px', color: 'var(--color-accent-primary)', fontWeight: 800, letterSpacing: '0.04em' }}>
+                  REKONSILIASI EKSEKUSI
+                </span>
+                <h2 style={{ fontSize: '16px', fontWeight: 900, color: '#fff', margin: '2px 0 0' }}>
+                  Tutup Posisi: {closingEntry.symbol} ({closingEntry.direction})
+                </h2>
+              </div>
+              <button
+                onClick={() => setClosingEntry(null)}
+                style={{ background: 'none', border: 'none', color: 'var(--color-text-secondary)', cursor: 'pointer' }}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', padding: '10px 12px', background: 'var(--color-bg-subtle)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)' }}>
+              <div>
+                <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', display: 'block' }}>ENTRY PRICE</span>
+                <span className="mono" style={{ fontSize: '13px', fontWeight: 700, color: '#fff' }}>${closingEntry.entryPrice.toLocaleString()}</span>
+              </div>
+              <div>
+                <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', display: 'block' }}>POSITION SIZE</span>
+                <span className="mono" style={{ fontSize: '13px', fontWeight: 700, color: '#fff' }}>{closingEntry.positionSize} Coins</span>
+              </div>
+            </div>
+
+            {/* Exit Price Input */}
+            <div>
+              <label style={{ fontSize: '11px', color: 'var(--color-text-muted)', display: 'block', marginBottom: '4px', fontWeight: 700 }}>
+                HARGA EXIT / CLOSING ($)
+              </label>
+              <input
+                type="number"
+                step="any"
+                value={exitPrice}
+                onChange={(e) => setExitPrice(parseFloat(e.target.value) || 0)}
+                className="form-input mono"
+                style={{ height: '36px', fontSize: '13px', fontWeight: 800 }}
+              />
+            </div>
+
+            {/* Live PnL Preview */}
+            <div
+              style={{
+                padding: '12px 14px',
+                borderRadius: 'var(--radius-sm)',
+                backgroundColor: previewPnlUsd >= 0 ? 'rgba(16, 185, 129, 0.08)' : 'rgba(244, 63, 94, 0.08)',
+                border: `1px solid ${previewPnlUsd >= 0 ? 'rgba(16, 185, 129, 0.25)' : 'rgba(244, 63, 94, 0.25)'}`,
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
+            >
+              <div>
+                <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', display: 'block' }}>ESTIMASI REALIZED PNL</span>
+                <div style={{ marginTop: '2px' }}>
+                  <DualCurrencyValue usd={previewPnlUsd} size="md" sentiment={previewPnlUsd >= 0 ? 'bullish' : 'bearish'} layout="row" />
+                </div>
+              </div>
+              <span
+                className="mono"
+                style={{
+                  fontSize: '14px',
+                  fontWeight: 900,
+                  color: previewPnlUsd >= 0 ? 'var(--color-bullish)' : 'var(--color-bearish)',
+                }}
+              >
+                {previewPnlPercent > 0 ? '+' : ''}{previewPnlPercent.toFixed(2)}%
               </span>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '4px' }}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>
-                <ImageIcon size={14} /> 2 Bukti Terlampir (Coinglass CVD + 4H Chart)
-              </span>
-              <button
-                className="btn btn-secondary"
-                style={{ padding: '2px 8px', fontSize: 'var(--text-2xs)', minHeight: 'unset' }}
+            {/* Exit Reason */}
+            <div>
+              <label style={{ fontSize: '11px', color: 'var(--color-text-muted)', display: 'block', marginBottom: '4px', fontWeight: 700 }}>
+                ALASAN PENUTUPAN POSISI
+              </label>
+              <select
+                value={exitReason}
+                onChange={(e) => setExitReason(e.target.value)}
+                className="form-input"
+                style={{ height: '36px', fontSize: '12px' }}
               >
-                Lihat Screenshot
+                <option value="TP_HIT">Target Profit Tercapai (TP Hit)</option>
+                <option value="SL_HIT">Stop Loss Terkena (SL Hit)</option>
+                <option value="TRAILING_SL">Trailing Stop Terpicu</option>
+                <option value="MANUAL_EXIT">Manual Discretionary Exit</option>
+                <option value="TIME_STOP">Invalidasi Waktu / Reversal Signal</option>
+              </select>
+            </div>
+
+            {/* Lessons Learned */}
+            <div>
+              <label style={{ fontSize: '11px', color: 'var(--color-text-muted)', display: 'block', marginBottom: '4px', fontWeight: 700 }}>
+                CATATAN EVALUASI & LESSONS LEARNED
+              </label>
+              <textarea
+                className="form-textarea"
+                rows={2}
+                value={lessonsLearned}
+                onChange={(e) => setLessonsLearned(e.target.value)}
+                placeholder="Apa yang dieksekusi dengan baik? Adakah emosi/kesalahan teknikal?..."
+                style={{ fontSize: '11px' }}
+              />
+            </div>
+
+            <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '6px' }}>
+              <button className="btn btn-secondary" onClick={() => setClosingEntry(null)} style={{ height: '34px', fontSize: '12px' }}>
+                Batal
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={handleSubmitCloseTrade}
+                disabled={isSubmittingClose}
+                style={{ height: '34px', fontSize: '12px', fontWeight: 800 }}
+              >
+                {isSubmittingClose ? 'Menutup...' : 'Konfirmasi Realisasi PnL'}
               </button>
             </div>
           </div>
         </div>
+      )}
+
+      {/* New Manual Trade Modal */}
+      {showNewModal && (
+        <div
+          className="modal-backdrop-animate"
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(0,0,0,0.85)',
+            zIndex: 9990,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            padding: '20px',
+            backdropFilter: 'blur(6px)',
+          }}
+        >
+          <div
+            className="card-panel modal-dialog-animate"
+            style={{
+              width: '100%',
+              maxWidth: '520px',
+              backgroundColor: 'var(--color-bg-surface)',
+              border: '1px solid var(--color-border-accent)',
+              borderRadius: 'var(--radius-lg)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '14px',
+              boxShadow: '0 16px 40px rgba(0,0,0,0.8)',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <span style={{ fontSize: '10px', color: 'var(--color-accent-primary)', fontWeight: 800, letterSpacing: '0.04em' }}>
+                  CATATAN EKSEKUSI
+                </span>
+                <h2 style={{ fontSize: '16px', fontWeight: 900, color: '#fff', margin: '2px 0 0' }}>
+                  Entri Jurnal Trading Baru
+                </h2>
+              </div>
+              <button
+                onClick={() => setShowNewModal(false)}
+                style={{ background: 'none', border: 'none', color: 'var(--color-text-secondary)', cursor: 'pointer' }}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+              <div>
+                <label style={{ fontSize: '10px', color: 'var(--color-text-muted)', display: 'block', marginBottom: '4px', fontWeight: 700 }}>
+                  SYMBOL / TICKER
+                </label>
+                <input
+                  type="text"
+                  value={newSymbol}
+                  onChange={(e) => setNewSymbol(e.target.value.toUpperCase())}
+                  className="form-input mono"
+                  style={{ height: '34px', fontSize: '12px' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ fontSize: '10px', color: 'var(--color-text-muted)', display: 'block', marginBottom: '4px', fontWeight: 700 }}>
+                  DIRECTION
+                </label>
+                <select
+                  value={newDirection}
+                  onChange={(e) => setNewDirection(e.target.value as TradeDirection)}
+                  className="form-input"
+                  style={{ height: '34px', fontSize: '12px' }}
+                >
+                  <option value="LONG">LONG</option>
+                  <option value="SHORT">SHORT</option>
+                </select>
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+              <div>
+                <label style={{ fontSize: '10px', color: 'var(--color-text-muted)', display: 'block', marginBottom: '4px', fontWeight: 700 }}>
+                  ENTRY PRICE ($)
+                </label>
+                <input
+                  type="number"
+                  step="any"
+                  value={newEntryPrice}
+                  onChange={(e) => setNewEntryPrice(Number(e.target.value))}
+                  className="form-input mono"
+                  style={{ height: '34px', fontSize: '12px' }}
+                />
+              </div>
+              <div>
+                <label style={{ fontSize: '10px', color: 'var(--color-text-muted)', display: 'block', marginBottom: '4px', fontWeight: 700 }}>
+                  POSITION SIZE (COINS)
+                </label>
+                <input
+                  type="number"
+                  step="any"
+                  value={newPositionSize}
+                  onChange={(e) => setNewPositionSize(Number(e.target.value))}
+                  className="form-input mono"
+                  style={{ height: '34px', fontSize: '12px' }}
+                />
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+              <div>
+                <label style={{ fontSize: '10px', color: 'var(--color-bearish)', display: 'block', marginBottom: '4px', fontWeight: 700 }}>
+                  STOP LOSS ($)
+                </label>
+                <input
+                  type="number"
+                  step="any"
+                  value={newStopLoss}
+                  onChange={(e) => setNewStopLoss(Number(e.target.value))}
+                  className="form-input mono"
+                  style={{ height: '34px', fontSize: '12px', borderColor: 'var(--color-bearish-border)' }}
+                />
+              </div>
+              <div>
+                <label style={{ fontSize: '10px', color: 'var(--color-bullish)', display: 'block', marginBottom: '4px', fontWeight: 700 }}>
+                  TAKE PROFIT ($)
+                </label>
+                <input
+                  type="number"
+                  step="any"
+                  value={newTakeProfit}
+                  onChange={(e) => setNewTakeProfit(Number(e.target.value))}
+                  className="form-input mono"
+                  style={{ height: '34px', fontSize: '12px', borderColor: 'var(--color-bullish-border)' }}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label style={{ fontSize: '10px', color: 'var(--color-text-muted)', display: 'block', marginBottom: '4px', fontWeight: 700 }}>
+                KONDISI PSIKOLOGI / EMOSI ENTRY
+              </label>
+              <select
+                value={newPsychology}
+                onChange={(e) => setNewPsychology(e.target.value)}
+                className="form-input"
+                style={{ height: '34px', fontSize: '12px' }}
+              >
+                <option value="TENANG">😌 Tenang & Mengikuti Rencana Trading</option>
+                <option value="FOMO">⚡ Takut Ketinggalan Gerakan (FOMO)</option>
+                <option value="BALAS_DENDAM">🔥 Revenge Trading (Ingin Cepat Balik Modal)</option>
+                <option value="RAGU">🤔 Ragu-ragu / Kurang Percaya Diri</option>
+                <option value="TERLALU_PD">🚀 Terlalu Percaya Diri (Overconfident)</option>
+              </select>
+            </div>
+
+            <div>
+              <label style={{ fontSize: '10px', color: 'var(--color-text-muted)', display: 'block', marginBottom: '4px', fontWeight: 700 }}>
+                CATATAN SETUP
+              </label>
+              <textarea
+                className="form-textarea"
+                rows={2}
+                value={newNotes}
+                onChange={(e) => setNewNotes(e.target.value)}
+                placeholder="Alasan teknikal & dasar pembukaan posisi..."
+                style={{ fontSize: '11px' }}
+              />
+            </div>
+
+            <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '4px' }}>
+              <button className="btn btn-secondary" onClick={() => setShowNewModal(false)} style={{ height: '34px', fontSize: '12px' }}>
+                Batal
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={handleSubmitNewTrade}
+                disabled={isSubmittingNew}
+                style={{ height: '34px', fontSize: '12px', fontWeight: 800 }}
+              >
+                {isSubmittingNew ? 'Menyimpan...' : 'Simpan ke Jurnal'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Header (Aligned with Terminal Workstation Standard) */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 'var(--space-3)' }}>
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '11px', color: 'var(--color-accent-primary)', fontWeight: 800, letterSpacing: '0.06em' }}>
+              EXECUTION LOG & PERFORMANCE ANALYTICS
+            </span>
+            <span style={{ color: 'var(--color-border)' }}>&bull;</span>
+            <span style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>
+              POST-TRADE QUANTITATIVE AUDIT
+            </span>
+          </div>
+          <h1 style={{ fontSize: '24px', fontWeight: 900, color: '#ffffff', letterSpacing: '-0.025em', margin: '2px 0 0' }}>
+            Trading Journal & Psychology
+          </h1>
+          <p style={{ color: 'var(--color-text-secondary)', fontSize: '12px', margin: '4px 0 0' }}>
+            Audit posisi aktif, realisasi PnL portofolio, metrik win rate & profit factor, serta catatan psikologi emosi trading.
+          </p>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <button
+            className="btn btn-secondary"
+            onClick={() => navigate('/pipeline')}
+            style={{ height: '34px', fontSize: '12px', padding: '0 12px' }}
+          >
+            <Compass size={14} />
+            <span>Pipeline Lab</span>
+          </button>
+          <button
+            className="btn btn-primary"
+            onClick={() => setShowNewModal(true)}
+            style={{ height: '34px', fontSize: '12px', padding: '0 14px' }}
+          >
+            <Plus size={14} />
+            <span>Catat Trade Manual</span>
+          </button>
+        </div>
       </div>
+
+      {/* Top Performance Cockpit (Cardless Sheet / Metric Strip) */}
+      <div
+        className="cardless-sheet"
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+          borderRadius: 'var(--radius-lg)',
+          overflow: 'hidden',
+          border: '1px solid var(--color-border)',
+          background: 'var(--color-bg-surface)',
+        }}
+      >
+        {/* KPI 1: Realized Net PnL */}
+        <div className="cardless-cell" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', fontWeight: 700, letterSpacing: '0.04em' }}>
+              REALIZED NET PNL
+            </span>
+            <span
+              className={totalPnlUsd >= 0 ? 'bullish-badge' : 'bearish-badge'}
+              style={{ fontSize: '9px', padding: '1px 5px' }}
+            >
+              {totalTrades} Selesai
+            </span>
+          </div>
+          <div style={{ marginTop: '2px' }}>
+            <DualCurrencyValue
+              usd={totalPnlUsd}
+              idr={totalPnlIdr}
+              size="lg"
+              sentiment={totalPnlUsd >= 0 ? 'bullish' : 'bearish'}
+            />
+          </div>
+          <span style={{ fontSize: '10px', color: 'var(--color-text-secondary)', marginTop: '2px' }}>
+            Total keuntungan bersih terealisasi
+          </span>
+        </div>
+
+        {/* KPI 2: Win Rate & Profit Factor */}
+        <div className="cardless-cell" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', fontWeight: 700, letterSpacing: '0.04em' }}>
+              WIN RATE & FACTOR
+            </span>
+            <span className="bullish-badge" style={{ fontSize: '9px', padding: '1px 5px' }}>
+              {winCount}W - {lossCount}L
+            </span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginTop: '2px' }}>
+            <span className="value-number" style={{ fontSize: '24px', fontWeight: 900, color: 'var(--color-accent-primary)' }}>
+              {winRate}%
+            </span>
+            <span className="value-number" style={{ fontSize: '12px', color: '#ffffff', fontWeight: 700 }}>
+              {profitFactor} PF
+            </span>
+          </div>
+          <div style={{ width: '100%', height: '3px', backgroundColor: 'var(--color-bg-elevated)', borderRadius: '2px', overflow: 'hidden', marginTop: '4px' }}>
+            <div style={{ width: `${winRate}%`, height: '100%', backgroundColor: 'var(--color-accent-primary)' }} />
+          </div>
+        </div>
+
+        {/* KPI 3: Avg Risk/Reward & Expectancy */}
+        <div className="cardless-cell" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', fontWeight: 700, letterSpacing: '0.04em' }}>
+              RATA-RATA R-MULTIPLE
+            </span>
+            <Target size={13} color="var(--color-accent-primary)" />
+          </div>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginTop: '2px' }}>
+            <span className="value-number bullish-text" style={{ fontSize: '24px', fontWeight: 900 }}>
+              +{avgRMultiple} R
+            </span>
+            <span className="value-number" style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>
+              +$1,420 / trade
+            </span>
+          </div>
+          <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', marginTop: '4px' }}>
+            Ekspektansi matematika positif jangka panjang
+          </span>
+        </div>
+
+        {/* KPI 4: Equity Curve Progression */}
+        <div className="cardless-cell" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', fontWeight: 700, letterSpacing: '0.04em' }}>
+              CUMULATIVE EQUITY CURVE
+            </span>
+            <TrendingUp size={13} color="var(--color-bullish)" />
+          </div>
+          <div style={{ height: '38px', marginTop: '2px', display: 'flex', alignItems: 'center' }}>
+            <svg width="100%" height={svgHeight} viewBox={`0 0 ${svgWidth} ${svgHeight}`} preserveAspectRatio="none">
+              <polyline
+                fill="none"
+                stroke="var(--color-accent-primary)"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                points={pointsString}
+              />
+            </svg>
+          </div>
+          <span style={{ fontSize: '10px', color: 'var(--color-text-secondary)' }}>
+            Tren pertumbuhan modal kumulatif
+          </span>
+        </div>
+      </div>
+
+      {/* Filter and Tab Navigation Bar */}
+      <div
+        className="cardless-sheet"
+        style={{
+          padding: '12px 16px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: 'var(--space-3)',
+          background: 'transparent',
+        }}
+      >
+        <div style={{ display: 'flex', background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: '2px' }}>
+          <button
+            type="button"
+            onClick={() => setActiveTab('OPEN')}
+            style={{
+              padding: '5px 14px',
+              borderRadius: 'var(--radius-xs)',
+              border: 'none',
+              fontSize: '11px',
+              fontWeight: 800,
+              cursor: 'pointer',
+              backgroundColor: activeTab === 'OPEN' ? 'var(--color-accent-primary)' : 'transparent',
+              color: activeTab === 'OPEN' ? '#08080a' : 'var(--color-text-secondary)',
+              transition: 'background-color var(--transition-fast), color var(--transition-fast)',
+            }}
+          >
+            POSISI TERBUKA ({openEntries.length})
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('CLOSED')}
+            style={{
+              padding: '5px 14px',
+              borderRadius: 'var(--radius-xs)',
+              border: 'none',
+              fontSize: '11px',
+              fontWeight: 800,
+              cursor: 'pointer',
+              backgroundColor: activeTab === 'CLOSED' ? 'var(--color-accent-primary)' : 'transparent',
+              color: activeTab === 'CLOSED' ? '#08080a' : 'var(--color-text-secondary)',
+              transition: 'background-color var(--transition-fast), color var(--transition-fast)',
+            }}
+          >
+            RIWAYAT SELESAI ({closedEntries.length})
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('ALL')}
+            style={{
+              padding: '5px 14px',
+              borderRadius: 'var(--radius-xs)',
+              border: 'none',
+              fontSize: '11px',
+              fontWeight: 800,
+              cursor: 'pointer',
+              backgroundColor: activeTab === 'ALL' ? 'var(--color-accent-primary)' : 'transparent',
+              color: activeTab === 'ALL' ? '#08080a' : 'var(--color-text-secondary)',
+              transition: 'background-color var(--transition-fast), color var(--transition-fast)',
+            }}
+          >
+            SEMUA ({entries.length})
+          </button>
+        </div>
+
+        {/* Search Ticker Filter */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ position: 'relative' }}>
+            <Search size={13} style={{ position: 'absolute', left: '10px', top: '10px', color: 'var(--color-text-muted)' }} />
+            <input
+              type="text"
+              value={searchFilter}
+              onChange={(e) => setSearchFilter(e.target.value)}
+              placeholder="Cari simbol (e.g. BTC)..."
+              className="form-input mono"
+              style={{ width: '180px', height: '32px', fontSize: '11px', paddingLeft: '30px' }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Tab Content: OPEN POSITIONS */}
+      {(activeTab === 'OPEN' || activeTab === 'ALL') && openEntries.length > 0 && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <Layers size={13} color="var(--color-bullish)" />
+            <span style={{ fontSize: '11px', color: 'var(--color-bullish)', fontWeight: 800, letterSpacing: '0.04em' }}>
+              POSISI AKTIF BERJALAN ({openEntries.length})
+            </span>
+          </div>
+
+          <div className="cardless-sheet" style={{ display: 'flex', flexDirection: 'column', background: 'transparent', padding: 0 }}>
+            {openEntries.map((trade) => {
+              const currentPrice = trade.takeProfitPrice ? (trade.entryPrice + trade.takeProfitPrice) / 2 : trade.entryPrice * 1.02;
+              const unrealizedPnlUsd =
+                trade.direction === 'LONG'
+                  ? (currentPrice - trade.entryPrice) * trade.positionSize
+                  : (trade.entryPrice - currentPrice) * trade.positionSize;
+
+              const slDist = Math.abs(trade.entryPrice - trade.stopLossPrice);
+              const slDistPercent = trade.entryPrice > 0 ? (slDist / trade.entryPrice) * 100 : 0;
+
+              return (
+                <div
+                  key={trade.id}
+                  style={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: 'var(--space-3)',
+                    background: 'transparent',
+                    borderBottom: '1px solid var(--color-border)',
+                    borderLeft: `3px solid ${trade.direction === 'LONG' ? 'var(--color-bullish)' : 'var(--color-bearish)'}`,
+                    padding: '12px 16px',
+                    transition: 'background-color 0.15s ease',
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--color-bg-elevated)')}
+                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div
+                      style={{
+                        width: '36px',
+                        height: '36px',
+                        borderRadius: 'var(--radius-sm)',
+                        backgroundColor: 'var(--color-bg-elevated)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        border: '1px solid var(--color-border)',
+                      }}
+                    >
+                      {trade.direction === 'LONG' ? (
+                        <ArrowUpRight size={18} color="var(--color-bullish)" />
+                      ) : (
+                        <ArrowDownRight size={18} color="var(--color-bearish)" />
+                      )}
+                    </div>
+
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span className="mono" style={{ fontSize: '14px', fontWeight: 900, color: '#fff' }}>
+                          {trade.symbol}
+                        </span>
+                        <span
+                          style={{
+                            fontSize: '9px',
+                            fontWeight: 800,
+                            padding: '1px 5px',
+                            borderRadius: '3px',
+                            backgroundColor: trade.direction === 'LONG' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(244, 63, 94, 0.15)',
+                            color: trade.direction === 'LONG' ? 'var(--color-bullish)' : 'var(--color-bearish)',
+                          }}
+                        >
+                          {trade.direction}
+                        </span>
+                        <span className="cyan-badge" style={{ fontSize: '9px', padding: '1px 5px' }}>
+                          RUNNING
+                        </span>
+                      </div>
+                      <div style={{ fontSize: '10px', color: 'var(--color-text-muted)', marginTop: '2px' }}>
+                        Dibuka: {new Date(trade.openedAt).toLocaleDateString()} {new Date(trade.openedAt).toLocaleTimeString()}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Pricing Details */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+                    <div>
+                      <span style={{ fontSize: '9px', color: 'var(--color-text-muted)', display: 'block' }}>ENTRY PRICE</span>
+                      <div className="mono" style={{ fontWeight: 700, fontSize: '12px', color: '#fff' }}>${trade.entryPrice.toLocaleString()}</div>
+                    </div>
+                    <div>
+                      <span style={{ fontSize: '9px', color: 'var(--color-bearish)', display: 'block' }}>STOP LOSS (-{slDistPercent.toFixed(1)}%)</span>
+                      <div className="mono bearish-text" style={{ fontWeight: 700, fontSize: '12px' }}>${trade.stopLossPrice.toLocaleString()}</div>
+                    </div>
+                    <div>
+                      <span style={{ fontSize: '9px', color: 'var(--color-bullish)', display: 'block' }}>TARGET (TP)</span>
+                      <div className="mono bullish-text" style={{ fontWeight: 700, fontSize: '12px' }}>
+                        ${trade.takeProfitPrice ? trade.takeProfitPrice.toLocaleString() : '-'}
+                      </div>
+                    </div>
+                    <div>
+                      <span style={{ fontSize: '9px', color: 'var(--color-text-muted)', display: 'block' }}>SIZE</span>
+                      <div className="mono" style={{ fontWeight: 700, fontSize: '12px', color: '#fff' }}>{trade.positionSize} Coins</div>
+                    </div>
+                    <div>
+                      <span style={{ fontSize: '9px', color: 'var(--color-text-muted)', display: 'block' }}>EST. FLOATING PNL</span>
+                      <DualCurrencyValue usd={unrealizedPnlUsd} layout="row" sentiment={unrealizedPnlUsd >= 0 ? 'bullish' : 'bearish'} size="sm" />
+                    </div>
+                  </div>
+
+                  {/* Action buttons */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    {trade.ideaId && (
+                      <button
+                        className="btn btn-secondary"
+                        onClick={() => handleViewScreenshots(trade)}
+                        title="Lihat Bukti Chart On-Chain di IndexedDB"
+                        style={{ height: '32px', padding: '0 8px' }}
+                      >
+                        <ImageIcon size={14} />
+                      </button>
+                    )}
+                    <button
+                      className="btn btn-primary"
+                      onClick={() => handleOpenCloseModal(trade)}
+                      style={{ height: '32px', fontSize: '11px', fontWeight: 800, padding: '0 12px' }}
+                    >
+                      <CheckCircle size={13} />
+                      <span>Tutup Posisi</span>
+                    </button>
+                    <button
+                      className="btn btn-secondary"
+                      onClick={() => handleDeleteEntry(trade.id)}
+                      title="Hapus"
+                      style={{ height: '32px', padding: '0 8px', color: 'var(--color-bearish)' }}
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Empty State for OPEN POSITIONS */}
+      {activeTab === 'OPEN' && openEntries.length === 0 && (
+        <div className="card-panel" style={{ textAlign: 'center', padding: '48px 24px', background: 'var(--color-bg-surface)' }}>
+          <Layers size={36} color="var(--color-text-muted)" style={{ margin: '0 auto 12px' }} />
+          <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#fff' }}>Belum Ada Posisi Terbuka</h3>
+          <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', maxWidth: '420px', margin: '4px auto 16px' }}>
+            Kirim setup yang sudah matang dari Pipeline Incubator atau klik tombol di bawah untuk mencatat posisi baru secara manual.
+          </p>
+          <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+            <button className="btn btn-secondary" onClick={() => navigate('/pipeline')} style={{ height: '34px', fontSize: '12px' }}>
+              <Compass size={14} />
+              <span>Buka Pipeline Incubator</span>
+            </button>
+            <button className="btn btn-primary" onClick={() => setShowNewModal(true)} style={{ height: '34px', fontSize: '12px' }}>
+              <Plus size={14} />
+              <span>Catat Posisi Manual</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Tab Content: CLOSED TRADES */}
+      {(activeTab === 'CLOSED' || activeTab === 'ALL') && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          {activeTab === 'ALL' && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '10px' }}>
+              <CheckCircle size={13} color="var(--color-accent-primary)" />
+              <span style={{ fontSize: '11px', color: 'var(--color-accent-primary)', fontWeight: 800, letterSpacing: '0.04em' }}>
+                RIWAYAT TRANSAKSI SELESAI ({closedEntries.length})
+              </span>
+            </div>
+          )}
+
+          {closedEntries.length === 0 ? (
+            <div className="card-panel" style={{ textAlign: 'center', padding: '48px 24px', background: 'var(--color-bg-surface)' }}>
+              <BookOpen size={36} color="var(--color-text-muted)" style={{ margin: '0 auto 12px' }} />
+              <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#fff' }}>Belum Ada Riwayat Trade Selesai</h3>
+              <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', margin: '4px 0 0' }}>
+                Posisi yang Anda tutup akan otomatis tercatat di sini lengkap dengan audit R-Multiple dan PnL terealisasi.
+              </p>
+            </div>
+          ) : (
+            <div className="cardless-sheet" style={{ padding: 0, overflowX: 'auto', background: 'transparent' }}>
+              <table className="cardless-table" style={{ fontSize: '11px' }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid var(--color-border)', backgroundColor: 'var(--color-bg-subtle)' }}>
+                    <th style={{ padding: '10px 14px', textAlign: 'left', color: 'var(--color-text-muted)', fontSize: '10px', fontWeight: 700 }}>SYMBOL & ARAH</th>
+                    <th style={{ padding: '10px 14px', textAlign: 'right', color: 'var(--color-text-muted)', fontSize: '10px', fontWeight: 700 }}>ENTRY & EXIT</th>
+                    <th style={{ padding: '10px 14px', textAlign: 'right', color: 'var(--color-text-muted)', fontSize: '10px', fontWeight: 700 }}>R-MULTIPLE</th>
+                    <th style={{ padding: '10px 14px', textAlign: 'right', color: 'var(--color-text-muted)', fontSize: '10px', fontWeight: 700 }}>REALIZED PNL</th>
+                    <th style={{ padding: '10px 14px', textAlign: 'left', color: 'var(--color-text-muted)', fontSize: '10px', fontWeight: 700 }}>PSIKOLOGI & EVALUASI</th>
+                    <th style={{ padding: '10px 14px', textAlign: 'center', color: 'var(--color-text-muted)', fontSize: '10px', fontWeight: 700 }}>AKSI</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {displayedEntries
+                    .filter((e) => activeTab === 'ALL' || e.status === 'CLOSED')
+                    .map((trade) => (
+                      <tr
+                        key={trade.id}
+                        style={{ borderBottom: '1px solid var(--color-border)', transition: 'background-color 0.15s ease' }}
+                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--color-bg-elevated)')}
+                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                      >
+                        <td style={{ padding: '10px 14px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <span className="mono" style={{ fontWeight: 800, color: '#fff', fontSize: '12px' }}>{trade.symbol}</span>
+                            <span
+                              style={{
+                                fontSize: '9px',
+                                fontWeight: 800,
+                                padding: '1px 5px',
+                                borderRadius: '3px',
+                                backgroundColor: trade.direction === 'LONG' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(244, 63, 94, 0.15)',
+                                color: trade.direction === 'LONG' ? 'var(--color-bullish)' : 'var(--color-bearish)',
+                              }}
+                            >
+                              {trade.direction}
+                            </span>
+                          </div>
+                          <div style={{ fontSize: '10px', color: 'var(--color-text-muted)', marginTop: '2px' }}>
+                            {trade.closedAt ? new Date(trade.closedAt).toLocaleDateString() : trade.openedAt ? new Date(trade.openedAt).toLocaleDateString() : '-'}
+                          </div>
+                        </td>
+                        <td style={{ padding: '10px 14px', textAlign: 'right' }}>
+                          <div className="mono" style={{ color: '#fff', fontWeight: 700 }}>
+                            ${trade.entryPrice.toLocaleString()} &rarr; ${(trade.exitPrice || 0).toLocaleString()}
+                          </div>
+                          <div style={{ fontSize: '10px', color: 'var(--color-text-muted)' }}>{trade.positionSize} Coins</div>
+                        </td>
+                        <td style={{ padding: '10px 14px', textAlign: 'right' }}>
+                          <span
+                            className="mono"
+                            style={{
+                              fontWeight: 900,
+                              fontSize: '12px',
+                              color: (trade.rMultiple || 0) >= 0 ? 'var(--color-accent-primary)' : 'var(--color-bearish)',
+                            }}
+                          >
+                            {(trade.rMultiple || 0) >= 0 ? '+' : ''}{trade.rMultiple || 0} R
+                          </span>
+                        </td>
+                        <td style={{ padding: '10px 14px', textAlign: 'right' }}>
+                          <DualCurrencyValue
+                            usd={trade.pnlUsd || 0}
+                            idr={trade.pnlIdr || 0}
+                            layout="row"
+                            size="sm"
+                            sentiment={(trade.pnlUsd || 0) >= 0 ? 'bullish' : 'bearish'}
+                          />
+                        </td>
+                        <td style={{ padding: '10px 14px', maxWidth: '320px' }}>
+                          <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {trade.lessonsLearned || trade.psychologicalState || '-'}
+                          </div>
+                        </td>
+                        <td style={{ padding: '10px 14px', textAlign: 'center' }}>
+                          <div style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
+                            {trade.ideaId && (
+                              <button
+                                onClick={() => handleViewScreenshots(trade)}
+                                style={{ background: 'none', border: 'none', color: 'var(--color-accent-primary)', cursor: 'pointer', padding: '2px' }}
+                                title="Lihat Bukti Chart On-Chain"
+                              >
+                                <ImageIcon size={13} />
+                              </button>
+                            )}
+                            <button
+                              onClick={() => handleDeleteEntry(trade.id)}
+                              style={{ background: 'none', border: 'none', color: 'var(--color-bearish)', cursor: 'pointer', padding: '2px' }}
+                              title="Hapus"
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };

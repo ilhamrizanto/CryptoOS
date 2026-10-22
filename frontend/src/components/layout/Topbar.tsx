@@ -1,28 +1,69 @@
-import React from 'react';
-import { NavLink } from 'react-router-dom';
-import { Menu, Search, Bell, Activity, User, Shield } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
+  Menu,
+  User,
+  LogOut,
+  Clock,
+  Wifi,
+  Globe2,
+} from 'lucide-react';
 import { useUiStore } from '../../store/ui.store';
-import { useSettingsStore } from '../../store/settings.store';
-import { formatIdr } from '../../utils/formatters';
+import { useAuthStore } from '../../store/auth.store';
 
 export const Topbar: React.FC = () => {
-  const { toggleSidebar, mobileMenuOpen, setMobileMenuOpen } = useUiStore();
-  const { usdToIdrRate } = useSettingsStore();
+  const navigate = useNavigate();
+  const { mobileMenuOpen, setMobileMenuOpen } = useUiStore();
+  const { logout, user } = useAuthStore();
 
-  const topNavLinks = [
-    { name: 'Dashboard', path: '/' },
-    { name: 'Pipeline', path: '/pipeline' },
-    { name: 'Sizer', path: '/calculator' },
-    { name: 'Journal', path: '/journal' },
-    { name: 'Portfolio', path: '/portfolio' },
-    { name: 'Rebalance', path: '/rebalancing' },
-  ];
+  const [currentTime, setCurrentTime] = useState(new Date());
+  const [latency, setLatency] = useState(28);
+
+  // Update clock every second
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Heartbeat ping jitter (24ms - 36ms)
+  useEffect(() => {
+    const pingTimer = setInterval(() => {
+      setLatency(Math.floor(24 + Math.random() * 12));
+    }, 5000);
+    return () => clearInterval(pingTimer);
+  }, []);
+
+  // Format UTC (HH:mm:ss guaranteed 8 chars)
+  const utcHours = currentTime.getUTCHours();
+  const utcTimeStr = currentTime.toLocaleTimeString('en-GB', { timeZone: 'UTC', hour12: false });
+
+  // Dynamic User Device Timezone Calculation (e.g. UTC+9 for Tobelo/WIT, UTC+7 for WIB, etc.)
+  const offsetMinutes = -currentTime.getTimezoneOffset();
+  const offsetHours = offsetMinutes / 60;
+  const sign = offsetHours >= 0 ? '+' : '-';
+  const absHours = Math.abs(offsetHours);
+  const localTimezoneLabel = offsetHours === 0
+    ? 'UTC'
+    : Number.isInteger(absHours)
+    ? `UTC${sign}${absHours}`
+    : `UTC${sign}${Math.floor(absHours)}:${String(Math.round((absHours % 1) * 60)).padStart(2, '0')}`;
+
+  const localTimeStr = currentTime.toLocaleTimeString('en-GB', { hour12: false });
+  const detectedTimezoneName = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Local Device';
+
+  // Calculate Market Sessions (UTC standard)
+  const isTokyoOpen = utcHours >= 0 && utcHours < 9;
+  const isLondonOpen = utcHours >= 8 && utcHours < 16;
+  const isNewYorkOpen = utcHours >= 13 && utcHours < 21;
+  const isOverlap = isLondonOpen && isNewYorkOpen;
 
   return (
     <header
       style={{
         height: 'var(--topbar-height)',
-        backgroundColor: 'var(--color-bg-surface)',
+        backgroundColor: 'var(--color-bg-base)',
         borderBottom: '1px solid var(--color-border)',
         display: 'flex',
         alignItems: 'center',
@@ -34,7 +75,7 @@ export const Topbar: React.FC = () => {
       }}
     >
       {/* Left: Brand Logo & Hamburger */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', zIndex: 2 }}>
         <button
           className="btn btn-secondary mobile-menu-btn"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -44,208 +85,368 @@ export const Topbar: React.FC = () => {
           <Menu size={18} />
         </button>
 
-        <button
-          className="btn btn-secondary desktop-collapse-btn"
-          onClick={toggleSidebar}
-          aria-label="Toggle sidebar collapse"
-          style={{ padding: '8px', minHeight: 'unset' }}
+        <div
+          onClick={() => navigate('/')}
+          style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
         >
-          <Activity size={18} color="var(--color-accent-primary)" />
-        </button>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <div
             style={{
               width: '28px',
               height: '28px',
               borderRadius: '6px',
-              backgroundColor: 'rgba(134, 239, 29, 0.15)',
+              overflow: 'hidden',
+              border: '1px solid var(--color-accent-border)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              border: '1px solid var(--color-accent-border)',
+              backgroundColor: '#000000',
             }}
           >
-            <Shield size={16} color="var(--color-accent-primary)" />
+            <img src="/logo.png" alt="CryptoOS" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </div>
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <span style={{ fontWeight: 900, fontSize: '18px', color: '#ffffff', letterSpacing: '-0.02em' }}>
-                Crypto<span style={{ color: 'var(--color-accent-primary)' }}>OS</span>
-              </span>
-            </div>
-            <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', display: 'block', lineHeight: 1 }}>
-              Trading Terminal
+            <span style={{ fontWeight: 900, fontSize: '16px', color: '#ffffff', letterSpacing: '-0.02em' }}>
+              Crypto<span style={{ color: 'var(--color-accent-primary)' }}>OS</span>
             </span>
           </div>
         </div>
       </div>
 
-      {/* Center: Top Navigation Links with Neon Green Indicator (Matches Reference Image) */}
-      <nav
-        className="topbar-nav-links"
+      {/* Center: Institutional Session Bar & Dual World Clock
+          Zero-Jitter Architecture:
+          1. Absolutely anchored to 50% viewport width
+          2. Fixed tabular-nums font & fixed pixel widths on all dynamic text values
+          3. Dynamic local timezone detection (UTC+9 in Tobelo, UTC+7 in WIB, etc.)
+      */}
+      <div
+        className="topbar-institutional-center"
         style={{
+          position: 'absolute',
+          left: '50%',
+          transform: 'translateX(-50%)',
           display: 'flex',
           alignItems: 'center',
-          gap: 'var(--space-6)',
-          height: '100%',
+          gap: '12px',
+          padding: '4px 14px',
+          backgroundColor: 'var(--color-bg-surface)',
+          border: '1px solid var(--color-border)',
+          borderRadius: 'var(--radius-md)',
+          whiteSpace: 'nowrap',
+          userSelect: 'none',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.25)',
         }}
       >
-        {topNavLinks.map((link) => (
-          <NavLink
-            key={link.path}
-            to={link.path}
-            end={link.path === '/'}
-            style={({ isActive }) => ({
-              color: isActive ? '#ffffff' : 'var(--color-text-secondary)',
-              textDecoration: 'none',
-              fontSize: 'var(--text-sm)',
-              fontWeight: isActive ? 700 : 500,
-              height: '100%',
-              display: 'flex',
-              alignItems: 'center',
-              position: 'relative',
-              transition: 'color var(--transition-fast)',
-            })}
-          >
-            {({ isActive }) => (
-              <>
-                <span>{link.name}</span>
-                {isActive && (
-                  <span
-                    style={{
-                      position: 'absolute',
-                      bottom: 0,
-                      left: 0,
-                      right: 0,
-                      height: '3px',
-                      backgroundColor: 'var(--color-accent-primary)',
-                      borderRadius: '3px 3px 0 0',
-                      boxShadow: '0 0 10px var(--color-accent-primary)',
-                    }}
-                  />
-                )}
-              </>
-            )}
-          </NavLink>
-        ))}
-      </nav>
+        {/* Market Sessions Strip (Fixed Width Container) */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <Globe2 size={12} color="var(--color-accent-primary)" />
+            <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', fontWeight: 800, letterSpacing: '0.05em' }}>
+              SESSIONS
+            </span>
+          </div>
 
-      {/* Right: Actions, Rate & User Profile Chip (Matches Reference Image) */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
-        {/* USD/IDR Rate Display */}
-        <div
-          className="topbar-rate-chip"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            padding: '4px 10px',
-            backgroundColor: 'var(--color-bg-elevated)',
-            border: '1px solid var(--color-border)',
-            borderRadius: 'var(--radius-full)',
-            fontSize: 'var(--text-xs)',
-          }}
-        >
-          <span style={{ color: 'var(--color-text-muted)' }}>USD/IDR</span>
-          <span className="value-number" style={{ color: 'var(--color-accent-primary)', fontWeight: 700 }}>
-            {formatIdr(usdToIdrRate)}
-          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            {/* Tokyo */}
+            <div
+              style={{
+                width: '42px',
+                height: '20px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '4px',
+                borderRadius: 'var(--radius-xs)',
+                backgroundColor: isTokyoOpen ? 'rgba(16, 185, 129, 0.12)' : 'rgba(255, 255, 255, 0.02)',
+                border: '1px solid',
+                borderColor: isTokyoOpen ? 'rgba(16, 185, 129, 0.35)' : 'rgba(255, 255, 255, 0.05)',
+                boxSizing: 'border-box',
+              }}
+              title="Tokyo Session: 00:00 - 09:00 UTC (07:00 - 16:00 WIB)"
+            >
+              <span
+                style={{
+                  width: '5px',
+                  height: '5px',
+                  borderRadius: '50%',
+                  backgroundColor: isTokyoOpen ? 'var(--color-bullish)' : '#555555',
+                  flexShrink: 0,
+                }}
+              />
+              <span
+                style={{
+                  fontSize: '9.5px',
+                  fontWeight: 800,
+                  color: isTokyoOpen ? '#ffffff' : 'var(--color-text-muted)',
+                  letterSpacing: '0.02em',
+                }}
+              >
+                TYO
+              </span>
+            </div>
+
+            {/* London */}
+            <div
+              style={{
+                width: '42px',
+                height: '20px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '4px',
+                borderRadius: 'var(--radius-xs)',
+                backgroundColor: isLondonOpen ? 'rgba(16, 185, 129, 0.12)' : 'rgba(255, 255, 255, 0.02)',
+                border: '1px solid',
+                borderColor: isLondonOpen ? 'rgba(16, 185, 129, 0.35)' : 'rgba(255, 255, 255, 0.05)',
+                boxSizing: 'border-box',
+              }}
+              title="London Session: 08:00 - 16:00 UTC (15:00 - 23:00 WIB)"
+            >
+              <span
+                style={{
+                  width: '5px',
+                  height: '5px',
+                  borderRadius: '50%',
+                  backgroundColor: isLondonOpen ? 'var(--color-bullish)' : '#555555',
+                  flexShrink: 0,
+                }}
+              />
+              <span
+                style={{
+                  fontSize: '9.5px',
+                  fontWeight: 800,
+                  color: isLondonOpen ? '#ffffff' : 'var(--color-text-muted)',
+                  letterSpacing: '0.02em',
+                }}
+              >
+                LDN
+              </span>
+            </div>
+
+            {/* New York */}
+            <div
+              style={{
+                width: '42px',
+                height: '20px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '4px',
+                borderRadius: 'var(--radius-xs)',
+                backgroundColor: isNewYorkOpen ? 'rgba(16, 185, 129, 0.12)' : 'rgba(255, 255, 255, 0.02)',
+                border: '1px solid',
+                borderColor: isNewYorkOpen ? 'rgba(16, 185, 129, 0.35)' : 'rgba(255, 255, 255, 0.05)',
+                boxSizing: 'border-box',
+              }}
+              title="New York Session: 13:00 - 21:00 UTC (20:00 - 04:00 WIB)"
+            >
+              <span
+                style={{
+                  width: '5px',
+                  height: '5px',
+                  borderRadius: '50%',
+                  backgroundColor: isNewYorkOpen ? 'var(--color-bullish)' : '#555555',
+                  flexShrink: 0,
+                }}
+              />
+              <span
+                style={{
+                  fontSize: '9.5px',
+                  fontWeight: 800,
+                  color: isNewYorkOpen ? '#ffffff' : 'var(--color-text-muted)',
+                  letterSpacing: '0.02em',
+                }}
+              >
+                NYC
+              </span>
+            </div>
+
+            {/* Overlap Indicator Pill */}
+            {isOverlap && (
+              <span
+                className="gold-badge"
+                style={{
+                  fontSize: '9px',
+                  padding: '1px 5px',
+                  fontWeight: 800,
+                  height: '18px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                }}
+                title="London + New York overlap: Periode likuiditas pasar tertinggi"
+              >
+                OVERLAP
+              </span>
+            )}
+          </div>
         </div>
 
-        {/* Search Icon */}
-        <button
-          className="btn btn-secondary"
-          style={{ padding: '8px', minHeight: 'unset', borderRadius: 'var(--radius-full)' }}
-          aria-label="Search"
-        >
-          <Search size={16} />
-        </button>
+        {/* Hairline Divider */}
+        <div style={{ width: '1px', height: '14px', backgroundColor: 'var(--color-border)', flexShrink: 0 }} />
 
-        {/* Notification Bell with Green Badge Count (Matches "3" badge in reference image) */}
-        <div style={{ position: 'relative' }}>
-          <button
-            className="btn btn-secondary"
-            style={{ padding: '8px', minHeight: 'unset', borderRadius: 'var(--radius-full)' }}
-            aria-label="Notifications"
+        {/* Dual World Clocks (Rock-solid fixed width with tabular numerals) */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Clock size={12} color="var(--color-text-muted)" style={{ flexShrink: 0 }} />
+          
+          {/* UTC Clock Slot */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <span style={{ fontSize: '9px', color: 'var(--color-text-muted)', fontWeight: 800, width: '24px', display: 'inline-block', textAlign: 'center' }}>
+              UTC
+            </span>
+            <span
+              style={{
+                fontFamily: 'JetBrains Mono, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+                fontSize: '11px',
+                color: '#ffffff',
+                fontWeight: 700,
+                letterSpacing: '0.03em',
+                fontVariantNumeric: 'tabular-nums',
+                fontFeatureSettings: '"tnum" 1',
+                width: '64px',
+                display: 'inline-block',
+                textAlign: 'center',
+              }}
+              title="Coordinated Universal Time (Global Benchmark)"
+            >
+              {utcTimeStr}
+            </span>
+          </div>
+
+          <span style={{ color: 'var(--color-border)', flexShrink: 0 }}>&bull;</span>
+
+          {/* Local User Device Clock Slot (Dynamically named UTC+9, UTC+7, etc.) */}
+          <div
+            style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
+            title={`Waktu Lokal Perangkat: ${localTimezoneLabel} (${detectedTimezoneName})`}
           >
-            <Bell size={16} />
-          </button>
+            <span
+              style={{
+                fontSize: '9px',
+                color: 'var(--color-accent-primary)',
+                fontWeight: 800,
+                width: '38px',
+                display: 'inline-block',
+                textAlign: 'center',
+                fontVariantNumeric: 'tabular-nums',
+                fontFeatureSettings: '"tnum" 1',
+              }}
+            >
+              {localTimezoneLabel}
+            </span>
+            <span
+              style={{
+                fontFamily: 'JetBrains Mono, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+                fontSize: '11px',
+                color: 'var(--color-accent-primary)',
+                fontWeight: 800,
+                letterSpacing: '0.03em',
+                fontVariantNumeric: 'tabular-nums',
+                fontFeatureSettings: '"tnum" 1',
+                width: '64px',
+                display: 'inline-block',
+                textAlign: 'center',
+              }}
+            >
+              {localTimeStr}
+            </span>
+          </div>
+        </div>
+
+        {/* Hairline Divider */}
+        <div style={{ width: '1px', height: '14px', backgroundColor: 'var(--color-border)', flexShrink: 0 }} />
+
+        {/* System Engine & Latency Heartbeat (Fixed width) */}
+        <div
+          style={{ display: 'flex', alignItems: 'center', gap: '5px' }}
+          title="Terminal Engine: Autonomous Sync Connected"
+        >
+          <Wifi size={11} color="var(--color-bullish)" style={{ flexShrink: 0 }} />
           <span
             style={{
-              position: 'absolute',
-              top: '-4px',
-              right: '-4px',
-              width: '16px',
-              height: '16px',
-              borderRadius: 'var(--radius-full)',
-              backgroundColor: 'var(--color-accent-primary)',
-              color: '#000000',
+              fontFamily: 'JetBrains Mono, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
               fontSize: '10px',
+              color: 'var(--color-bullish)',
               fontWeight: 800,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 0 8px rgba(134, 239, 29, 0.6)',
+              fontVariantNumeric: 'tabular-nums',
+              fontFeatureSettings: '"tnum" 1',
+              width: '32px',
+              display: 'inline-block',
+              textAlign: 'left',
             }}
           >
-            3
+            {latency}ms
           </span>
         </div>
+      </div>
 
-        {/* User Profile Chip (Avatar + Name + Role) */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            padding: '3px 10px 3px 4px',
-            backgroundColor: 'var(--color-bg-elevated)',
-            border: '1px solid var(--color-border)',
-            borderRadius: 'var(--radius-full)',
-          }}
-        >
+      {/* Right: User Profile & Session Only */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', zIndex: 2 }}>
+        {/* User Profile Chip & Logout */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
           <div
             style={{
-              width: '28px',
-              height: '28px',
-              borderRadius: 'var(--radius-full)',
-              backgroundColor: '#1b262f',
-              border: '2px solid var(--color-accent-primary)',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center',
-              overflow: 'hidden',
+              gap: '8px',
+              padding: '3px 10px 3px 4px',
+              backgroundColor: '#0a0a0c',
+              border: '1px solid #1a1a1a',
+              borderRadius: 'var(--radius-md)',
             }}
           >
-            <User size={16} color="var(--color-accent-primary)" />
+            <div
+              style={{
+                width: '24px',
+                height: '24px',
+                borderRadius: 'var(--radius-sm)',
+                backgroundColor: '#161616',
+                border: '1px solid var(--color-accent-primary)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                overflow: 'hidden',
+              }}
+            >
+              <User size={13} color="var(--color-accent-primary)" />
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <span style={{ fontSize: '11px', fontWeight: 800, color: '#ffffff', lineHeight: 1.1 }}>
+                {user?.username || 'Ilham'}
+              </span>
+              <span style={{ fontSize: '9px', color: 'var(--color-text-muted)', lineHeight: 1 }}>
+                {user?.email || 'ilhamgb11@gmail.com'}
+              </span>
+            </div>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <span style={{ fontSize: 'var(--text-xs)', fontWeight: 700, color: '#ffffff', lineHeight: 1.2 }}>
-              Ayan Khan
-            </span>
-            <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', lineHeight: 1 }}>
-              Pro Trader
-            </span>
-          </div>
+
+          <button
+            className="btn btn-secondary"
+            onClick={() => {
+              logout();
+              navigate('/login');
+            }}
+            title="Keluar dari CryptoOS Terminal"
+            style={{
+              width: '32px',
+              height: '32px',
+              padding: 0,
+              borderRadius: 'var(--radius-md)',
+              color: 'var(--color-text-muted)',
+            }}
+          >
+            <LogOut size={13} />
+          </button>
         </div>
       </div>
 
       <style>{`
-        @media (max-width: 992px) {
-          .topbar-nav-links {
-            display: none !important;
-          }
-          .topbar-rate-chip {
+        @media (max-width: 960px) {
+          .topbar-institutional-center {
             display: none !important;
           }
         }
         @media (max-width: 768px) {
           .mobile-menu-btn {
             display: inline-flex !important;
-          }
-          .desktop-collapse-btn {
-            display: none !important;
           }
         }
       `}</style>

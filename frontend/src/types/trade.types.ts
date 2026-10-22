@@ -16,6 +16,7 @@ export interface FundamentalPillarData {
   coinGeckoId?: string;
   name?: string;
   symbol?: string;
+  currentPriceUsd?: number;
   marketCapUsd?: number;
   fdvUsd?: number;
   circulatingSupply?: number;

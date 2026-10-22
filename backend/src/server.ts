@@ -7,6 +7,10 @@ import { sqliteClient } from './db/index.js';
 import { errorHandler } from './middleware/error.middleware.js';
 import { authRouter } from './modules/auth/auth.router.js';
 import { marketRouter } from './modules/market/market.router.js';
+import { ideasRouter } from './modules/ideas/ideas.router.js';
+import { journalRouter } from './modules/journal/journal.router.js';
+import { portfolioRouter } from './modules/portfolio/portfolio.router.js';
+import { cashflowRouter } from './modules/cashflow/cashflow.router.js';
 
 const app = express();
 
@@ -59,6 +63,18 @@ app.use('/api/auth', authRouter);
 
 // Market Intelligence Router (Milestone 2)
 app.use('/api/market', marketRouter);
+
+// Trade Ideas & Pipeline Router (Milestone 3)
+app.use('/api/ideas', ideasRouter);
+
+// Trading Journal Router (Milestone 5)
+app.use('/api/journal', journalRouter);
+
+// Portfolio Tracker Router (Milestone 6)
+app.use('/api/portfolio', portfolioRouter);
+
+// Treasury & Cashflow Router (Milestone 8)
+app.use('/api/cashflow', cashflowRouter);
 
 // Central Error Handler
 app.use(errorHandler);

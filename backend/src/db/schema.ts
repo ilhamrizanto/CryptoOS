@@ -1,16 +1,19 @@
 import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core';
 
-// 1. Users table (Single-user authentication)
+// 1. Users table (Multi-user authentication)
 export const users = sqliteTable('users', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   username: text('username').notNull().unique(),
   password: text('password').notNull(),
+  email: text('email'),
+  role: text('role').default('USER'),
   createdAt: integer('created_at').notNull(),
 });
 
-// 2. Trade Ideas (Pipeline & Idea Incubator)
+// 2. Trade Ideas (Pipeline & Idea Incubator - Multi-User Isolated)
 export const tradeIdeas = sqliteTable('trade_ideas', {
   id: text('id').primaryKey(), // UUID
+  userId: text('user_id').notNull().default('user-ilhamgb11'),
   createdAt: integer('created_at').notNull(),
   updatedAt: integer('updated_at').notNull(),
   symbol: text('symbol').notNull(),
@@ -30,9 +33,10 @@ export const tradeIdeas = sqliteTable('trade_ideas', {
   notes: text('notes'),
 });
 
-// 3. Trading Journal
+// 3. Trading Journal (Multi-User Isolated)
 export const journalEntries = sqliteTable('journal_entries', {
   id: text('id').primaryKey(), // UUID
+  userId: text('user_id').notNull().default('user-ilhamgb11'),
   ideaId: text('idea_id'),
   symbol: text('symbol').notNull(),
   direction: text('direction').notNull(),
@@ -53,9 +57,10 @@ export const journalEntries = sqliteTable('journal_entries', {
   screenshotsMeta: text('screenshots_meta'), // JSON metadata of screenshots
 });
 
-// 4. Portfolio Holdings
+// 4. Portfolio Holdings (Multi-User Isolated)
 export const portfolioHoldings = sqliteTable('portfolio_holdings', {
   id: text('id').primaryKey(),
+  userId: text('user_id').notNull().default('user-ilhamgb11'),
   symbol: text('symbol').notNull(),
   amount: real('amount').notNull(),
   averageBuyPrice: real('average_buy_price'),
@@ -65,9 +70,10 @@ export const portfolioHoldings = sqliteTable('portfolio_holdings', {
   updatedAt: integer('updated_at').notNull(),
 });
 
-// 5. Cashflow Ledger
+// 5. Cashflow Ledger (Multi-User Isolated)
 export const cashflowLedger = sqliteTable('cashflow_ledger', {
   id: text('id').primaryKey(),
+  userId: text('user_id').notNull().default('user-ilhamgb11'),
   type: text('type').notNull(), // 'DEPOSIT' | 'WITHDRAWAL' | 'STAKING_YIELD' | 'AIRDROP' | 'FEE'
   amountUsd: real('amount_usd').notNull(),
   amountIdr: real('amount_idr').notNull(),

@@ -3,19 +3,53 @@ import { useEffect } from 'react';
 import { api } from '../services/api';
 import { useSettingsStore } from '../store/settings.store';
 
+export interface TimeSeriesPoint {
+  date: string;
+  value: number;
+}
+
+export interface MetricWithHistory {
+  value: number;
+  change24h: number;
+  change7d?: number;
+  context?: string;
+  updatedAt: number;
+  isLive: boolean;
+  history?: TimeSeriesPoint[];
+  sparkline?: number[];
+}
+
 export interface MarketIntelResponse {
   forex: {
-    usdIdr: { value: number; change24h: number; updatedAt: number; isLive: boolean };
-    dxy: { value: number; change24h: number; updatedAt: number; isLive: boolean };
+    usdIdr: MetricWithHistory;
+    dxy: MetricWithHistory;
   };
   commodities: {
-    wtiOil: { value: number; change24h: number; updatedAt: number; isLive: boolean };
+    wtiOil: MetricWithHistory;
   };
   macro: {
     fedFundsRate: { value: number; updatedAt: number; isLive: boolean };
+    fedTargetRate?: string;
     nextFomcDate: string;
-    cpiYoy: { value: number; updatedAt: number; isLive: boolean };
-    coreInflation: { value: number; updatedAt: number; isLive: boolean };
+    fomcDaysRemaining?: number;
+    fomcBias?: string;
+    cpiYoy: {
+      value: number;
+      previous?: number;
+      expectation?: number;
+      status?: string;
+      updatedAt: number;
+      isLive: boolean;
+    };
+    coreInflation: {
+      value: number;
+      previous?: number;
+      target?: number;
+      status?: string;
+      updatedAt: number;
+      isLive: boolean;
+    };
+    macroRegime?: string;
   };
   fedwatch: {
     easeProb: number;
@@ -26,16 +60,43 @@ export interface MarketIntelResponse {
     cmeFedwatchUrl: string;
   };
   sentiment: {
-    fearAndGreed: { value: number; classification: string; updatedAt: number; isLive: boolean };
+    fearAndGreed: {
+      value: number;
+      classification: string;
+      updatedAt: number;
+      isLive: boolean;
+      history?: TimeSeriesPoint[];
+      sparkline?: number[];
+      yesterday?: number;
+      lastWeek?: number;
+      lastMonth?: number;
+    };
     altcoinSeasonIndex: { value: number; classification: string; updatedAt: number; isLive: boolean };
   };
   crypto: {
-    btcDominance: { value: number; change24h: number; updatedAt: number; isLive: boolean };
-    total3: { value: number; change24h: number; updatedAt: number; isLive: boolean };
+    btcDominance: { value: number; change24h: number; change7d?: number; updatedAt: number; isLive: boolean; history?: TimeSeriesPoint[]; sparkline?: number[] };
+    total3: {
+      value: number;
+      change24h: number;
+      change7d?: number;
+      sparkline?: number[];
+      updatedAt: number;
+      isLive: boolean;
+    };
     others: { value: number; change24h: number; updatedAt: number; isLive: boolean };
   };
   onchain: {
-    mvrvZScore: { value: number; classification: string; updatedAt: number; isLive: boolean };
+    mvrvZScore: {
+      value: number;
+      change24h?: number;
+      change7d?: number;
+      context?: string;
+      classification: string;
+      updatedAt: number;
+      isLive: boolean;
+      history?: TimeSeriesPoint[];
+      sparkline?: number[];
+    };
   };
 }
 
@@ -71,9 +132,16 @@ export function useMarketData() {
     },
   });
 
+  const forceRefresh = async (): Promise<MarketIntelResponse> => {
+    const data = await api.get<MarketIntelResponse>('/market/intel?refresh=true');
+    queryClient.setQueryData(['market', 'intel'], data);
+    return data;
+  };
+
   return {
     ...query,
     intel: query.data,
+    forceRefresh,
     updateFedWatch: updateFedWatchMutation.mutateAsync,
     isUpdatingFedWatch: updateFedWatchMutation.isPending,
   };

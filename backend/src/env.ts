@@ -14,6 +14,12 @@ const envSchema = z.object({
   JWT_SECRET: z.string().default('cryptoos-dev-insecure-secret-key-change-in-production-12345'),
   MASTER_PASSWORD_HASH: z.string().optional(),
   
+  // Google Cloud & OAuth Services (Web OAuth Credentials)
+  GOOGLE_CLIENT_ID: z.string().optional().default('973014592409-t4v36qps5lh2rrc7pqjv3ebtvuek4fb3.apps.googleusercontent.com'),
+  GOOGLE_CLIENT_SECRET: z.string().optional().default('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'),
+  GOOGLE_PROJECT_ID: z.string().optional().default('idyllic-lattice-434108-s8'),
+  GOOGLE_APPLICATION_CREDENTIALS: z.string().optional().default('./CryptoOS-GAService.json'),
+
   // Exchange API credentials (optional)
   BINANCE_API_KEY: z.string().optional().default(''),
   BINANCE_API_SECRET: z.string().optional().default(''),

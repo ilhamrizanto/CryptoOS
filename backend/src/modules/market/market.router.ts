@@ -6,15 +6,16 @@ import { ValidationError } from '../../utils/errors.js';
 export const marketRouter = Router();
 
 // GET /api/market/intel - Aggregated Market Data
-marketRouter.get('/intel', async (_req, res, next) => {
+marketRouter.get('/intel', async (req, res, next) => {
   try {
-    const data = await marketService.getAggregatedIntel();
+    const forceRefresh = req.query.refresh === 'true' || req.query.refresh === '1';
+    const data = await marketService.getAggregatedIntel(forceRefresh);
     res.json({
       success: true,
       data,
       meta: {
         timestamp: Date.now(),
-        cached: true,
+        cached: !forceRefresh,
       },
     });
   } catch (error) {
@@ -71,6 +72,33 @@ marketRouter.get('/usd-idr', async (_req, res, next) => {
     res.json({
       success: true,
       data: rate,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// GET /api/market/coin/search - Search token by symbol or name
+marketRouter.get('/coin/search', async (req, res, next) => {
+  try {
+    const q = (req.query.q as string) || '';
+    const coins = await marketService.searchCoins(q);
+    res.json({
+      success: true,
+      data: coins,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// GET /api/market/coin/:coinId/fundamental - Fetch tokenomics and fundamental metrics
+marketRouter.get('/coin/:coinId/fundamental', async (req, res, next) => {
+  try {
+    const data = await marketService.getCoinFundamental(req.params.coinId);
+    res.json({
+      success: true,
+      data,
     });
   } catch (error) {
     next(error);

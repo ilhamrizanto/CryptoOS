@@ -4,6 +4,7 @@ import { api } from '../services/api';
 interface UserProfile {
   id: string;
   username: string;
+  email?: string;
   role: string;
 }
 
@@ -14,6 +15,7 @@ interface AuthState {
   isLoading: boolean;
   error: string | null;
   login: (password: string) => Promise<boolean>;
+  loginWithGoogle: (email?: string, name?: string, idToken?: string, accessToken?: string) => Promise<boolean>;
   logout: () => void;
   verifySession: () => Promise<boolean>;
 }
@@ -24,6 +26,33 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   isAuthenticated: !!localStorage.getItem('cryptoos_auth_token'),
   isLoading: false,
   error: null,
+
+  loginWithGoogle: async (email?: string, name?: string, idToken?: string, accessToken?: string) => {
+    set({ isLoading: true, error: null });
+    try {
+      const res = await api.post<{
+        token: string;
+        user: UserProfile;
+      }>('/auth/google', { email, name, idToken, accessToken });
+
+      localStorage.setItem('cryptoos_auth_token', res.token);
+      set({
+        token: res.token,
+        user: res.user,
+        isAuthenticated: true,
+        isLoading: false,
+        error: null,
+      });
+      return true;
+    } catch (err: any) {
+      set({
+        isLoading: false,
+        error: err?.message || 'Gagal login dengan akun Google. Akun tidak memiliki akses.',
+        isAuthenticated: false,
+      });
+      return false;
+    }
+  },
 
   login: async (password: string) => {
     set({ isLoading: true, error: null });

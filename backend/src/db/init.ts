@@ -6,11 +6,14 @@ export async function initializeDatabase(): Promise<void> {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       username TEXT NOT NULL UNIQUE,
       password TEXT NOT NULL,
+      email TEXT,
+      role TEXT DEFAULT 'USER',
       created_at INTEGER NOT NULL
     );
 
     CREATE TABLE IF NOT EXISTS trade_ideas (
       id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL DEFAULT 'user-ilhamgb11',
       created_at INTEGER NOT NULL,
       updated_at INTEGER NOT NULL,
       symbol TEXT NOT NULL,
@@ -32,6 +35,7 @@ export async function initializeDatabase(): Promise<void> {
 
     CREATE TABLE IF NOT EXISTS journal_entries (
       id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL DEFAULT 'user-ilhamgb11',
       idea_id TEXT,
       symbol TEXT NOT NULL,
       direction TEXT NOT NULL,
@@ -54,6 +58,7 @@ export async function initializeDatabase(): Promise<void> {
 
     CREATE TABLE IF NOT EXISTS portfolio_holdings (
       id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL DEFAULT 'user-ilhamgb11',
       symbol TEXT NOT NULL,
       amount REAL NOT NULL,
       average_buy_price REAL,
@@ -65,6 +70,7 @@ export async function initializeDatabase(): Promise<void> {
 
     CREATE TABLE IF NOT EXISTS cashflow_ledger (
       id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL DEFAULT 'user-ilhamgb11',
       type TEXT NOT NULL,
       amount_usd REAL NOT NULL,
       amount_idr REAL NOT NULL,

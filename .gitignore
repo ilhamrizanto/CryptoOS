@@ -8,13 +8,19 @@ dist/
 build/
 out/
 
-# Environment files
+# Environment and Secrets files
 .env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
 !*.example
+CryptoOS-GAService.json
+*-GAService.json
+*service-account*.json
+*.key.json
+*.pem
+*.key
 
 # Database files
 *.db
@@ -50,3 +56,11 @@ Thumbs.db
 .stylelintcache
 *.tsbuildinfo
 .turbo/
+
+# Local runners & Desktop shortcuts (Local only - never push)
+*.bat
+*.cmd
+*.lnk
+run-local.*
+start-cryptoos.*
+
