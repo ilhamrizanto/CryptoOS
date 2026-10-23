@@ -94,8 +94,17 @@ export interface MarketIntelData {
       yesterday?: number;
       lastWeek?: number;
       lastMonth?: number;
+      source?: string;
     };
-    altcoinSeasonIndex: { value: number; classification: string; updatedAt: number; isLive: boolean };
+    altcoinSeasonIndex: {
+      value: number;
+      classification: string;
+      updatedAt: number;
+      isLive: boolean;
+      history?: TimeSeriesPoint[];
+      sparkline?: number[];
+      source?: string;
+    };
   };
   crypto: {
     btcDominance: { value: number; change24h: number; updatedAt: number; isLive: boolean; history?: TimeSeriesPoint[]; sparkline?: number[] };
@@ -128,6 +137,7 @@ export class MarketService {
   private static readonly CACHE_KEYS = {
     USD_IDR: 'intel:forex:usd_idr',
     FEAR_GREED: 'intel:sentiment:fng',
+    ALTCOIN_SEASON: 'intel:sentiment:altseason',
     CRYPTO_GLOBAL: 'intel:crypto:global',
     MACRO_FRED: 'intel:macro:fred',
     DXY_OIL: 'intel:commodities:dxy_oil',
@@ -220,7 +230,7 @@ export class MarketService {
   }
 
   /**
-   * Fetch Fear & Greed Index from Alternative.me with 14-day history (TTL: 1 hour)
+   * Fetch Fear & Greed Index from CoinMarketCap (primary) with fallback to Alternative.me (TTL: 1 hour)
    */
   public async getFearAndGreed(): Promise<{
     value: number;
@@ -232,10 +242,61 @@ export class MarketService {
     yesterday?: number;
     lastWeek?: number;
     lastMonth?: number;
+    source?: string;
   }> {
     const cached = memoryCache.get<any>(MarketService.CACHE_KEYS.FEAR_GREED);
     if (cached) return cached.value;
 
+    const nowSec = Math.floor(Date.now() / 1000);
+    const thirtyDaysAgo = nowSec - 30 * 86400;
+
+    // 1. Primary: CoinMarketCap Fear & Greed
+    try {
+      const res = await axios.get(
+        `https://api.coinmarketcap.com/data-api/v3/fear-greed/chart?start=${thirtyDaysAgo}&end=${nowSec}`,
+        {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+            'Accept': 'application/json, text/plain, */*',
+            'Referer': 'https://coinmarketcap.com/',
+          },
+          timeout: 6000,
+        }
+      );
+
+      const list = res.data?.data?.dataList;
+      if (Array.isArray(list) && list.length > 0) {
+        const latest = list[list.length - 1];
+        const history: TimeSeriesPoint[] = list.map((item: any) => ({
+          date: new Date(parseInt(item.timestamp, 10) * 1000).toISOString().slice(0, 10),
+          value: item.score,
+        }));
+        const sparkline = history.map((h) => h.value);
+        const yesterday = list.length >= 2 ? list[list.length - 2].score : latest.score;
+        const lastWeek = list.length >= 8 ? list[list.length - 8].score : yesterday;
+        const lastMonth = list[0]?.score ?? yesterday;
+
+        const result = {
+          value: latest.score,
+          classification: latest.name,
+          updatedAt: parseInt(latest.timestamp, 10) * 1000,
+          isLive: true,
+          history,
+          sparkline,
+          yesterday,
+          lastWeek,
+          lastMonth,
+          source: 'CoinMarketCap',
+        };
+
+        memoryCache.set(MarketService.CACHE_KEYS.FEAR_GREED, result, 3600); // 1 hour TTL
+        return result;
+      }
+    } catch (e) {
+      console.warn('[MarketService] Failed to fetch CoinMarketCap Fear & Greed, falling back to Alternative.me:', (e as Error).message);
+    }
+
+    // 2. Fallback: Alternative.me
     try {
       const res = await axios.get('https://api.alternative.me/fng/?limit=14', { timeout: 5000 });
       const list = res.data?.data;
@@ -260,15 +321,16 @@ export class MarketService {
           yesterday,
           lastWeek,
           lastMonth,
+          source: 'Alternative.me',
         };
-        memoryCache.set(MarketService.CACHE_KEYS.FEAR_GREED, result, 3600); // 1 hour TTL
+        memoryCache.set(MarketService.CACHE_KEYS.FEAR_GREED, result, 3600);
         return result;
       }
     } catch (e) {
-      console.warn('[MarketService] Failed to fetch Fear & Greed history:', (e as Error).message);
+      console.warn('[MarketService] Failed to fetch Alternative.me Fear & Greed:', (e as Error).message);
     }
 
-    const fallbackSparkline = [58, 64, 69, 57, 62, 53, 63, 55, 53];
+    const fallbackSparkline = [58, 64, 69, 57, 62, 53, 63, 55, 48];
     const now = Date.now();
     const fallbackHistory = fallbackSparkline.map((v, i) => ({
       date: new Date(now - (fallbackSparkline.length - 1 - i) * 86400000).toISOString().slice(0, 10),
@@ -276,15 +338,84 @@ export class MarketService {
     }));
 
     return {
-      value: 53,
+      value: 48,
       classification: 'Neutral',
       updatedAt: Date.now(),
       isLive: false,
       history: fallbackHistory,
       sparkline: fallbackSparkline,
-      yesterday: 50,
-      lastWeek: 62,
-      lastMonth: 45,
+      yesterday: 48,
+      lastWeek: 52,
+      lastMonth: 50,
+      source: 'CoinMarketCap (Offline)',
+    };
+  }
+
+  /**
+   * Fetch Altcoin Season Index from CoinMarketCap (TTL: 1 hour)
+   */
+  public async getAltcoinSeasonIndex(): Promise<{
+    value: number;
+    classification: string;
+    updatedAt: number;
+    isLive: boolean;
+    history?: TimeSeriesPoint[];
+    sparkline?: number[];
+    source?: string;
+  }> {
+    const cached = memoryCache.get<any>(MarketService.CACHE_KEYS.ALTCOIN_SEASON);
+    if (cached) return cached.value;
+
+    const nowSec = Math.floor(Date.now() / 1000);
+    const thirtyDaysAgo = nowSec - 30 * 86400;
+
+    try {
+      const res = await axios.get(
+        `https://api.coinmarketcap.com/data-api/v3/altcoin-season/chart?start=${thirtyDaysAgo}&end=${nowSec}`,
+        {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+            'Accept': 'application/json, text/plain, */*',
+            'Referer': 'https://coinmarketcap.com/',
+          },
+          timeout: 6000,
+        }
+      );
+
+      const points = res.data?.data?.points;
+      if (Array.isArray(points) && points.length > 0) {
+        const latest = points[points.length - 1];
+        const val = parseInt(latest.altcoinIndex, 10);
+        const classification = val >= 75 ? 'Altcoin Season' : val <= 25 ? 'Bitcoin Season' : 'Neutral / Altcoin Momentum';
+        const history: TimeSeriesPoint[] = points.map((p: any) => ({
+          date: new Date(parseInt(p.timestamp, 10) * 1000).toISOString().slice(0, 10),
+          value: parseInt(p.altcoinIndex, 10),
+        }));
+        const sparkline = history.map((h) => h.value);
+
+        const result = {
+          value: val,
+          classification,
+          updatedAt: parseInt(latest.timestamp, 10) * 1000,
+          isLive: true,
+          history,
+          sparkline,
+          source: 'CoinMarketCap',
+        };
+
+        memoryCache.set(MarketService.CACHE_KEYS.ALTCOIN_SEASON, result, 3600);
+        return result;
+      }
+    } catch (e) {
+      console.warn('[MarketService] Failed to fetch CoinMarketCap Altcoin Season:', (e as Error).message);
+    }
+
+    return {
+      value: 57,
+      classification: 'Neutral / Altcoin Momentum',
+      updatedAt: Date.now(),
+      isLive: false,
+      source: 'CoinMarketCap (Fallback)',
     };
   }
 
@@ -685,6 +816,7 @@ export class MarketService {
     memoryCache.delete(MarketService.CACHE_KEYS.AGGREGATED_INTEL);
     memoryCache.delete(MarketService.CACHE_KEYS.USD_IDR);
     memoryCache.delete(MarketService.CACHE_KEYS.FEAR_GREED);
+    memoryCache.delete(MarketService.CACHE_KEYS.ALTCOIN_SEASON);
     memoryCache.delete(MarketService.CACHE_KEYS.CRYPTO_GLOBAL);
     memoryCache.delete(MarketService.CACHE_KEYS.MACRO_FRED);
     memoryCache.delete(MarketService.CACHE_KEYS.DXY_OIL);
@@ -702,9 +834,10 @@ export class MarketService {
       if (cached) return cached.value;
     }
 
-    const [usdIdr, fng, crypto, macro, fedwatch] = await Promise.all([
+    const [usdIdr, fng, altSeason, crypto, macro, fedwatch] = await Promise.all([
       this.getUsdIdr(),
       this.getFearAndGreed(),
+      this.getAltcoinSeasonIndex(),
       this.getCryptoGlobal(),
       this.getMacroData(),
       this.getFedWatchData(),
@@ -778,30 +911,12 @@ export class MarketService {
       macro,
       fedwatch,
       sentiment: {
-        fearAndGreed: {
-          ...fng,
-          value: 53,
-          classification: 'Neutral',
-          isLive: true,
-        },
-        altcoinSeasonIndex: {
-          value: 58,
-          classification: 'Altcoin Momentum',
-          updatedAt: now,
-          isLive: true,
-        },
+        fearAndGreed: fng,
+        altcoinSeasonIndex: altSeason,
       },
       crypto: {
-        btcDominance: {
-          ...crypto.btcDominance,
-          value: 60.59,
-          sparkline: [59.8, 60.0, 60.2, 60.4, 60.5, 60.59],
-        },
-        total3: {
-          ...crypto.total3,
-          value: 770_420_000_000,
-          sparkline: [752, 756, 760, 764, 768, 770.42],
-        },
+        btcDominance: crypto.btcDominance,
+        total3: crypto.total3,
         others: crypto.others,
       },
       onchain: {

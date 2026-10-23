@@ -771,7 +771,7 @@ export const GlobalIntelligencePanel: React.FC<GlobalIntelligencePanelProps> = (
                     </span>
                   </div>
                   <span className="amber-badge" style={{ fontSize: '8px', padding: '1px 5px' }}>
-                    SENTIMEN
+                    SENTIMENT
                   </span>
                 </div>
 
@@ -827,10 +827,10 @@ export const GlobalIntelligencePanel: React.FC<GlobalIntelligencePanelProps> = (
                     }}
                   >
                     <span style={{ color: 'var(--color-text-secondary)', display: 'block', fontSize: '8.5px', fontWeight: 700 }}>
-                      Kemarin
+                      Yesterday
                     </span>
                     <span className="value-number" style={{ color: '#ffffff', fontSize: '12.5px', fontWeight: 900, display: 'block', marginTop: '1px' }}>
-                      {sentiment?.fearAndGreed?.yesterday ?? 50}
+                      {sentiment?.fearAndGreed?.yesterday ?? 48}
                     </span>
                   </div>
 
@@ -844,10 +844,10 @@ export const GlobalIntelligencePanel: React.FC<GlobalIntelligencePanelProps> = (
                     }}
                   >
                     <span style={{ color: 'var(--color-text-secondary)', display: 'block', fontSize: '8.5px', fontWeight: 700 }}>
-                      Minggu Lalu
+                      Last Week
                     </span>
                     <span className="value-number" style={{ color: 'var(--color-bullish)', fontSize: '12.5px', fontWeight: 900, display: 'block', marginTop: '1px' }}>
-                      {sentiment?.fearAndGreed?.lastWeek ?? 62}
+                      {sentiment?.fearAndGreed?.lastWeek ?? 50}
                     </span>
                   </div>
 
@@ -861,10 +861,10 @@ export const GlobalIntelligencePanel: React.FC<GlobalIntelligencePanelProps> = (
                     }}
                   >
                     <span style={{ color: 'var(--color-text-secondary)', display: 'block', fontSize: '8.5px', fontWeight: 700 }}>
-                      Bulan Lalu
+                      Last Month
                     </span>
                     <span className="value-number" style={{ color: 'var(--color-amber)', fontSize: '12.5px', fontWeight: 900, display: 'block', marginTop: '1px' }}>
-                      {sentiment?.fearAndGreed?.lastMonth ?? 45}
+                      {sentiment?.fearAndGreed?.lastMonth ?? 73}
                     </span>
                   </div>
                 </div>
@@ -1138,7 +1138,7 @@ export const GlobalIntelligencePanel: React.FC<GlobalIntelligencePanelProps> = (
                           boxShadow: '0 0 4px var(--color-bullish)',
                         }}
                       />
-                      <span>FRED & CME LIVE</span>
+                      <span>FRED REALTIME</span>
                     </div>
 
                     <a
@@ -1146,18 +1146,22 @@ export const GlobalIntelligencePanel: React.FC<GlobalIntelligencePanelProps> = (
                       target="_blank"
                       rel="noreferrer"
                       style={{
-                        color: 'var(--color-text-muted)',
+                        color: 'var(--color-cyan)',
                         textDecoration: 'none',
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '2px',
-                        fontSize: '9px',
+                        gap: '3px',
+                        fontSize: '9.5px',
                         fontWeight: 700,
-                        padding: '2px',
+                        padding: '1px 5px',
+                        backgroundColor: 'rgba(56, 189, 248, 0.1)',
+                        borderRadius: 'var(--radius-xs)',
+                        border: '1px solid rgba(56, 189, 248, 0.25)',
                       }}
-                      title="Buka CME FedWatch Tool Resmi"
+                      title="Open Official CME FedWatch Tool"
                     >
-                      <ExternalLink size={10} />
+                      <span>CME Tool</span>
+                      <ExternalLink size={9} />
                     </a>
                   </div>
                 </div>
@@ -1185,7 +1189,7 @@ export const GlobalIntelligencePanel: React.FC<GlobalIntelligencePanelProps> = (
                   >
                     <div style={{ textAlign: 'left' }}>
                       <span style={{ fontSize: '7.5px', color: 'var(--color-text-muted)', display: 'block', fontWeight: 700 }}>
-                        RATE EFEKTIF (DFF)
+                        EFFECTIVE RATE (DFF)
                       </span>
                       <span className="value-number" style={{ fontSize: '12.5px', fontWeight: 900, color: '#ffffff', lineHeight: 1.1 }}>
                         {macro?.fedFundsRate?.value ?? 3.88}%
@@ -1200,22 +1204,12 @@ export const GlobalIntelligencePanel: React.FC<GlobalIntelligencePanelProps> = (
                           gap: '2px',
                           padding: '1px 4px',
                           borderRadius: 'var(--radius-xs)',
-                          backgroundColor: (fedwatch?.noChangeProb ?? 84.5) >= 50
-                            ? 'rgba(96, 165, 250, 0.15)'
-                            : (fedwatch?.easeProb ?? 0) >= 50
-                            ? 'var(--color-cyan-dim)'
-                            : 'rgba(245, 158, 11, 0.15)',
-                          border: `1px solid ${
-                            (fedwatch?.noChangeProb ?? 84.5) >= 50
-                              ? 'rgba(96, 165, 250, 0.4)'
-                              : (fedwatch?.easeProb ?? 0) >= 50
-                              ? 'var(--color-cyan)'
-                              : 'var(--color-amber)'
-                          }`,
+                          backgroundColor: 'rgba(96, 165, 250, 0.15)',
+                          border: '1px solid rgba(96, 165, 250, 0.4)',
                         }}
                       >
                         <span style={{ fontSize: '7.5px', fontWeight: 800, color: '#93c5fd' }}>
-                          0 bps (Hold)
+                          Target Band
                         </span>
                       </div>
                     </div>
@@ -1247,7 +1241,7 @@ export const GlobalIntelligencePanel: React.FC<GlobalIntelligencePanelProps> = (
                         NEXT FOMC
                       </span>
                       <span className="amber-badge" style={{ fontSize: '7px', padding: '0 3px', fontWeight: 800 }}>
-                        {macro?.fomcDaysRemaining ?? 5} HARI
+                        {macro?.fomcDaysRemaining ?? 5} DAYS
                       </span>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginTop: '1px' }}>
@@ -1258,74 +1252,54 @@ export const GlobalIntelligencePanel: React.FC<GlobalIntelligencePanelProps> = (
                         style={{
                           fontSize: '7.5px',
                           fontWeight: 700,
-                          color: (fedwatch?.hikeProb ?? 15.5) > 10
-                            ? 'var(--color-amber)'
-                            : '#93c5fd',
+                          color: '#93c5fd',
                         }}
                       >
-                        {macro?.fomcBias ?? 'Hawkish Hold'}
+                        {macro?.fomcBias ?? 'Scheduled'}
                       </span>
                     </div>
                   </div>
                 </div>
 
-                {/* CME FedWatch Probability Split Bar + Forward Pricing */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '8px' }}>
-                    <span style={{ color: '#60a5fa', fontWeight: 800 }}>
-                      CME 28 OKT: PAUSE {fedwatch?.noChangeProb ?? 84.5}%
+                {/* CME FedWatch Manual Link Button Banner */}
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '5px 8px',
+                    backgroundColor: 'var(--color-bg-base)',
+                    borderRadius: 'var(--radius-sm)',
+                    border: '1px solid var(--color-border-muted)',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <div style={{ width: '5px', height: '5px', borderRadius: '50%', backgroundColor: 'var(--color-cyan)' }} />
+                    <span style={{ fontSize: '9px', fontWeight: 700, color: 'var(--color-text-secondary)' }}>
+                      CME FedWatch Futures Rate Probabilities
                     </span>
-                    <div style={{ display: 'flex', gap: '6px' }}>
-                      <span style={{ color: 'var(--color-amber)', fontWeight: 800 }}>
-                        HIKE {fedwatch?.hikeProb ?? 15.5}%
-                      </span>
-                      <span style={{ color: 'var(--color-text-muted)', fontWeight: 700 }}>
-                        CUT {fedwatch?.easeProb ?? 0}%
-                      </span>
-                    </div>
                   </div>
-                  <div
+                  <a
+                    href="https://www.cmegroup.com/markets/interest-rates/cme-fedwatch-tool.html"
+                    target="_blank"
+                    rel="noreferrer"
                     style={{
-                      height: '4px',
-                      width: '100%',
-                      backgroundColor: 'var(--color-bg-base)',
-                      borderRadius: 'var(--radius-full)',
-                      overflow: 'hidden',
-                      display: 'flex',
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: `${fedwatch?.noChangeProb ?? 84.5}%`,
-                        backgroundColor: '#3b82f6',
-                      }}
-                    />
-                    <div
-                      style={{
-                        width: `${fedwatch?.hikeProb ?? 15.5}%`,
-                        backgroundColor: '#f59e0b',
-                      }}
-                    />
-                  </div>
-
-                  {/* December Forward Rate Pricing Badge */}
-                  <div
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
+                      display: 'inline-flex',
                       alignItems: 'center',
-                      fontSize: '7.5px',
-                      color: 'var(--color-text-muted)',
-                      padding: '1px 2px',
+                      gap: '4px',
+                      padding: '2px 7px',
+                      borderRadius: 'var(--radius-xs)',
+                      backgroundColor: 'rgba(56, 189, 248, 0.12)',
+                      border: '1px solid rgba(56, 189, 248, 0.35)',
+                      color: 'var(--color-cyan)',
+                      fontSize: '9px',
+                      fontWeight: 800,
+                      textDecoration: 'none',
                     }}
                   >
-                    <span style={{ color: 'var(--color-amber)', fontWeight: 800 }}>
-                      FORWARD 9 DES 2026: {fedwatch?.nextMeetingForward?.hikeProb ?? 88.2}% KEMUNGKINAN HIKE (+25 BPS KE 4.00%-4.25%)
-                    </span>
-                    <span style={{ color: 'var(--color-text-secondary)', fontWeight: 700 }}>
-                      PAUSE {fedwatch?.nextMeetingForward?.noChangeProb ?? 11.8}%
-                    </span>
-                  </div>
+                    <span>Check CME Live</span>
+                    <ExternalLink size={9} />
+                  </a>
                 </div>
 
                 {/* US Inflation Complete 4-Point Gauge (CPI & Core CPI by BLS, PCE & Core PCE by BEA) */}
@@ -1787,43 +1761,27 @@ export const GlobalIntelligencePanel: React.FC<GlobalIntelligencePanelProps> = (
                   href="https://www.cmegroup.com/markets/interest-rates/cme-fedwatch-tool.html"
                   target="_blank"
                   rel="noreferrer"
-                  style={{ fontSize: '10px', color: 'var(--color-cyan)', fontWeight: 700, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '3px' }}
+                  style={{
+                    fontSize: '10.5px',
+                    color: 'var(--color-cyan)',
+                    fontWeight: 700,
+                    textDecoration: 'none',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    padding: '3px 8px',
+                    backgroundColor: 'rgba(56, 189, 248, 0.12)',
+                    borderRadius: 'var(--radius-xs)',
+                    border: '1px solid rgba(56, 189, 248, 0.3)',
+                  }}
                 >
-                  <span>Open CME FedWatch</span>
+                  <span>Open Official CME FedWatch</span>
                   <ExternalLink size={10} />
                 </a>
               </div>
-              <p style={{ fontSize: '10.5px', color: 'var(--color-text-secondary)', lineHeight: 1.5, margin: '0 0 10px 0' }}>
-                Derived from CBOT 30-Day Fed Funds Futures prices to reflect institutional market expectations for Federal Open Market Committee (FOMC) rate decisions.
+              <p style={{ fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: 1.5, margin: 0 }}>
+                To verify real-time institutional FOMC target rate probabilities (pause, cut, or hike), click the button above to view CME Group's live 30-Day Fed Funds Futures tracker directly.
               </p>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                <div style={{ padding: '8px 10px', background: 'var(--color-bg-surface)', borderRadius: 'var(--radius-xs)', border: '1px solid var(--color-border-muted)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', fontWeight: 700 }}>FOMC OCT 28, 2026 ({macro?.fomcDaysRemaining ?? 5} Days Remaining)</span>
-                    <span className="bullish-badge" style={{ fontSize: '8px', padding: '1px 5px' }}>PAUSE 84.5%</span>
-                  </div>
-                  <div style={{ fontSize: '12px', fontWeight: 800, color: '#fff', marginTop: '4px' }}>
-                    Target: 3.75% - 4.00%
-                  </div>
-                  <div style={{ fontSize: '9.5px', color: 'var(--color-text-muted)', marginTop: '2px' }}>
-                    Pause: <strong>84.5%</strong> • Hike (+25 bps): <strong>15.5%</strong> • Cut: <strong>0%</strong>
-                  </div>
-                </div>
-
-                <div style={{ padding: '8px 10px', background: 'var(--color-bg-surface)', borderRadius: 'var(--radius-xs)', border: '1px solid var(--color-border-muted)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', fontWeight: 700 }}>FOMC DEC 9, 2026 (Forward Outlook)</span>
-                    <span className="amber-badge" style={{ fontSize: '8px', padding: '1px 5px' }}>HIKE 88.2%</span>
-                  </div>
-                  <div style={{ fontSize: '12px', fontWeight: 800, color: '#fff', marginTop: '4px' }}>
-                    Projected Target: 4.00% - 4.25%
-                  </div>
-                  <div style={{ fontSize: '9.5px', color: 'var(--color-text-muted)', marginTop: '2px' }}>
-                    Hike (+25 bps): <strong>88.2%</strong> • Pause: <strong>11.8%</strong> • Cut: <strong>0%</strong>
-                  </div>
-                </div>
-              </div>
             </div>
 
             {/* Section 2: US Inflation 4-Point Gauge Matrix */}

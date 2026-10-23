@@ -116,8 +116,27 @@ export class PortfolioService {
       }
     } catch {}
 
-    // 2. CoinGecko public simple price with BROWSER_UA
-    const coinId = COMMON_COINGECKO_MAP[sym];
+    // 3. Known CoinGecko map lookup
+    let coinId = COMMON_COINGECKO_MAP[sym];
+
+    // 4. Dynamic CoinGecko search if not in static map
+    if (!coinId) {
+      try {
+        const searchRes = await axios.get(
+          `https://api.coingecko.com/api/v3/search?query=${encodeURIComponent(sym)}`,
+          { timeout: 4000, headers: { 'User-Agent': BROWSER_UA } }
+        );
+        const coins = searchRes.data?.coins;
+        if (Array.isArray(coins)) {
+          const match = coins.find((c: any) => c.symbol?.toUpperCase() === sym);
+          if (match?.id) {
+            coinId = match.id;
+            COMMON_COINGECKO_MAP[sym] = coinId; // cache for future calls
+          }
+        }
+      } catch {}
+    }
+
     if (coinId) {
       try {
         const res = await axios.get(
@@ -133,7 +152,21 @@ export class PortfolioService {
       } catch {}
     }
 
-    const fallbackPrice = BASELINE_FALLBACK_PRICES[sym] || 10.0;
+    // 5. Gate.io spot ticker fallback
+    try {
+      const gateRes = await axios.get(
+        `https://api.gateio.ws/api/v4/spot/tickers?currency_pair=${sym}_USDT`,
+        { timeout: 3500, headers: { 'User-Agent': BROWSER_UA } }
+      );
+      const gatePrice = parseFloat(gateRes.data?.[0]?.last);
+      if (gatePrice && gatePrice > 0) {
+        const result = { price: gatePrice, isLive: true };
+        memoryCache.set(cacheKey, result, 60);
+        return result;
+      }
+    } catch {}
+
+    const fallbackPrice = BASELINE_FALLBACK_PRICES[sym] || 0;
     const fallbackResult = { price: fallbackPrice, isLive: false };
     memoryCache.set(cacheKey, fallbackResult, 30);
     return fallbackResult;
@@ -566,8 +599,13 @@ export class PortfolioService {
     // Concurrently fetch realtime prices for all user holdings
     const holdingsWithMarketData = await Promise.all(
       holdings.map(async (h) => {
-        const { price: livePrice } = await this.getLiveCoinPrice(h.symbol);
-        const currentPrice = livePrice || h.averageBuyPrice || 10.0;
+        const { price: livePrice, isLive } = await this.getLiveCoinPrice(h.symbol);
+        // Priority: Verified Live Price > User Average Buy Price > Fallback Baseline
+        const currentPrice = (isLive && livePrice > 0)
+          ? livePrice
+          : (h.averageBuyPrice && h.averageBuyPrice > 0)
+          ? h.averageBuyPrice
+          : (livePrice || 1.0);
         const currentValueUsd = h.amount * currentPrice;
         const costBasisUsd = (h.averageBuyPrice || currentPrice) * h.amount;
         const pnlUsd = currentValueUsd - costBasisUsd;

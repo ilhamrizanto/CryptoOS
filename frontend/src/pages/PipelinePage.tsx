@@ -17,6 +17,7 @@ import {
   CheckCircle2,
   Calculator,
   Upload,
+  ExternalLink,
 } from 'lucide-react';
 import { api } from '../services/api';
 import { evidenceDb } from '../services/db';
@@ -1123,15 +1124,29 @@ export const PipelinePage: React.FC = () => {
             </div>
 
             <div>
-              <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', display: 'block' }}>CME FEDWATCH PROJECTION</span>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginTop: '2px' }}>
-                <span className="value-number" style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-bullish)' }}>
-                  Pause {intel?.fedwatch?.noChangeProb || 82.8}%
-                </span>
-                <span style={{ fontSize: '10px', color: 'var(--color-text-muted)' }}>
-                  | Hike {intel?.fedwatch?.hikeProb || 17.2}%
-                </span>
-              </div>
+              <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', display: 'block' }}>CME FEDWATCH</span>
+              <a
+                href="https://www.cmegroup.com/markets/interest-rates/cme-fedwatch-tool.html"
+                target="_blank"
+                rel="noreferrer"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  marginTop: '3px',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  color: 'var(--color-cyan)',
+                  textDecoration: 'none',
+                  backgroundColor: 'rgba(56, 189, 248, 0.1)',
+                  padding: '2px 8px',
+                  borderRadius: 'var(--radius-xs)',
+                  border: '1px solid rgba(56, 189, 248, 0.25)',
+                }}
+              >
+                <span>Check CME Live</span>
+                <ExternalLink size={10} />
+              </a>
             </div>
 
             <div>
