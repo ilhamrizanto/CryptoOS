@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   BookOpen,
   CheckCircle,
@@ -24,6 +24,7 @@ import { JournalEntry, TradeDirection } from '../types/trade.types';
 
 export const JournalPage: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { usdToIdrRate } = useSettingsStore();
 
   const [activeTab, setActiveTab] = useState<'OPEN' | 'CLOSED' | 'ALL'>('OPEN');
@@ -76,6 +77,24 @@ export const JournalPage: React.FC = () => {
   useEffect(() => {
     loadJournalData();
   }, [loadJournalData]);
+
+  // Handle passed location state from Calculator or Pipeline
+  useEffect(() => {
+    if (location.state) {
+      const state = location.state as any;
+      if (state.openNewModal) {
+        setShowNewModal(true);
+        if (state.symbol) setNewSymbol(state.symbol);
+        if (state.direction) setNewDirection(state.direction);
+        if (state.entryPrice) setNewEntryPrice(Number(state.entryPrice));
+        if (state.positionSize) setNewPositionSize(Number(state.positionSize));
+        if (state.stopLossPrice) setNewStopLoss(Number(state.stopLossPrice));
+        if (state.takeProfitPrice) setNewTakeProfit(Number(state.takeProfitPrice));
+        if (state.notes) setNewNotes(state.notes);
+        showToast(`Setup for ${state.symbol || 'trade'} imported from Calculator!`);
+      }
+    }
+  }, [location.state]);
 
   // Open trades vs Closed trades
   const openEntries = entries.filter((e) => e.status === 'OPEN');

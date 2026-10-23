@@ -350,6 +350,56 @@ body {
   background-color: rgba(255, 255, 255, 0.02);
 }
 
+/* Pipeline Pillars Cardless Grid */
+.pipeline-pillars-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  background-color: #000000;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-left: none;
+  border-right: none;
+}
+
+.pipeline-pillar-left {
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.pipeline-pillar-top {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+@media (max-width: 1080px) {
+  .pipeline-pillars-grid {
+    grid-template-columns: 1fr;
+  }
+  .pipeline-pillar-left {
+    border-right: none !important;
+  }
+  .pipeline-pillar-top {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  }
+  .pipeline-pillar-cell:not(:last-child) {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  }
+}
+
+.pipeline-compact-select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-position: right 8px center !important;
+  background-size: 11px !important;
+  padding: 3px 22px 3px 8px !important;
+  font-size: 10.5px !important;
+  font-weight: 700;
+  height: 28px !important;
+  border-radius: var(--radius-xs);
+  background-color: rgba(255, 255, 255, 0.03) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: #ededed;
+  cursor: pointer;
+}
+
 /* Button Styles - Signature Electric Lime CTA */
 .btn {
   display: inline-flex;

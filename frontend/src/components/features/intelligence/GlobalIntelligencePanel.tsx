@@ -562,18 +562,21 @@ export const GlobalIntelligencePanel: React.FC<GlobalIntelligencePanelProps> = (
   return (
     <>
 
-      {/* Main Cardless Macro Intelligence Container */}
+      {/* Main Cardless Macro Intelligence Container (Pure Black OLED, Borderless Edges) */}
       <div
         style={{
           display: 'flex',
           flexDirection: 'column',
-          gap: 'var(--space-4)',
-          paddingBottom: 'var(--space-2)',
-          borderBottom: '1px solid var(--color-border)',
+          backgroundColor: '#000000',
+          borderLeft: 'none',
+          borderRight: 'none',
+          borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+          padding: '12px 0 0 0',
         }}
       >
         {/* Header Strip */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 'var(--space-2)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 'var(--space-2)', padding: '0 8px 12px 8px', borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <div
               style={{
@@ -741,26 +744,32 @@ export const GlobalIntelligencePanel: React.FC<GlobalIntelligencePanelProps> = (
         </div>
 
         {!isCollapsed && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-            {/* Visual Macro Triptych (3 Compact High-Density Terminal Cards) */}
+          <div style={{ display: 'flex', flexDirection: 'column', backgroundColor: '#000000' }}>
+            {/* Visual Macro Triptych (Seamless Cardless Columns on Pure Black) */}
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-                gap: '8px',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(310px, 1fr))',
+                backgroundColor: '#000000',
+                borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+                borderLeft: 'none',
+                borderRight: 'none',
               }}
             >
               {/* Visual Column 1: CMC-Style Fear & Greed Semicircle Gauge + 7D Trend */}
               <div
                 style={{
-                  padding: '9px 12px',
-                  backgroundColor: 'var(--color-bg-surface)',
-                  border: '1px solid var(--color-border)',
-                  borderRadius: 'var(--radius-md)',
+                  padding: '12px 16px',
+                  backgroundColor: '#000000',
+                  borderRight: '1px solid rgba(255, 255, 255, 0.08)',
+                  borderLeft: 'none',
+                  borderTop: 'none',
+                  borderBottom: 'none',
+                  borderRadius: 0,
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'space-between',
-                  gap: '5px',
+                  gap: '6px',
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -786,10 +795,10 @@ export const GlobalIntelligencePanel: React.FC<GlobalIntelligencePanelProps> = (
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    padding: '4px 8px',
-                    backgroundColor: 'var(--color-bg-base)',
+                    padding: '5px 8px',
+                    backgroundColor: 'rgba(255, 255, 255, 0.02)',
                     borderRadius: 'var(--radius-sm)',
-                    border: '1px solid var(--color-border-muted)',
+                    border: '1px solid rgba(255, 255, 255, 0.06)',
                   }}
                 >
                   <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -819,10 +828,10 @@ export const GlobalIntelligencePanel: React.FC<GlobalIntelligencePanelProps> = (
                 >
                   <div
                     style={{
-                      padding: '3px 5px',
-                      backgroundColor: 'var(--color-bg-base)',
+                      padding: '4px 6px',
+                      backgroundColor: 'rgba(255, 255, 255, 0.02)',
                       borderRadius: 'var(--radius-sm)',
-                      border: '1px solid var(--color-border-muted)',
+                      border: '1px solid rgba(255, 255, 255, 0.06)',
                       textAlign: 'center',
                     }}
                   >
@@ -836,10 +845,10 @@ export const GlobalIntelligencePanel: React.FC<GlobalIntelligencePanelProps> = (
 
                   <div
                     style={{
-                      padding: '3px 5px',
-                      backgroundColor: 'var(--color-bg-base)',
+                      padding: '4px 6px',
+                      backgroundColor: 'rgba(255, 255, 255, 0.02)',
                       borderRadius: 'var(--radius-sm)',
-                      border: '1px solid var(--color-border-muted)',
+                      border: '1px solid rgba(255, 255, 255, 0.06)',
                       textAlign: 'center',
                     }}
                   >
@@ -853,10 +862,10 @@ export const GlobalIntelligencePanel: React.FC<GlobalIntelligencePanelProps> = (
 
                   <div
                     style={{
-                      padding: '3px 5px',
-                      backgroundColor: 'var(--color-bg-base)',
+                      padding: '4px 6px',
+                      backgroundColor: 'rgba(255, 255, 255, 0.02)',
                       borderRadius: 'var(--radius-sm)',
-                      border: '1px solid var(--color-border-muted)',
+                      border: '1px solid rgba(255, 255, 255, 0.06)',
                       textAlign: 'center',
                     }}
                   >
@@ -873,10 +882,13 @@ export const GlobalIntelligencePanel: React.FC<GlobalIntelligencePanelProps> = (
               {/* Visual Column 2: Dual-Column Layout (Donut & BTC.D Trend | Altseason & TOTAL3 Chart) */}
               <div
                 style={{
-                  padding: '10px 13px',
-                  backgroundColor: 'var(--color-bg-surface)',
-                  border: '1px solid var(--color-border)',
-                  borderRadius: 'var(--radius-md)',
+                  padding: '12px 16px',
+                  backgroundColor: '#000000',
+                  borderRight: '1px solid rgba(255, 255, 255, 0.08)',
+                  borderLeft: 'none',
+                  borderTop: 'none',
+                  borderBottom: 'none',
+                  borderRadius: 0,
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'space-between',
@@ -969,9 +981,9 @@ export const GlobalIntelligencePanel: React.FC<GlobalIntelligencePanelProps> = (
                       flexDirection: 'column',
                       justifyContent: 'space-between',
                       padding: '8px 10px',
-                      backgroundColor: 'var(--color-bg-base)',
+                      backgroundColor: 'rgba(255, 255, 255, 0.02)',
                       borderRadius: 'var(--radius-sm)',
-                      border: '1px solid var(--color-border-muted)',
+                      border: '1px solid rgba(255, 255, 255, 0.06)',
                       gap: '6px',
                     }}
                   >
@@ -1021,9 +1033,9 @@ export const GlobalIntelligencePanel: React.FC<GlobalIntelligencePanelProps> = (
                       flexDirection: 'column',
                       justifyContent: 'space-between',
                       padding: '8px 10px',
-                      backgroundColor: 'var(--color-bg-base)',
+                      backgroundColor: 'rgba(255, 255, 255, 0.02)',
                       borderRadius: 'var(--radius-sm)',
-                      border: '1px solid var(--color-border-muted)',
+                      border: '1px solid rgba(255, 255, 255, 0.06)',
                       gap: '6px',
                     }}
                   >
@@ -1071,14 +1083,17 @@ export const GlobalIntelligencePanel: React.FC<GlobalIntelligencePanelProps> = (
               {/* Visual Column 3: FED Interest Rates, FOMC Catalyst & US Inflation */}
               <div
                 style={{
-                  padding: '9px 12px',
-                  backgroundColor: 'var(--color-bg-surface)',
-                  border: '1px solid var(--color-border)',
-                  borderRadius: 'var(--radius-md)',
+                  padding: '12px 16px',
+                  backgroundColor: '#000000',
+                  borderRight: 'none',
+                  borderLeft: 'none',
+                  borderTop: 'none',
+                  borderBottom: 'none',
+                  borderRadius: 0,
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'space-between',
-                  gap: '5px',
+                  gap: '6px',
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -1182,9 +1197,9 @@ export const GlobalIntelligencePanel: React.FC<GlobalIntelligencePanelProps> = (
                       alignItems: 'center',
                       justifyContent: 'space-between',
                       padding: '4px 6px',
-                      backgroundColor: 'var(--color-bg-base)',
+                      backgroundColor: 'rgba(255, 255, 255, 0.02)',
                       borderRadius: 'var(--radius-sm)',
-                      border: '1px solid var(--color-border-muted)',
+                      border: '1px solid rgba(255, 255, 255, 0.06)',
                     }}
                   >
                     <div style={{ textAlign: 'left' }}>
@@ -1228,9 +1243,9 @@ export const GlobalIntelligencePanel: React.FC<GlobalIntelligencePanelProps> = (
                   <div
                     style={{
                       padding: '4px 6px',
-                      backgroundColor: 'var(--color-bg-base)',
+                      backgroundColor: 'rgba(255, 255, 255, 0.02)',
                       borderRadius: 'var(--radius-sm)',
-                      border: '1px solid var(--color-border-muted)',
+                      border: '1px solid rgba(255, 255, 255, 0.06)',
                       display: 'flex',
                       flexDirection: 'column',
                       justifyContent: 'center',
@@ -1244,8 +1259,8 @@ export const GlobalIntelligencePanel: React.FC<GlobalIntelligencePanelProps> = (
                         {macro?.fomcDaysRemaining ?? 5} DAYS
                       </span>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginTop: '1px' }}>
-                      <span style={{ fontSize: '10.5px', fontWeight: 800, color: '#ffffff' }}>
+                    <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginTop: '1px', gap: '4px' }}>
+                      <span style={{ fontSize: '10px', fontWeight: 800, color: '#ffffff', whiteSpace: 'nowrap' }}>
                         {macro?.nextFomcDate ?? '28 Okt 2026'}
                       </span>
                       <span
@@ -1253,6 +1268,9 @@ export const GlobalIntelligencePanel: React.FC<GlobalIntelligencePanelProps> = (
                           fontSize: '7.5px',
                           fontWeight: 700,
                           color: '#93c5fd',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
                         }}
                       >
                         {macro?.fomcBias ?? 'Scheduled'}
@@ -1268,9 +1286,9 @@ export const GlobalIntelligencePanel: React.FC<GlobalIntelligencePanelProps> = (
                     alignItems: 'center',
                     justifyContent: 'space-between',
                     padding: '5px 8px',
-                    backgroundColor: 'var(--color-bg-base)',
+                    backgroundColor: 'rgba(255, 255, 255, 0.02)',
                     borderRadius: 'var(--radius-sm)',
-                    border: '1px solid var(--color-border-muted)',
+                    border: '1px solid rgba(255, 255, 255, 0.06)',
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -1314,9 +1332,9 @@ export const GlobalIntelligencePanel: React.FC<GlobalIntelligencePanelProps> = (
                   <div
                     style={{
                       padding: '3px 5px',
-                      backgroundColor: 'var(--color-bg-base)',
+                      backgroundColor: 'rgba(255, 255, 255, 0.02)',
                       borderRadius: 'var(--radius-sm)',
-                      border: '1px solid var(--color-border-muted)',
+                      border: '1px solid rgba(255, 255, 255, 0.06)',
                     }}
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -1341,9 +1359,9 @@ export const GlobalIntelligencePanel: React.FC<GlobalIntelligencePanelProps> = (
                   <div
                     style={{
                       padding: '3px 5px',
-                      backgroundColor: 'var(--color-bg-base)',
+                      backgroundColor: 'rgba(255, 255, 255, 0.02)',
                       borderRadius: 'var(--radius-sm)',
-                      border: '1px solid var(--color-border-muted)',
+                      border: '1px solid rgba(255, 255, 255, 0.06)',
                     }}
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -1368,9 +1386,9 @@ export const GlobalIntelligencePanel: React.FC<GlobalIntelligencePanelProps> = (
                   <div
                     style={{
                       padding: '3px 5px',
-                      backgroundColor: 'var(--color-bg-base)',
+                      backgroundColor: 'rgba(255, 255, 255, 0.02)',
                       borderRadius: 'var(--radius-sm)',
-                      border: '1px solid var(--color-border-muted)',
+                      border: '1px solid rgba(255, 255, 255, 0.06)',
                     }}
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -1395,9 +1413,9 @@ export const GlobalIntelligencePanel: React.FC<GlobalIntelligencePanelProps> = (
                   <div
                     style={{
                       padding: '3px 5px',
-                      backgroundColor: 'var(--color-bg-base)',
+                      backgroundColor: 'rgba(255, 255, 255, 0.02)',
                       borderRadius: 'var(--radius-sm)',
-                      border: '1px solid var(--color-border-muted)',
+                      border: '1px solid rgba(255, 255, 255, 0.06)',
                     }}
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -1423,8 +1441,8 @@ export const GlobalIntelligencePanel: React.FC<GlobalIntelligencePanelProps> = (
                 <div
                   style={{
                     padding: '3px 6px',
-                    backgroundColor: 'rgba(245, 158, 11, 0.08)',
-                    border: '1px solid rgba(245, 158, 11, 0.25)',
+                    backgroundColor: 'rgba(245, 158, 11, 0.06)',
+                    border: '1px solid rgba(245, 158, 11, 0.22)',
                     borderRadius: 'var(--radius-sm)',
                     display: 'flex',
                     alignItems: 'center',
@@ -1477,22 +1495,28 @@ export const GlobalIntelligencePanel: React.FC<GlobalIntelligencePanelProps> = (
               </div>
             </div>
 
-            {/* Bottom Macro Ribbon: Kurs, DXY, Oil, and MVRV (Taller Cards, Rich Visual Sparklines & Interpretations) */}
+            {/* Bottom Macro Ribbon: Kurs, DXY, Oil, and MVRV (Seamless Cardless Cells on Pure Black) */}
             <div
               style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))',
-                gap: '10px',
-                paddingTop: '2px',
+                backgroundColor: '#000000',
+                borderLeft: 'none',
+                borderRight: 'none',
+                borderTop: 'none',
+                borderBottom: 'none',
               }}
             >
-              {/* USD / IDR Card */}
+              {/* USD / IDR Cardless Cell */}
               <div
                 style={{
-                  padding: '12px 14px',
-                  backgroundColor: 'var(--color-bg-surface)',
-                  border: '1px solid var(--color-border)',
-                  borderRadius: 'var(--radius-md)',
+                  padding: '14px 16px',
+                  backgroundColor: '#000000',
+                  borderRight: '1px solid rgba(255, 255, 255, 0.08)',
+                  borderLeft: 'none',
+                  borderTop: 'none',
+                  borderBottom: 'none',
+                  borderRadius: 0,
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'space-between',
@@ -1532,18 +1556,21 @@ export const GlobalIntelligencePanel: React.FC<GlobalIntelligencePanelProps> = (
                 </div>
 
                 {/* Context Strip */}
-                <div style={{ fontSize: '9px', color: 'var(--color-text-muted)', fontWeight: 600, borderTop: '1px solid var(--color-border-muted)', paddingTop: '5px' }}>
+                <div style={{ fontSize: '9px', color: 'var(--color-text-muted)', fontWeight: 600, borderTop: '1px solid rgba(255, 255, 255, 0.06)', paddingTop: '5px' }}>
                   {forex?.usdIdr?.context ?? 'Rupiah Terkendali • Volatilitas Rendah'}
                 </div>
               </div>
 
-              {/* DXY Index Card */}
+              {/* DXY Index Cardless Cell */}
               <div
                 style={{
-                  padding: '12px 14px',
-                  backgroundColor: 'var(--color-bg-surface)',
-                  border: '1px solid var(--color-border)',
-                  borderRadius: 'var(--radius-md)',
+                  padding: '14px 16px',
+                  backgroundColor: '#000000',
+                  borderRight: '1px solid rgba(255, 255, 255, 0.08)',
+                  borderLeft: 'none',
+                  borderTop: 'none',
+                  borderBottom: 'none',
+                  borderRadius: 0,
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'space-between',
@@ -1583,18 +1610,21 @@ export const GlobalIntelligencePanel: React.FC<GlobalIntelligencePanelProps> = (
                 </div>
 
                 {/* Context Strip */}
-                <div style={{ fontSize: '9px', color: 'var(--color-text-muted)', fontWeight: 600, borderTop: '1px solid var(--color-border-muted)', paddingTop: '5px' }}>
+                <div style={{ fontSize: '9px', color: 'var(--color-text-muted)', fontWeight: 600, borderTop: '1px solid rgba(255, 255, 255, 0.06)', paddingTop: '5px' }}>
                   {forex?.dxy?.context ?? 'Weakening Trend • Market Risk-On Catalyst'}
                 </div>
               </div>
 
-              {/* WTI Crude Oil Card */}
+              {/* WTI Crude Oil Cardless Cell */}
               <div
                 style={{
-                  padding: '12px 14px',
-                  backgroundColor: 'var(--color-bg-surface)',
-                  border: '1px solid var(--color-border)',
-                  borderRadius: 'var(--radius-md)',
+                  padding: '14px 16px',
+                  backgroundColor: '#000000',
+                  borderRight: '1px solid rgba(255, 255, 255, 0.08)',
+                  borderLeft: 'none',
+                  borderTop: 'none',
+                  borderBottom: 'none',
+                  borderRadius: 0,
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'space-between',
@@ -1634,18 +1664,21 @@ export const GlobalIntelligencePanel: React.FC<GlobalIntelligencePanelProps> = (
                 </div>
 
                 {/* Context Strip */}
-                <div style={{ fontSize: '9px', color: 'var(--color-text-muted)', fontWeight: 600, borderTop: '1px solid var(--color-border-muted)', paddingTop: '5px' }}>
+                <div style={{ fontSize: '9px', color: 'var(--color-text-muted)', fontWeight: 600, borderTop: '1px solid rgba(255, 255, 255, 0.06)', paddingTop: '5px' }}>
                   {commodities?.wtiOil?.context ?? 'Minyak Melandai • Beban Inflasi Turun'}
                 </div>
               </div>
 
-              {/* MVRV Z-Score Card */}
+              {/* MVRV Z-Score Cardless Cell */}
               <div
                 style={{
-                  padding: '12px 14px',
-                  backgroundColor: 'var(--color-bg-surface)',
-                  border: '1px solid var(--color-border)',
-                  borderRadius: 'var(--radius-md)',
+                  padding: '14px 16px',
+                  backgroundColor: '#000000',
+                  borderRight: 'none',
+                  borderLeft: 'none',
+                  borderTop: 'none',
+                  borderBottom: 'none',
+                  borderRadius: 0,
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'space-between',
@@ -1685,7 +1718,7 @@ export const GlobalIntelligencePanel: React.FC<GlobalIntelligencePanelProps> = (
                 </div>
 
                 {/* Context Strip */}
-                <div style={{ fontSize: '9px', color: 'var(--color-text-muted)', fontWeight: 600, borderTop: '1px solid var(--color-border-muted)', paddingTop: '5px' }}>
+                <div style={{ fontSize: '9px', color: 'var(--color-text-muted)', fontWeight: 600, borderTop: '1px solid rgba(255, 255, 255, 0.06)', paddingTop: '5px' }}>
                   {onchain?.mvrvZScore?.context ?? 'Zona Akumulasi Sehat • Di Bawah Overheat (>4.0)'}
                 </div>
               </div>

@@ -25,6 +25,7 @@ import { useMarketData } from '../hooks/useMarketData';
 import { DualCurrencyValue } from '../components/ui/DualCurrencyValue';
 import { TradeIdea, TradeDirection, IdeaStatus } from '../types/trade.types';
 import { formatCompactUsd } from '../utils/formatters';
+import { TokenIcon } from '../components/common/TokenIcon';
 
 export const PipelinePage: React.FC = () => {
   const navigate = useNavigate();
@@ -281,6 +282,34 @@ export const PipelinePage: React.FC = () => {
     setShowSearchDropdown(false);
     setSearchQuery('');
     fetchFundamentalData(coin.id);
+  };
+
+  const handleSyncSearch = async (overrideTicker?: string) => {
+    const rawInput = (overrideTicker || ticker).trim().toUpperCase();
+    if (!rawInput) return;
+    const rawSymbol = rawInput.replace(/(USDT|BUSD|USDC|USD)$/i, '').trim() || rawInput;
+
+    setIsFetchingFundamental(true);
+    try {
+      let targetId = coinId;
+      // If targetId is empty or doesn't match the typed symbol, resolve via CoinGecko search API
+      const searchRes = await api.get<Array<{ id: string; name: string; symbol: string }>>(
+        `/market/coin/search?q=${encodeURIComponent(rawSymbol)}`
+      );
+      if (searchRes && searchRes.length > 0) {
+        const exactMatch = searchRes.find(
+          (c) => c.symbol.toLowerCase() === rawSymbol.toLowerCase()
+        );
+        targetId = exactMatch ? exactMatch.id : searchRes[0].id;
+        setCoinId(targetId);
+      }
+      await fetchFundamentalData(targetId);
+    } catch (err) {
+      console.error('Failed to sync ticker:', err);
+      showToast(`Failed to resolve ticker ${rawInput}`, 'error');
+    } finally {
+      setIsFetchingFundamental(false);
+    }
   };
 
   // Clipboard Paste Screenshot Handler (Ctrl+V)
@@ -671,7 +700,7 @@ export const PipelinePage: React.FC = () => {
         </div>
       </div>
 
-      {/* Interactive Horizontal Queue Cards Track */}
+      {/* Interactive Horizontal Queue Cards Track (Cardless Pure Black Architecture) */}
       <div
         className="cardless-sheet"
         style={{
@@ -679,7 +708,11 @@ export const PipelinePage: React.FC = () => {
           display: 'flex',
           flexDirection: 'column',
           gap: '8px',
-          background: 'transparent',
+          backgroundColor: '#000000',
+          borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+          borderLeft: 'none',
+          borderRight: 'none',
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -720,16 +753,16 @@ export const PipelinePage: React.FC = () => {
                   borderRadius: 'var(--radius-md)',
                   border: isSelected
                     ? '1px solid var(--color-accent-primary)'
-                    : '1px solid var(--color-border)',
+                    : '1px solid rgba(255, 255, 255, 0.08)',
                   backgroundColor: isSelected
-                    ? 'rgba(212, 175, 55, 0.06)'
-                    : 'var(--color-bg-elevated)',
+                    ? 'rgba(212, 175, 55, 0.08)'
+                    : 'rgba(255, 255, 255, 0.02)',
                   cursor: 'pointer',
                   transition: 'border-color var(--transition-fast), background-color var(--transition-fast), box-shadow var(--transition-fast)',
                   display: 'flex',
                   flexDirection: 'column',
                   gap: '6px',
-                  boxShadow: isSelected ? '0 0 14px rgba(212, 175, 55, 0.18)' : 'none',
+                  boxShadow: isSelected ? '0 0 16px rgba(212, 175, 55, 0.2)' : 'none',
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -784,15 +817,15 @@ export const PipelinePage: React.FC = () => {
                 </div>
 
                 {/* 4-Pillar Readiness Dots */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '2px', paddingTop: '4px', borderTop: '1px solid var(--color-border)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '2px', paddingTop: '4px', borderTop: '1px solid rgba(255, 255, 255, 0.08)' }}>
                   <span style={{ fontSize: '9px', color: 'var(--color-text-muted)', fontWeight: 600 }}>
-                    PILAR: {read.count}/4
+                    PILLARS: {read.count}/4
                   </span>
                   <div style={{ display: 'flex', gap: '3px' }}>
-                    <div style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: read.p1 ? 'var(--color-cyan)' : 'var(--color-border)' }} title="Pilar 1: Makro" />
-                    <div style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: read.p2 ? 'var(--color-bullish)' : 'var(--color-border)' }} title="Pilar 2: Fundamental" />
-                    <div style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: read.p3 ? 'var(--color-amber)' : 'var(--color-border)' }} title="Pilar 3: Price Action" />
-                    <div style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: read.p4 ? '#ec4899' : 'var(--color-border)' }} title="Pilar 4: On-Chain Coinglass" />
+                    <div style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: read.p1 ? 'var(--color-cyan)' : 'rgba(255, 255, 255, 0.15)' }} title="Pillar 1: Macro & Fed" />
+                    <div style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: read.p2 ? 'var(--color-bullish)' : 'rgba(255, 255, 255, 0.15)' }} title="Pillar 2: Fundamental & FDV" />
+                    <div style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: read.p3 ? 'var(--color-amber)' : 'rgba(255, 255, 255, 0.15)' }} title="Pillar 3: Price Action SMC" />
+                    <div style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: read.p4 ? '#ec4899' : 'rgba(255, 255, 255, 0.15)' }} title="Pillar 4: On-Chain & Coinglass" />
                   </div>
                 </div>
               </div>
@@ -806,7 +839,7 @@ export const PipelinePage: React.FC = () => {
               minWidth: '120px',
               padding: '10px 12px',
               borderRadius: 'var(--radius-md)',
-              border: '1px dashed var(--color-border-accent)',
+              border: '1px dashed rgba(255, 255, 255, 0.18)',
               backgroundColor: 'transparent',
               cursor: 'pointer',
               display: 'flex',
@@ -822,17 +855,17 @@ export const PipelinePage: React.FC = () => {
               e.currentTarget.style.color = 'var(--color-accent-primary)';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = 'var(--color-border-accent)';
+              e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.18)';
               e.currentTarget.style.color = 'var(--color-text-secondary)';
             }}
           >
             <Plus size={18} />
-            <span style={{ fontSize: '11px', fontWeight: 700 }}>+ Draft Baru</span>
+            <span style={{ fontSize: '11px', fontWeight: 700 }}>+ New Draft</span>
           </div>
         </div>
       </div>
 
-      {/* Setup Config Bar (High Density Terminal Controls) */}
+      {/* Setup Config Bar (Cardless Pure Black Architecture) */}
       <div
         className="cardless-sheet"
         style={{
@@ -841,7 +874,11 @@ export const PipelinePage: React.FC = () => {
           alignItems: 'center',
           justifyContent: 'space-between',
           gap: 'var(--space-4)',
-          background: 'transparent',
+          backgroundColor: '#000000',
+          borderTop: 'none',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+          borderLeft: 'none',
+          borderRight: 'none',
           padding: '12px 16px',
           marginTop: '-4px',
         }}
@@ -859,16 +896,23 @@ export const PipelinePage: React.FC = () => {
                 onChange={(e) => {
                   const val = e.target.value.toUpperCase();
                   setTicker(val);
-                  setSearchQuery(val.replace('USDT', ''));
+                  setSearchQuery(val.replace(/(USDT|BUSD|USDC|USD)$/i, ''));
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleSyncSearch();
+                  }
                 }}
                 className="form-input mono"
                 style={{ width: '150px', height: '34px', fontSize: '13px', fontWeight: 800 }}
                 placeholder="e.g. SOLUSDT"
               />
               <button
+                type="button"
                 className="btn btn-secondary"
-                onClick={() => fetchFundamentalData(coinId)}
-                title="Sync CoinGecko Data"
+                onClick={() => handleSyncSearch()}
+                title="Search and sync coin metrics"
                 style={{ height: '34px', padding: '0 10px', fontSize: '12px' }}
                 disabled={isFetchingFundamental}
               >
@@ -926,7 +970,7 @@ export const PipelinePage: React.FC = () => {
             <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', display: 'block', marginBottom: '4px', fontWeight: 700, letterSpacing: '0.04em' }}>
               TRADE DIRECTION
             </span>
-            <div style={{ display: 'flex', background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: '2px' }}>
+            <div style={{ display: 'flex', background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: 'var(--radius-sm)', padding: '2px' }}>
               <button
                 type="button"
                 onClick={() => setDirection('LONG')}
@@ -977,9 +1021,9 @@ export const PipelinePage: React.FC = () => {
           {/* Timeframe Segmented Control */}
           <div>
             <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', display: 'block', marginBottom: '4px', fontWeight: 700, letterSpacing: '0.04em' }}>
-              TIMEFRAME ANALISIS
+              TIMEFRAME
             </span>
-            <div style={{ display: 'flex', background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: '2px' }}>
+            <div style={{ display: 'flex', background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: 'var(--radius-sm)', padding: '2px' }}>
               {['15M', '1H', '4H', '1D', '1W'].map((tf) => (
                 <button
                   key={tf}
@@ -1045,25 +1089,25 @@ export const PipelinePage: React.FC = () => {
               }}
             >
               <CheckCircle2 size={13} />
-              <span>{currentReadiness.count}/4 PILAR VALID</span>
+              <span>{currentReadiness.count}/4 PILLARS VALID</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* 4 Pillars Grid Layout (Balanced 2x2 Terminal Grid) */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(520px, 1fr))',
-          border: '1px solid var(--color-border)',
-          borderRadius: 'var(--radius-lg)',
-          overflow: 'hidden',
-          background: 'transparent',
-        }}
-      >
-        {/* PILAR 1: Makro Pasar & Fed Policy */}
-        <div style={{ padding: '16px 20px', borderRight: '1px solid var(--color-border)', borderBottom: '1px solid var(--color-border)', display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+      {/* 4 Pillars Grid Layout (Balanced 2x2 Terminal Grid on OLED Black) */}
+      <div className="pipeline-pillars-grid">
+        {/* PILLAR 1: Macro & Global Liquidity */}
+        <div
+          className="pipeline-pillar-cell pipeline-pillar-left pipeline-pillar-top"
+          style={{
+            padding: '16px 20px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 'var(--space-3)',
+            backgroundColor: '#000000',
+          }}
+        >
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <div style={{ width: 26, height: 26, borderRadius: 'var(--radius-sm)', backgroundColor: 'var(--color-cyan-dim)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -1086,8 +1130,8 @@ export const PipelinePage: React.FC = () => {
               display: 'grid',
               gridTemplateColumns: '1fr 1fr',
               gap: '8px',
-              backgroundColor: 'var(--color-bg-subtle)',
-              border: '1px solid var(--color-border)',
+              backgroundColor: 'rgba(255, 255, 255, 0.02)',
+              border: '1px solid rgba(255, 255, 255, 0.07)',
               borderRadius: 'var(--radius-sm)',
               padding: '10px 12px',
             }}
@@ -1153,7 +1197,7 @@ export const PipelinePage: React.FC = () => {
               <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', display: 'block' }}>NEXT FOMC MEETING</span>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginTop: '2px' }}>
                 <span className="mono" style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-cyan)' }}>
-                  {intel?.macro?.nextFomcDate || '28 Okt 2026'}
+                  {intel?.macro?.nextFomcDate || '28 Oct 2026'}
                 </span>
                 <span style={{ fontSize: '10px', color: 'var(--color-text-muted)' }}>
                   ({intel?.macro?.fomcDaysRemaining ?? 8} days)
@@ -1220,12 +1264,21 @@ export const PipelinePage: React.FC = () => {
             value={macroNotes}
             onChange={(e) => setMacroNotes(e.target.value)}
             placeholder="Macro regime personal notes (FOMC bias, DXY resistance, global liquidity flows)..."
-            style={{ marginTop: 'auto', fontSize: '11px', minHeight: '52px' }}
+            style={{ marginTop: 'auto', fontSize: '11px', minHeight: '52px', backgroundColor: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(255, 255, 255, 0.08)' }}
           />
         </div>
 
-        {/* PILAR 2: Fundamental & Tokenomics */}
-        <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--color-border)', display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+        {/* PILLAR 2: Fundamentals & Tokenomics */}
+        <div
+          className="pipeline-pillar-cell pipeline-pillar-top"
+          style={{
+            padding: '16px 20px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 'var(--space-3)',
+            backgroundColor: '#000000',
+          }}
+        >
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <div style={{ width: 26, height: 26, borderRadius: 'var(--radius-sm)', backgroundColor: 'var(--color-bullish-dim)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -1248,8 +1301,8 @@ export const PipelinePage: React.FC = () => {
               display: 'grid',
               gridTemplateColumns: '1fr 1fr',
               gap: '8px',
-              backgroundColor: 'var(--color-bg-subtle)',
-              border: '1px solid var(--color-border)',
+              backgroundColor: 'rgba(255, 255, 255, 0.02)',
+              border: '1px solid rgba(255, 255, 255, 0.07)',
               borderRadius: 'var(--radius-sm)',
               padding: '10px 12px',
             }}
@@ -1322,12 +1375,21 @@ export const PipelinePage: React.FC = () => {
             value={fundamentalNotes}
             onChange={(e) => setFundamentalNotes(e.target.value)}
             placeholder="Token unlock schedule notes, investor vesting, chain metrics & TVL..."
-            style={{ marginTop: 'auto', fontSize: '11px', minHeight: '52px' }}
+            style={{ marginTop: 'auto', fontSize: '11px', minHeight: '52px', backgroundColor: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(255, 255, 255, 0.08)' }}
           />
         </div>
 
-        {/* PILAR 3: Price Action & Risk-Reward Engine */}
-        <div style={{ padding: '16px 20px', borderRight: '1px solid var(--color-border)', display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+        {/* PILLAR 3: Price Action (TradingView) */}
+        <div
+          className="pipeline-pillar-cell pipeline-pillar-left"
+          style={{
+            padding: '16px 20px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 'var(--space-3)',
+            backgroundColor: '#000000',
+          }}
+        >
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <div style={{ width: 26, height: 26, borderRadius: 'var(--radius-sm)', backgroundColor: 'var(--color-amber-dim)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -1433,8 +1495,8 @@ export const PipelinePage: React.FC = () => {
           <div
             style={{
               padding: '8px 12px',
-              backgroundColor: 'var(--color-bg-subtle)',
-              border: '1px solid var(--color-border)',
+              backgroundColor: 'rgba(255, 255, 255, 0.02)',
+              border: '1px solid rgba(255, 255, 255, 0.07)',
               borderRadius: 'var(--radius-sm)',
               display: 'flex',
               flexDirection: 'column',
@@ -1543,12 +1605,21 @@ export const PipelinePage: React.FC = () => {
             value={priceActionNotes}
             onChange={(e) => setPriceActionNotes(e.target.value)}
             placeholder="TradingView chart link, imbalance FVG, equilibrium..."
-            style={{ marginTop: 'auto', fontSize: '11px', minHeight: '52px' }}
+            style={{ marginTop: 'auto', fontSize: '11px', minHeight: '52px', backgroundColor: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(255, 255, 255, 0.08)' }}
           />
         </div>
 
-        {/* PILAR 4: Bukti On-Chain & Coinglass Hub */}
-        <div style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+        {/* PILLAR 4: On-Chain & Coinglass Evidence */}
+        <div
+          className="pipeline-pillar-cell"
+          style={{
+            padding: '16px 20px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 'var(--space-3)',
+            backgroundColor: '#000000',
+          }}
+        >
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <div style={{ width: 26, height: 26, borderRadius: 'var(--radius-sm)', backgroundColor: 'rgba(236, 72, 153, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -1570,11 +1641,11 @@ export const PipelinePage: React.FC = () => {
           <div
             onClick={() => fileInputRef.current?.click()}
             style={{
-              border: '2px dashed var(--color-border-accent)',
+              border: '1px dashed rgba(255, 255, 255, 0.18)',
               borderRadius: 'var(--radius-md)',
               padding: '12px',
               textAlign: 'center',
-              backgroundColor: 'var(--color-bg-subtle)',
+              backgroundColor: 'rgba(255, 255, 255, 0.015)',
               cursor: 'pointer',
               transition: 'border-color 0.2s',
             }}
@@ -1646,14 +1717,14 @@ export const PipelinePage: React.FC = () => {
             </div>
           )}
 
-          {/* Coinglass Onchain Checklists */}
+          {/* Coinglass Onchain Checklists with Compact No-Clip Selects */}
           <div
             style={{
               display: 'grid',
               gridTemplateColumns: '1fr 1fr 1fr',
               gap: '6px',
-              backgroundColor: 'var(--color-bg-subtle)',
-              border: '1px solid var(--color-border)',
+              backgroundColor: 'rgba(255, 255, 255, 0.02)',
+              border: '1px solid rgba(255, 255, 255, 0.07)',
               borderRadius: 'var(--radius-sm)',
               padding: '8px 10px',
             }}
@@ -1663,8 +1734,8 @@ export const PipelinePage: React.FC = () => {
               <select
                 value={oiTrend}
                 onChange={(e) => setOiTrend(e.target.value as any)}
-                className="form-input"
-                style={{ fontSize: '10px', padding: '2px 4px', height: '26px' }}
+                className="pipeline-compact-select"
+                style={{ width: '100%' }}
               >
                 <option value="INCREASING">Increasing</option>
                 <option value="DECREASING">Decreasing</option>
@@ -1677,8 +1748,8 @@ export const PipelinePage: React.FC = () => {
               <select
                 value={fundingRateStatus}
                 onChange={(e) => setFundingRateStatus(e.target.value as any)}
-                className="form-input"
-                style={{ fontSize: '10px', padding: '2px 4px', height: '26px' }}
+                className="pipeline-compact-select"
+                style={{ width: '100%' }}
               >
                 <option value="HEALTHY">Healthy (0.01%)</option>
                 <option value="POSITIVE_EXTREME">Extreme Longs</option>
@@ -1691,8 +1762,8 @@ export const PipelinePage: React.FC = () => {
               <select
                 value={cvdDivergence}
                 onChange={(e) => setCvdDivergence(e.target.value as any)}
-                className="form-input"
-                style={{ fontSize: '10px', padding: '2px 4px', height: '26px' }}
+                className="pipeline-compact-select"
+                style={{ width: '100%' }}
               >
                 <option value="BULLISH_DIV">Bullish Div</option>
                 <option value="BEARISH_DIV">Bearish Div</option>
@@ -1707,132 +1778,224 @@ export const PipelinePage: React.FC = () => {
             value={evidenceNotes}
             onChange={(e) => setEvidenceNotes(e.target.value)}
             placeholder="Coinglass liquidation levels, heatmap clusters, CVD spot divergence notes..."
-            style={{ marginTop: 'auto', fontSize: '11px', minHeight: '52px' }}
+            style={{ marginTop: 'auto', fontSize: '11px', minHeight: '52px', backgroundColor: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(255, 255, 255, 0.08)' }}
           />
         </div>
       </div>
 
-      {/* Floating Cockpit Execution Dock (Pinned at Bottom) */}
+      {/* Floating Cockpit Execution Dock (Dynamic Glass HUD Capsule - Perfectly Centered) */}
       <div
         style={{
           position: 'fixed',
-          bottom: 0,
-          left: 'var(--sidebar-width)',
+          bottom: '20px',
+          left: 0,
           right: 0,
-          backgroundColor: 'rgba(14, 14, 19, 0.95)',
-          backdropFilter: 'blur(12px)',
-          borderTop: '1px solid var(--color-border-accent)',
-          padding: '10px 24px',
-          zIndex: 50,
           display: 'flex',
-          justifyContent: 'space-between',
+          justifyContent: 'center',
           alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: 'var(--space-3)',
-          boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.5)',
+          pointerEvents: 'none',
+          zIndex: 100,
+          padding: '0 24px',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 'var(--space-5)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span className="mono" style={{ fontSize: '15px', fontWeight: 900, color: '#ffffff' }}>
-              {ticker}
-            </span>
-            <span
+        <div
+          style={{
+            pointerEvents: 'auto',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '18px',
+            backgroundColor: 'rgba(10, 10, 14, 0.92)',
+            backdropFilter: 'blur(24px)',
+            WebkitBackdropFilter: 'blur(24px)',
+            border: '1px solid rgba(255, 255, 255, 0.12)',
+            boxShadow: '0 20px 48px -10px rgba(0, 0, 0, 0.9), 0 0 1px 1px rgba(255, 255, 255, 0.05)',
+            borderRadius: '16px',
+            padding: '8px 14px 8px 18px',
+            maxWidth: '1240px',
+            width: '100%',
+            overflowX: 'auto',
+          }}
+        >
+          {/* Asset & Validation Status */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <TokenIcon symbol={ticker.replace(/(USDT|BUSD|USDC|USD)$/i, '') || ticker} size={22} />
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <span className="mono" style={{ fontSize: '14px', fontWeight: 900, color: '#ffffff', lineHeight: 1.1 }}>
+                  {ticker}
+                </span>
+                <span style={{ fontSize: '9px', color: 'var(--color-text-muted)', fontWeight: 600 }}>
+                  {timeframe} Setup
+                </span>
+              </div>
+            </div>
+
+            <div
               style={{
-                fontSize: '9px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+                fontSize: '10px',
                 fontWeight: 800,
-                padding: '2px 6px',
-                borderRadius: '3px',
+                padding: '2px 8px',
+                borderRadius: '6px',
                 backgroundColor: direction === 'LONG' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(244, 63, 94, 0.15)',
                 color: direction === 'LONG' ? 'var(--color-bullish)' : 'var(--color-bearish)',
+                border: direction === 'LONG' ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid rgba(244, 63, 94, 0.3)',
               }}
             >
-              {direction} {timeframe}
-            </span>
-          </div>
+              {direction === 'LONG' ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
+              <span>{direction}</span>
+            </div>
 
-          <div style={{ height: '24px', width: '1px', backgroundColor: 'var(--color-border)' }} />
-
-          <div>
-            <span style={{ fontSize: '9px', color: 'var(--color-text-muted)', display: 'block' }}>ENTRY</span>
-            <span className="mono" style={{ fontSize: '13px', fontWeight: 700, color: '#fff' }}>
-              ${entryPrice.toLocaleString()}
-            </span>
-          </div>
-
-          <div>
-            <span style={{ fontSize: '9px', color: 'var(--color-text-muted)', display: 'block' }}>STOP LOSS</span>
-            <span className="mono bearish-text" style={{ fontSize: '13px', fontWeight: 700 }}>
-              ${stopLossPrice.toLocaleString()}
-            </span>
-          </div>
-
-          <div>
-            <span style={{ fontSize: '9px', color: 'var(--color-text-muted)', display: 'block' }}>TARGET (TP1)</span>
-            <span className="mono bullish-text" style={{ fontSize: '13px', fontWeight: 700 }}>
-              ${tp1Price.toLocaleString()}
-            </span>
-          </div>
-
-          <div style={{ height: '24px', width: '1px', backgroundColor: 'var(--color-border)' }} />
-
-          <div>
-            <span style={{ fontSize: '9px', color: 'var(--color-text-muted)', display: 'block' }}>RISK : REWARD</span>
-            <span
-              className="mono"
+            <div
               style={{
-                fontSize: '15px',
-                fontWeight: 900,
-                color: rrInfo.rrRatio >= 2.0 ? 'var(--color-accent-primary)' : 'var(--color-amber)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '5px',
+                padding: '2px 8px',
+                borderRadius: '6px',
+                backgroundColor: currentReadiness.isComplete ? 'rgba(16, 185, 129, 0.12)' : 'rgba(212, 175, 55, 0.12)',
+                border: currentReadiness.isComplete ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid rgba(212, 175, 55, 0.3)',
+                color: currentReadiness.isComplete ? 'var(--color-bullish)' : 'var(--color-accent-primary)',
+                fontSize: '10px',
+                fontWeight: 800,
               }}
             >
-              1 : {rrInfo.rrRatio} R
-            </span>
+              <span style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: 'currentColor' }} />
+              <span>{currentReadiness.count}/4 PILLARS</span>
+            </div>
           </div>
 
+          {/* Execution Metrics Pod (Recessed Glass Instrument Cluster) */}
           <div
             style={{
-              padding: '2px 8px',
-              borderRadius: 'var(--radius-xs)',
-              backgroundColor: currentReadiness.isComplete ? 'rgba(16, 185, 129, 0.15)' : 'rgba(212, 175, 55, 0.15)',
-              color: currentReadiness.isComplete ? 'var(--color-bullish)' : 'var(--color-accent-primary)',
-              fontSize: '10px',
-              fontWeight: 800,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '16px',
+              backgroundColor: 'rgba(255, 255, 255, 0.03)',
+              border: '1px solid rgba(255, 255, 255, 0.07)',
+              borderRadius: '10px',
+              padding: '5px 16px',
+              flexShrink: 0,
             }}
           >
-            ● {currentReadiness.count}/4 PILLARS
+            <div>
+              <span style={{ fontSize: '8px', color: 'var(--color-text-muted)', display: 'block', fontWeight: 700, letterSpacing: '0.06em' }}>
+                ENTRY
+              </span>
+              <span className="mono" style={{ fontSize: '13px', fontWeight: 800, color: '#fff' }}>
+                ${entryPrice.toLocaleString()}
+              </span>
+            </div>
+
+            <div style={{ height: '20px', width: '1px', backgroundColor: 'rgba(255, 255, 255, 0.08)' }} />
+
+            <div>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+                <span style={{ fontSize: '8px', color: 'var(--color-text-muted)', fontWeight: 700, letterSpacing: '0.06em' }}>
+                  STOP LOSS
+                </span>
+                {rrInfo.slPercent > 0 && (
+                  <span className="mono bearish-text" style={{ fontSize: '9px', fontWeight: 700 }}>
+                    -{rrInfo.slPercent.toFixed(1)}%
+                  </span>
+                )}
+              </div>
+              <span className="mono bearish-text" style={{ fontSize: '13px', fontWeight: 800 }}>
+                ${stopLossPrice.toLocaleString()}
+              </span>
+            </div>
+
+            <div style={{ height: '20px', width: '1px', backgroundColor: 'rgba(255, 255, 255, 0.08)' }} />
+
+            <div>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+                <span style={{ fontSize: '8px', color: 'var(--color-text-muted)', fontWeight: 700, letterSpacing: '0.06em' }}>
+                  TARGET (TP1)
+                </span>
+                {rrInfo.tpPercent > 0 && (
+                  <span className="mono bullish-text" style={{ fontSize: '9px', fontWeight: 700 }}>
+                    +{rrInfo.tpPercent.toFixed(1)}%
+                  </span>
+                )}
+              </div>
+              <span className="mono bullish-text" style={{ fontSize: '13px', fontWeight: 800 }}>
+                ${tp1Price.toLocaleString()}
+              </span>
+            </div>
+
+            <div style={{ height: '20px', width: '1px', backgroundColor: 'rgba(255, 255, 255, 0.08)' }} />
+
+            <div>
+              <span style={{ fontSize: '8px', color: 'var(--color-text-muted)', display: 'block', fontWeight: 700, letterSpacing: '0.06em' }}>
+                RISK : REWARD
+              </span>
+              <span
+                className="mono"
+                style={{
+                  fontSize: '13px',
+                  fontWeight: 900,
+                  color: rrInfo.rrRatio >= 2.0 ? 'var(--color-accent-primary)' : 'var(--color-amber)',
+                }}
+              >
+                1 : {rrInfo.rrRatio} R
+              </span>
+            </div>
           </div>
-        </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <button
-            className="btn btn-secondary"
-            onClick={handleNavigateToCalculator}
-            style={{ height: '34px', fontSize: '12px', padding: '0 12px' }}
-            title="Send setup to Risk Calculator & Position Sizer"
-          >
-            <Calculator size={14} />
-            <span>Position Sizer</span>
-          </button>
+          {/* Terminal Action Buttons */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+            <button
+              className="btn btn-secondary"
+              onClick={handleNavigateToCalculator}
+              style={{
+                height: '34px',
+                fontSize: '11px',
+                padding: '0 12px',
+                borderRadius: '8px',
+                backgroundColor: 'rgba(255, 255, 255, 0.04)',
+                borderColor: 'rgba(255, 255, 255, 0.09)',
+              }}
+              title="Send setup to Risk Calculator & Position Sizer"
+            >
+              <Calculator size={13} />
+              <span>Position Sizer</span>
+            </button>
 
-          <button
-            className="btn btn-secondary"
-            onClick={handleSaveIdea}
-            disabled={isSaving}
-            style={{ height: '34px', fontSize: '12px', padding: '0 14px' }}
-          >
-            <span>{isSaving ? 'Saving...' : 'Save Draft'}</span>
-          </button>
+            <button
+              className="btn btn-secondary"
+              onClick={handleSaveIdea}
+              disabled={isSaving}
+              style={{
+                height: '34px',
+                fontSize: '11px',
+                padding: '0 14px',
+                borderRadius: '8px',
+                backgroundColor: 'rgba(255, 255, 255, 0.06)',
+                borderColor: 'rgba(255, 255, 255, 0.12)',
+              }}
+            >
+              <span>{isSaving ? 'Saving...' : 'Save Draft'}</span>
+            </button>
 
-          <button
-            className="btn btn-primary"
-            onClick={handleTransferToJournal}
-            disabled={isTransferring}
-            style={{ height: '34px', fontSize: '12px', padding: '0 16px', fontWeight: 800 }}
-          >
-            <span>{isTransferring ? 'Dispatching...' : 'Dispatch to Trade Journal'}</span>
-            <ArrowRight size={14} />
-          </button>
+            <button
+              className="btn btn-primary"
+              onClick={handleTransferToJournal}
+              disabled={isTransferring}
+              style={{
+                height: '34px',
+                fontSize: '11.5px',
+                padding: '0 16px',
+                fontWeight: 800,
+                borderRadius: '8px',
+              }}
+            >
+              <span>{isTransferring ? 'Dispatching...' : 'Dispatch to Trade Journal'}</span>
+              <ArrowRight size={13} />
+            </button>
+          </div>
         </div>
       </div>
     </div>

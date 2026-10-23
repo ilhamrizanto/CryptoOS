@@ -54,6 +54,13 @@ export const DashboardPage: React.FC = () => {
   const profitFactor = totalTrades > 0 ? journalAnalytics.profitFactor : 0;
 
   const holdings = portfolioSummary?.holdings || [];
+  const sortedHoldings = [...holdings].sort((a: any, b: any) => {
+    const valA = Number(a.currentValueUsd) || Number(a.allocationPercent) || 0;
+    const valB = Number(b.currentValueUsd) || Number(b.allocationPercent) || 0;
+    return valB - valA;
+  });
+  const topHoldings = sortedHoldings.slice(0, 5);
+  const remainingHoldingsCount = Math.max(0, sortedHoldings.length - topHoldings.length);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)', paddingBottom: 'var(--space-8)' }}>
@@ -437,9 +444,16 @@ export const DashboardPage: React.FC = () => {
                 borderBottom: '1px solid var(--color-border)',
               }}
             >
-              <span style={{ fontSize: '11px', fontWeight: 800, color: '#ffffff', letterSpacing: '0.04em' }}>
-                ASSET ALLOCATION & DEVIATION
-              </span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ fontSize: '11px', fontWeight: 800, color: '#ffffff', letterSpacing: '0.04em' }}>
+                  ASSET ALLOCATION & DEVIATION
+                </span>
+                {holdings.length > 5 && (
+                  <span className="badge" style={{ fontSize: '8px', padding: '1px 5px', fontWeight: 800 }}>
+                    TOP 5
+                  </span>
+                )}
+              </div>
               <button
                 onClick={() => navigate('/rebalancing')}
                 style={{ background: 'none', border: 'none', color: 'var(--color-accent-primary)', fontSize: '10px', cursor: 'pointer', fontWeight: 700 }}
@@ -449,37 +463,64 @@ export const DashboardPage: React.FC = () => {
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {holdings.length > 0 ? (
-                holdings.map((h: any) => {
-                  const diff = h.allocationPercent - (h.targetPercent || 0);
-                  return (
-                    <div key={h.symbol} style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <TokenIcon symbol={h.symbol} size={15} />
-                          <span style={{ color: '#ffffff', fontWeight: 700 }}>{h.symbol}</span>
+              {topHoldings.length > 0 ? (
+                <>
+                  {topHoldings.map((h: any) => {
+                    const diff = h.allocationPercent - (h.targetPercent || 0);
+                    return (
+                      <div key={h.symbol} style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <TokenIcon symbol={h.symbol} size={15} />
+                            <span style={{ color: '#ffffff', fontWeight: 700 }}>{h.symbol}</span>
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <span className="value-number" style={{ color: '#ffffff', fontWeight: 700 }}>
+                              {h.allocationPercent}%
+                            </span>
+                            <span style={{ fontSize: '10px', color: diff > 5 ? 'var(--color-neutral)' : 'var(--color-text-muted)' }}>
+                              (Target {h.targetPercent || 0}%)
+                            </span>
+                          </div>
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <span className="value-number" style={{ color: '#ffffff', fontWeight: 700 }}>
-                            {h.allocationPercent}%
-                          </span>
-                          <span style={{ fontSize: '10px', color: diff > 5 ? 'var(--color-neutral)' : 'var(--color-text-muted)' }}>
-                            (Target {h.targetPercent || 0}%)
-                          </span>
+                        <div className="progress-track" style={{ height: '3px', backgroundColor: 'var(--color-border)' }}>
+                          <div
+                            className="progress-fill"
+                            style={{
+                              width: `${Math.min(100, h.allocationPercent)}%`,
+                              backgroundColor: diff > 5 ? '#f59e0b' : 'var(--color-accent-primary)',
+                            }}
+                          />
                         </div>
                       </div>
-                      <div className="progress-track" style={{ height: '3px', backgroundColor: 'var(--color-border)' }}>
-                        <div
-                          className="progress-fill"
-                          style={{
-                            width: `${Math.min(100, h.allocationPercent)}%`,
-                            backgroundColor: diff > 5 ? '#f59e0b' : 'var(--color-accent-primary)',
-                          }}
-                        />
-                      </div>
-                    </div>
-                  );
-                })
+                    );
+                  })}
+
+                  {remainingHoldingsCount > 0 && (
+                    <button
+                      onClick={() => navigate('/portfolio')}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: 'var(--color-text-muted)',
+                        fontSize: '10.5px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        textAlign: 'left',
+                        padding: '4px 0 0',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        transition: 'color var(--transition-fast)',
+                      }}
+                      onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--color-accent-primary)')}
+                      onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--color-text-muted)')}
+                      title="View all portfolio assets and allocations in Portfolio Tracker"
+                    >
+                      <span>+{remainingHoldingsCount} more spot assets in Portfolio Tracker &rarr;</span>
+                    </button>
+                  )}
+                </>
               ) : (
                 <div style={{ padding: '16px 0', textAlign: 'center', color: 'var(--color-text-muted)', fontSize: '11px' }}>
                   No spot asset allocation data recorded.
