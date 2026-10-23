@@ -22,7 +22,7 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
   options,
   value,
   onChange,
-  placeholder = 'Pilih opsi...',
+  placeholder = 'Select an option...',
   disabled = false,
   className = '',
   style,

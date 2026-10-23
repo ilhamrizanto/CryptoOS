@@ -47,7 +47,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     } catch (err: any) {
       set({
         isLoading: false,
-        error: err?.message || 'Gagal login dengan akun Google. Akun tidak memiliki akses.',
+        error: err?.message || 'Google login failed. Account does not have authorized access.',
         isAuthenticated: false,
       });
       return false;
@@ -74,7 +74,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     } catch (err: any) {
       set({
         isLoading: false,
-        error: err?.message || 'Password salah atau gagal menghubungkan ke server',
+        error: err?.message || 'Incorrect master key or failed to connect to terminal server',
         isAuthenticated: false,
       });
       return false;

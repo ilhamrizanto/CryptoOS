@@ -14,6 +14,7 @@ import {
 import { api } from '../services/api';
 import { GlobalIntelligencePanel } from '../components/features/intelligence/GlobalIntelligencePanel';
 import { formatUsd, formatIdr } from '../utils/formatters';
+import { TokenIcon } from '../components/common/TokenIcon';
 
 export const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
@@ -46,18 +47,13 @@ export const DashboardPage: React.FC = () => {
     refreshDashboardData();
   }, []);
 
-  const winRate = journalAnalytics?.totalTrades > 0 ? journalAnalytics.winRate : 85;
-  const winCount = journalAnalytics?.totalTrades > 0 ? journalAnalytics.winCount : 17;
-  const totalTrades = journalAnalytics?.totalTrades > 0 ? journalAnalytics.totalTrades : 20;
-  const lossCount = journalAnalytics?.totalTrades > 0 ? journalAnalytics.lossCount : 2;
-  const profitFactor = journalAnalytics?.totalTrades > 0 ? journalAnalytics.profitFactor : 2.85;
+  const totalTrades = journalAnalytics?.totalTrades > 0 ? journalAnalytics.totalTrades : 0;
+  const winRate = totalTrades > 0 ? journalAnalytics.winRate : 0;
+  const winCount = totalTrades > 0 ? journalAnalytics.winCount : 0;
+  const lossCount = totalTrades > 0 ? journalAnalytics.lossCount : 0;
+  const profitFactor = totalTrades > 0 ? journalAnalytics.profitFactor : 0;
 
-  const holdings = portfolioSummary?.holdings || [
-    { symbol: 'BTC', allocationPercent: 58, targetPercent: 50, exchange: 'BINANCE/WALLET' },
-    { symbol: 'ETH', allocationPercent: 21.1, targetPercent: 25, exchange: 'BINANCE' },
-    { symbol: 'SOL', allocationPercent: 10, targetPercent: 15, exchange: 'BYBIT' },
-    { symbol: 'USDT', allocationPercent: 10.9, targetPercent: 10, exchange: 'OKX' },
-  ];
+  const holdings = portfolioSummary?.holdings || [];
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)', paddingBottom: 'var(--space-8)' }}>
@@ -93,7 +89,7 @@ export const DashboardPage: React.FC = () => {
             style={{ height: '34px', fontSize: '12px', padding: '0 14px' }}
           >
             <Sparkles size={14} />
-            <span>+ Analisis Token Baru</span>
+            <span>+ Analyze New Token</span>
           </button>
         </div>
       </div>
@@ -126,9 +122,9 @@ export const DashboardPage: React.FC = () => {
         <div className="cardless-cell" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', fontWeight: 700, letterSpacing: '0.04em' }}>
-              WIN RATE EKSEKUSI
+              EXECUTION WIN RATE
             </span>
-            <span className="bullish-badge" style={{ fontSize: '9px', padding: '1px 5px' }}>
+            <span className={winCount > 0 ? 'bullish-badge' : 'badge'} style={{ fontSize: '9px', padding: '1px 5px' }}>
               {winCount}W - {lossCount}L
             </span>
           </div>
@@ -137,7 +133,7 @@ export const DashboardPage: React.FC = () => {
               {winRate}%
             </span>
             <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>
-              dari {totalTrades} setup selesai
+              from {totalTrades} completed setups
             </span>
           </div>
           <div className="progress-track" style={{ height: '3px', marginTop: '4px' }}>
@@ -155,14 +151,14 @@ export const DashboardPage: React.FC = () => {
           </div>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginTop: '2px' }}>
             <span className="value-number" style={{ fontSize: '24px', fontWeight: 900, color: 'var(--color-accent-primary)' }}>
-              {profitFactor} PF
+              {profitFactor > 0 ? `${profitFactor} PF` : '0.00 PF'}
             </span>
             <span className="value-number" style={{ fontSize: '12px', color: '#ffffff', fontWeight: 700 }}>
-              +$1,420 / trade
+              {journalAnalytics?.expectancyUsd !== undefined && totalTrades > 0 ? `${journalAnalytics.expectancyUsd >= 0 ? '+' : ''}$${journalAnalytics.expectancyUsd.toFixed(0)} / trade` : '$0 / trade'}
             </span>
           </div>
           <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', marginTop: '4px' }}>
-            Kombinasi SMC + Konfirmasi CVD On-Chain
+            {totalTrades > 0 ? 'SMC Confluence + On-Chain CVD Confirmation' : 'No closed trades recorded yet'}
           </span>
         </div>
 
@@ -170,20 +166,20 @@ export const DashboardPage: React.FC = () => {
         <div className="cardless-cell" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', fontWeight: 700, letterSpacing: '0.04em' }}>
-              RATA-RATA RISK TO REWARD
+              AVERAGE RISK TO REWARD
             </span>
             <Target size={13} color="var(--color-accent-primary)" />
           </div>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginTop: '2px' }}>
             <span className="value-number bullish-text" style={{ fontSize: '24px', fontWeight: 900 }}>
-              1 : 3.38 R
+              {journalAnalytics?.averageRMultiple && totalTrades > 0 ? `1 : ${journalAnalytics.averageRMultiple.toFixed(2)} R` : '0.00 R'}
             </span>
             <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>
-              Avg hold 18h 45m
+              {totalTrades > 0 ? 'Disciplined Execution' : 'No trades executed'}
             </span>
           </div>
           <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', marginTop: '4px' }}>
-            Disiplin Cut-loss terukur tanpa geser SL
+            {totalTrades > 0 ? 'Disciplined stop-loss without moving SL' : 'Awaiting position close'}
           </span>
         </div>
 
@@ -192,24 +188,24 @@ export const DashboardPage: React.FC = () => {
           className="cardless-cell"
           style={{ display: 'flex', flexDirection: 'column', gap: '4px', cursor: 'pointer' }}
           onClick={() => navigate('/portfolio')}
-          title="Buka detail Portfolio Tracker"
+          title="View Portfolio Tracker details"
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', fontWeight: 700, letterSpacing: '0.04em' }}>
-              NET WORTH PORTOFOLIO
+              PORTFOLIO NET WORTH
             </span>
             <span className="bullish-badge" style={{ fontSize: '9px', padding: '1px 5px' }}>
-              +34.84% ATH
+              {portfolioSummary?.holdings?.length || 0} ASSETS
             </span>
           </div>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginTop: '2px' }}>
             <span className="value-number" style={{ fontSize: '24px', fontWeight: 900, color: '#ffffff' }}>
-              {formatUsd(portfolioSummary?.totalNetWorthUsd || 138817.5)}
+              {formatUsd(portfolioSummary?.totalNetWorthUsd || 0)}
             </span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '4px' }}>
             <span className="value-number" style={{ fontSize: '10px', color: 'var(--color-text-muted)' }}>
-              {formatIdr(portfolioSummary?.totalNetWorthIdr || 2255784375)} &bull; Multi-Exchange
+              {formatIdr(portfolioSummary?.totalNetWorthIdr || 0)} &bull; Multi-Exchange
             </span>
             <ArrowUpRight size={12} color="var(--color-text-muted)" />
           </div>
@@ -241,17 +237,17 @@ export const DashboardPage: React.FC = () => {
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <span style={{ fontSize: '12px', fontWeight: 800, color: '#ffffff', letterSpacing: '0.04em' }}>
-                  PIPELINE INCUBATOR (ANALISIS 4-PILAR AKTIF)
+                  PIPELINE INCUBATOR (ACTIVE 4-PILLARS ANALYSIS)
                 </span>
                 <span className="bullish-badge" style={{ fontSize: '9px', padding: '1px 5px' }}>
-                  {ideas.length > 0 ? ideas.length : 1} READY
+                  {ideas.length} READY
                 </span>
               </div>
               <button
                 onClick={() => navigate('/pipeline')}
                 style={{ background: 'none', border: 'none', color: 'var(--color-accent-primary)', fontSize: '11px', cursor: 'pointer', fontWeight: 700 }}
               >
-                Buka Pipeline &rarr;
+                Open Pipeline &rarr;
               </button>
             </div>
 
@@ -260,58 +256,85 @@ export const DashboardPage: React.FC = () => {
                 <thead>
                   <tr>
                     <th>TOKEN</th>
-                    <th>ARAH / TF</th>
-                    <th>4-PILAR STATUS</th>
+                    <th>DIRECTION / TF</th>
+                    <th>4-PILLARS STATUS</th>
                     <th style={{ textAlign: 'right' }}>ENTRY</th>
                     <th style={{ textAlign: 'right' }}>STOP LOSS</th>
                     <th style={{ textAlign: 'right' }}>TARGET (TP)</th>
                     <th style={{ textAlign: 'center' }}>R:R</th>
-                    <th style={{ textAlign: 'center' }}>AKSI</th>
+                    <th style={{ textAlign: 'center' }}>ACTION</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
-                    <td style={{ fontWeight: 800 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <span style={{ color: 'var(--color-accent-primary)' }}>✦</span>
-                        <span style={{ color: '#ffffff' }}>SOLUSDT</span>
-                      </div>
-                    </td>
-                    <td>
-                      <span className="bullish-badge" style={{ fontSize: '9px', padding: '1px 5px' }}>
-                        LONG 4H
-                      </span>
-                    </td>
-                    <td>
-                      <span style={{ color: 'var(--color-text-secondary)', fontSize: '11px' }}>
-                        SMC Bullish BOS + CVD Absorption
-                      </span>
-                    </td>
-                    <td style={{ textAlign: 'right' }} className="value-number">
-                      $182.00
-                    </td>
-                    <td style={{ textAlign: 'right', color: 'var(--color-bearish)' }} className="value-number">
-                      $177.50
-                    </td>
-                    <td style={{ textAlign: 'right', color: 'var(--color-bullish)' }} className="value-number">
-                      $195.00
-                    </td>
-                    <td style={{ textAlign: 'center' }}>
-                      <span className="bullish-badge" style={{ fontSize: '10px', padding: '1px 6px' }}>
-                        1 : 2.89 R
-                      </span>
-                    </td>
-                    <td style={{ textAlign: 'center' }}>
-                      <button
-                        className="btn btn-secondary"
-                        onClick={() => navigate('/calculator')}
-                        style={{ height: '26px', padding: '0 8px', fontSize: '11px' }}
-                      >
-                        <Zap size={11} color="var(--color-accent-primary)" />
-                        <span>Sizer</span>
-                      </button>
-                    </td>
-                  </tr>
+                  {ideas.length > 0 ? (
+                    ideas.slice(0, 5).map((item) => {
+                      const rr =
+                        item.entryPrice && item.stopLossPrice && item.tp1Price && Math.abs(item.entryPrice - item.stopLossPrice) > 0
+                          ? Math.abs(item.tp1Price - item.entryPrice) / Math.abs(item.entryPrice - item.stopLossPrice)
+                          : 0;
+                      return (
+                        <tr key={item.id}>
+                          <td style={{ fontWeight: 800 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <TokenIcon symbol={item.symbol.replace('USDT', '')} size={16} />
+                              <span style={{ color: '#ffffff' }}>{item.symbol}</span>
+                            </div>
+                          </td>
+                          <td>
+                            <span className={item.direction === 'LONG' ? 'bullish-badge' : 'bearish-badge'} style={{ fontSize: '9px', padding: '1px 5px' }}>
+                              {item.direction} {item.timeframe || '4H'}
+                            </span>
+                          </td>
+                          <td>
+                            <span style={{ color: 'var(--color-text-secondary)', fontSize: '11px' }}>
+                              {item.notes || '4-Pillars Confluence Active'}
+                            </span>
+                          </td>
+                          <td style={{ textAlign: 'right' }} className="value-number">
+                            ${item.entryPrice?.toLocaleString() || '-'}
+                          </td>
+                          <td style={{ textAlign: 'right', color: 'var(--color-bearish)' }} className="value-number">
+                            ${item.stopLossPrice?.toLocaleString() || '-'}
+                          </td>
+                          <td style={{ textAlign: 'right', color: 'var(--color-bullish)' }} className="value-number">
+                            ${item.tp1Price?.toLocaleString() || '-'}
+                          </td>
+                          <td style={{ textAlign: 'center' }}>
+                            <span className="bullish-badge" style={{ fontSize: '10px', padding: '1px 6px' }}>
+                              1 : {rr.toFixed(2)} R
+                            </span>
+                          </td>
+                          <td style={{ textAlign: 'center' }}>
+                            <button
+                              className="btn btn-secondary"
+                              onClick={() =>
+                                navigate('/calculator', {
+                                  state: {
+                                    ticker: item.symbol,
+                                    direction: item.direction,
+                                    entryPrice: item.entryPrice,
+                                    stopLossPrice: item.stopLossPrice,
+                                    takeProfitPrice: item.tp1Price,
+                                    riskPercent: item.riskPercent,
+                                  },
+                                })
+                              }
+                              style={{ height: '26px', padding: '0 8px', fontSize: '11px' }}
+                            >
+                              <Zap size={11} color="var(--color-accent-primary)" />
+                              <span>Sizer</span>
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  ) : (
+                    <tr>
+                      <td colSpan={8} style={{ textAlign: 'center', padding: '24px 0', color: 'var(--color-text-muted)', fontSize: '11px' }}>
+                        No active trade setups in pipeline. Click "+ Analyze New Token" to draft a setup.
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
@@ -330,17 +353,17 @@ export const DashboardPage: React.FC = () => {
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <span style={{ fontSize: '12px', fontWeight: 800, color: '#ffffff', letterSpacing: '0.04em' }}>
-                  RIWAYAT EKSEKUSI & PSIKOLOGI TRADE TERAKHIR
+                  RECENT TRADE EXECUTIONS & EMOTIONAL AUDIT
                 </span>
                 <span style={{ fontSize: '10px', color: 'var(--color-text-muted)' }}>
-                  (Evaluasi Disiplin Trading Plan)
+                  (Trading Plan Discipline Audit)
                 </span>
               </div>
               <button
                 onClick={() => navigate('/journal')}
                 style={{ background: 'none', border: 'none', color: 'var(--color-accent-primary)', fontSize: '11px', cursor: 'pointer', fontWeight: 700 }}
               >
-                Buka Jurnal &rarr;
+                Open Journal &rarr;
               </button>
             </div>
 
@@ -350,7 +373,7 @@ export const DashboardPage: React.FC = () => {
                   <tr>
                     <th>TOKEN</th>
                     <th>STATUS</th>
-                    <th>PSIKOLOGI ENTRY</th>
+                    <th>ENTRY EMOTION & PSYCHOLOGY</th>
                     <th style={{ textAlign: 'right' }}>REALIZED PNL</th>
                     <th style={{ textAlign: 'center' }}>R-MULTIPLE</th>
                   </tr>
@@ -369,7 +392,7 @@ export const DashboardPage: React.FC = () => {
                           </span>
                         </td>
                         <td style={{ color: 'var(--color-text-secondary)', fontSize: '11px' }}>
-                          {t.psychologyState || 'Disiplin Rencana'}
+                          {t.psychologyState || 'Plan Disciplined'}
                         </td>
                         <td
                           style={{
@@ -389,46 +412,11 @@ export const DashboardPage: React.FC = () => {
                       </tr>
                     ))
                   ) : (
-                    <>
-                      <tr>
-                        <td style={{ fontWeight: 700, color: '#ffffff' }}>BTCUSDT</td>
-                        <td>
-                          <span className="bullish-badge" style={{ fontSize: '9px', padding: '1px 5px' }}>
-                            CLOSED WIN
-                          </span>
-                        </td>
-                        <td style={{ color: 'var(--color-text-secondary)', fontSize: '11px' }}>
-                          Tenang, mengikuti setup FVG 1H tanpa geser stop loss
-                        </td>
-                        <td style={{ textAlign: 'right', fontWeight: 700, color: 'var(--color-bullish)' }} className="value-number">
-                          +$2,450.00
-                        </td>
-                        <td style={{ textAlign: 'center' }}>
-                          <span className="value-number" style={{ color: 'var(--color-bullish)', fontWeight: 700 }}>
-                            +3.15 R
-                          </span>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style={{ fontWeight: 700, color: '#ffffff' }}>ETHUSDT</td>
-                        <td>
-                          <span className="bearish-badge" style={{ fontSize: '9px', padding: '1px 5px' }}>
-                            CLOSED LOSS
-                          </span>
-                        </td>
-                        <td style={{ color: 'var(--color-text-secondary)', fontSize: '11px' }}>
-                          Kena SL terencana saat rilis CPI, patuh tanpa revenge
-                        </td>
-                        <td style={{ textAlign: 'right', fontWeight: 700, color: 'var(--color-bearish)' }} className="value-number">
-                          -$500.00
-                        </td>
-                        <td style={{ textAlign: 'center' }}>
-                          <span className="value-number" style={{ color: 'var(--color-bearish)', fontWeight: 700 }}>
-                            -1.00 R
-                          </span>
-                        </td>
-                      </tr>
-                    </>
+                    <tr>
+                      <td colSpan={5} style={{ textAlign: 'center', padding: '24px 0', color: 'var(--color-text-muted)', fontSize: '11px' }}>
+                        No recent trade executions logged in journal.
+                      </td>
+                    </tr>
                   )}
                 </tbody>
               </table>
@@ -450,7 +438,7 @@ export const DashboardPage: React.FC = () => {
               }}
             >
               <span style={{ fontSize: '11px', fontWeight: 800, color: '#ffffff', letterSpacing: '0.04em' }}>
-                ALOKASI ASET & DEVIASI
+                ASSET ALLOCATION & DEVIATION
               </span>
               <button
                 onClick={() => navigate('/rebalancing')}
@@ -461,33 +449,42 @@ export const DashboardPage: React.FC = () => {
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {holdings.map((h: any) => {
-                const diff = h.allocationPercent - h.targetPercent;
-                return (
-                  <div key={h.symbol} style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px' }}>
-                      <span style={{ color: '#ffffff', fontWeight: 700 }}>{h.symbol}</span>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <span className="value-number" style={{ color: '#ffffff', fontWeight: 700 }}>
-                          {h.allocationPercent}%
-                        </span>
-                        <span style={{ fontSize: '10px', color: diff > 5 ? 'var(--color-neutral)' : 'var(--color-text-muted)' }}>
-                          (Target {h.targetPercent}%)
-                        </span>
+              {holdings.length > 0 ? (
+                holdings.map((h: any) => {
+                  const diff = h.allocationPercent - (h.targetPercent || 0);
+                  return (
+                    <div key={h.symbol} style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <TokenIcon symbol={h.symbol} size={15} />
+                          <span style={{ color: '#ffffff', fontWeight: 700 }}>{h.symbol}</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span className="value-number" style={{ color: '#ffffff', fontWeight: 700 }}>
+                            {h.allocationPercent}%
+                          </span>
+                          <span style={{ fontSize: '10px', color: diff > 5 ? 'var(--color-neutral)' : 'var(--color-text-muted)' }}>
+                            (Target {h.targetPercent || 0}%)
+                          </span>
+                        </div>
+                      </div>
+                      <div className="progress-track" style={{ height: '3px', backgroundColor: 'var(--color-border)' }}>
+                        <div
+                          className="progress-fill"
+                          style={{
+                            width: `${Math.min(100, h.allocationPercent)}%`,
+                            backgroundColor: diff > 5 ? '#f59e0b' : 'var(--color-accent-primary)',
+                          }}
+                        />
                       </div>
                     </div>
-                    <div className="progress-track" style={{ height: '3px', backgroundColor: 'var(--color-border)' }}>
-                      <div
-                        className="progress-fill"
-                        style={{
-                          width: `${Math.min(100, h.allocationPercent)}%`,
-                          backgroundColor: diff > 5 ? '#f59e0b' : 'var(--color-accent-primary)',
-                        }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })
+              ) : (
+                <div style={{ padding: '16px 0', textAlign: 'center', color: 'var(--color-text-muted)', fontSize: '11px' }}>
+                  No spot asset allocation data recorded.
+                </div>
+              )}
             </div>
 
             <div
@@ -502,11 +499,13 @@ export const DashboardPage: React.FC = () => {
                 marginTop: '4px',
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#f59e0b', fontWeight: 700, marginBottom: '2px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: holdings.length > 0 ? '#f59e0b' : 'var(--color-text-muted)', fontWeight: 700, marginBottom: '2px' }}>
                 <SlidersHorizontal size={12} />
-                <span>Status Rebalancing</span>
+                <span>Rebalancing Status</span>
               </div>
-              BTC deviasi +8% melebihi target alokasi. Siklus berkala tersisa <strong>24 hari</strong>.
+              {holdings.length > 0
+                ? 'Portfolio allocations tracked across exchanges. Rebalance when asset deviation exceeds 5%.'
+                : 'No asset deviation recorded. Add holdings in Portfolio Tracker to monitor allocation balance.'}
             </div>
           </div>
 
@@ -529,15 +528,17 @@ export const DashboardPage: React.FC = () => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '11px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--color-text-secondary)' }}>
                 <span>Risk per Trade (Default):</span>
-                <span className="value-number" style={{ color: '#ffffff', fontWeight: 700 }}>2% ($2,776)</span>
+                <span className="value-number" style={{ color: '#ffffff', fontWeight: 700 }}>
+                  2% ({portfolioSummary?.totalNetWorthUsd ? formatUsd(portfolioSummary.totalNetWorthUsd * 0.02) : '$0.00'})
+                </span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--color-text-secondary)' }}>
                 <span>Max Concurrent Trades:</span>
-                <span className="value-number" style={{ color: '#ffffff', fontWeight: 700 }}>3 Posisi</span>
+                <span className="value-number" style={{ color: '#ffffff', fontWeight: 700 }}>3 Positions</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--color-text-secondary)' }}>
                 <span>Kelly Criterion Sizing:</span>
-                <span className="value-number" style={{ color: 'var(--color-accent-primary)', fontWeight: 700 }}>Half-Kelly (12.5%)</span>
+                <span className="value-number" style={{ color: 'var(--color-accent-primary)', fontWeight: 700 }}>Half-Kelly</span>
               </div>
             </div>
 
@@ -548,7 +549,7 @@ export const DashboardPage: React.FC = () => {
                 style={{ width: '100%', height: '36px', fontSize: '12px' }}
               >
                 <Zap size={13} />
-                <span>Hitung Lot Sizer Sekarang</span>
+                <span>Open Position Sizer</span>
               </button>
 
               <button
@@ -557,7 +558,7 @@ export const DashboardPage: React.FC = () => {
                 style={{ width: '100%', height: '34px', fontSize: '12px' }}
               >
                 <BookOpen size={13} />
-                <span>Buka Log Trade Journal</span>
+                <span>Open Trade Journal</span>
               </button>
             </div>
           </div>

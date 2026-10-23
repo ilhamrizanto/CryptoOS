@@ -92,7 +92,7 @@ const GoogleSignInButton: React.FC = () => {
         />
       </svg>
       <span style={{ fontSize: '14px', fontWeight: 700, color: '#ffffff' }}>
-        {isLoading ? 'Mengautentikasi...' : 'Sign in with Google'}
+        {isLoading ? 'Authenticating...' : 'Sign in with Google'}
       </span>
     </button>
   );
@@ -214,7 +214,7 @@ export const LoginPage: React.FC = () => {
               onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--color-accent-primary)')}
               onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--color-text-muted)')}
             >
-              Akses Langsung: ilhamgb11@gmail.com (Whitelist) →
+              Direct Access: ilhamgb11@gmail.com (Whitelist) →
             </button>
           </div>
 

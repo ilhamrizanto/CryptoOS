@@ -4,7 +4,28 @@ import { requireAuth } from '../../middleware/auth.middleware.js';
 
 export const portfolioRouter = Router();
 
-// Enforce authentication on all portfolio endpoints
+/**
+ * GET /api/portfolio/price/:symbol
+ * Public realtime coin price lookup for manual asset entry and calculators
+ */
+portfolioRouter.get('/price/:symbol', async (req, res, next) => {
+  try {
+    const symbol = req.params.symbol.toUpperCase();
+    const priceInfo = await portfolioService.getLiveCoinPrice(symbol);
+    res.json({
+      success: true,
+      data: {
+        symbol,
+        priceUsd: priceInfo.price,
+        isLive: priceInfo.isLive,
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Enforce authentication on all private portfolio endpoints below
 portfolioRouter.use(requireAuth);
 
 /**
@@ -109,3 +130,43 @@ portfolioRouter.delete('/holdings/:id', async (req, res, next) => {
     next(err);
   }
 });
+
+/**
+ * POST /api/portfolio/sync
+ * Idempotently sync multi-exchange balances (Binance, Bybit, OKX) - overwrites existing records
+ */
+portfolioRouter.post('/sync', async (req, res, next) => {
+  try {
+    const userId = req.user!.userId;
+    const exchange = req.body?.exchange || 'ALL';
+    const credentials = req.body?.credentials;
+    const result = await portfolioService.syncExchange(userId, exchange, credentials);
+    res.json({
+      success: true,
+      data: result,
+      message: 'Sinkronisasi exchange berhasil. Data saldo telah diperbarui dan ditimpa tanpa duplikasi.',
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/**
+ * POST /api/portfolio/exchange/test
+ * Test real network connection and ping latency to exchange servers
+ */
+portfolioRouter.post('/exchange/test', async (req, res, next) => {
+  try {
+    const { exchange, apiKey, apiSecret, passphrase } = req.body;
+    const result = await portfolioService.testExchangeLatency(exchange, { apiKey, apiSecret, passphrase });
+    res.json({
+      success: true,
+      data: result,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+
+

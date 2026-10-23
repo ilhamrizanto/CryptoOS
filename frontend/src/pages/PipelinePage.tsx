@@ -199,13 +199,13 @@ export const PipelinePage: React.FC = () => {
     setPriceActionNotes('');
     setEvidenceNotes('');
     setConfluences([
-      'Liquidity Sweep pada Asian Session',
+      'Liquidity Sweep at Asian Session',
       '4H Bullish Order Block + Imbalance FVG',
       'CVD Spot Accumulation Divergence',
     ]);
     setScreenshots([]);
     fetchFundamentalData('bitcoin');
-    showToast('Membuat formulir draft ide baru');
+    showToast('Created new setup draft form');
   };
 
   // Search Coin on typing
@@ -264,11 +264,11 @@ export const PipelinePage: React.FC = () => {
           setStopLossPrice(direction === 'LONG' ? data.currentPriceUsd * 0.95 : data.currentPriceUsd * 1.05);
           setTp1Price(direction === 'LONG' ? data.currentPriceUsd * 1.15 : data.currentPriceUsd * 0.85);
         }
-        showToast(`Data fundamental ${data.name} berhasil disinkronisasi!`);
+        showToast(`Fundamental metrics for ${data.name} synced!`);
       }
     } catch (e) {
       console.error('Error fetching coin fundamentals:', e);
-      showToast('Gagal sinkron data CoinGecko, menggunakan data tersimpan', 'error');
+      showToast('Failed to sync CoinGecko data, using cached values', 'error');
     } finally {
       setIsFetchingFundamental(false);
     }
@@ -301,10 +301,10 @@ export const PipelinePage: React.FC = () => {
         };
 
         setScreenshots((prev) => [newScreenshot, ...prev]);
-        showToast('Screenshot bukti chart berhasil disimpan ke IndexedDB!');
+        showToast('Chart evidence screenshot saved to IndexedDB!');
       } catch (err) {
         console.error('Failed to save screenshot blob:', err);
-        showToast('Gagal menyimpan screenshot ke IndexedDB', 'error');
+        showToast('Failed to save screenshot to IndexedDB', 'error');
       }
     },
     [selectedIdeaId]
@@ -341,7 +341,7 @@ export const PipelinePage: React.FC = () => {
     try {
       await evidenceDb.deleteScreenshot(id);
       setScreenshots((prev) => prev.filter((s) => s.id !== id));
-      showToast('Screenshot dihapus');
+      showToast('Screenshot removed');
     } catch (e) {
       console.error('Failed to delete screenshot:', e);
     }
@@ -376,22 +376,22 @@ export const PipelinePage: React.FC = () => {
       rewardAmount = tp1Price - entryPrice;
       if (stopLossPrice >= entryPrice) {
         isValid = false;
-        warning = 'Stop Loss harus di bawah harga Entry untuk posisi LONG!';
+        warning = 'Stop Loss must be below Entry price for LONG positions!';
       }
       if (tp1Price <= entryPrice) {
         isValid = false;
-        warning = 'Take Profit 1 harus di atas harga Entry untuk posisi LONG!';
+        warning = 'Take Profit 1 must be above Entry price for LONG positions!';
       }
     } else {
       riskAmount = stopLossPrice - entryPrice;
       rewardAmount = entryPrice - tp1Price;
       if (stopLossPrice <= entryPrice) {
         isValid = false;
-        warning = 'Stop Loss harus di atas harga Entry untuk posisi SHORT!';
+        warning = 'Stop Loss must be above Entry price for SHORT positions!';
       }
       if (tp1Price >= entryPrice) {
         isValid = false;
-        warning = 'Take Profit 1 harus di bawah harga Entry untuk posisi SHORT!';
+        warning = 'Take Profit 1 must be below Entry price for SHORT positions!';
       }
     }
 
@@ -476,17 +476,17 @@ export const PipelinePage: React.FC = () => {
 
       if (selectedIdeaId) {
         await api.patch(`/ideas/${selectedIdeaId}`, payload);
-        showToast(`Ide ${ticker} berhasil diperbarui di database!`);
+        showToast(`Setup ${ticker} successfully updated in database!`);
       } else {
         const created = await api.post<TradeIdea>('/ideas', payload);
         setSelectedIdeaId(created.id);
-        showToast(`Ide baru ${ticker} berhasil disimpan ke Pipeline!`);
+        showToast(`New setup ${ticker} saved to Pipeline!`);
       }
 
       await loadIdeas();
     } catch (e) {
       console.error('Failed to save idea:', e);
-      showToast('Gagal menyimpan ide ke database', 'error');
+      showToast('Failed to save setup to database', 'error');
     } finally {
       setIsSaving(false);
     }
@@ -495,11 +495,11 @@ export const PipelinePage: React.FC = () => {
   // Delete Idea
   const handleDeleteIdea = async (ideaId: string, symbol: string, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
-    if (!window.confirm(`Hapus ide setup ${symbol} dari Pipeline?`)) return;
+    if (!window.confirm(`Delete setup idea ${symbol} from Pipeline?`)) return;
 
     try {
       await api.delete(`/ideas/${ideaId}`);
-      showToast(`Ide setup ${symbol} berhasil dihapus!`);
+      showToast(`Setup idea ${symbol} deleted!`);
       if (selectedIdeaId === ideaId) {
         setSelectedIdeaId(null);
         handleNewDraft();
@@ -507,14 +507,14 @@ export const PipelinePage: React.FC = () => {
       await loadIdeas();
     } catch (err) {
       console.error('Failed to delete idea:', err);
-      showToast('Gagal menghapus ide setup', 'error');
+      showToast('Failed to delete setup idea', 'error');
     }
   };
 
   // Transfer Idea to Journal
   const handleTransferToJournal = async () => {
     if (!selectedIdeaId) {
-      showToast('Harap simpan draft ide ini terlebih dahulu sebelum mengirim ke Journal!', 'error');
+      showToast('Please save this setup draft before dispatching to Journal!', 'error');
       return;
     }
 
@@ -524,13 +524,13 @@ export const PipelinePage: React.FC = () => {
         positionSize: entryPrice > 0 ? 1000 / entryPrice : 1,
       });
 
-      showToast(`Setup ${res.symbol} berhasil dikirim ke Journal Trading! Membuka Journal...`);
+      showToast(`Setup ${res.symbol} dispatched to Trade Journal! Opening Journal...`);
       setTimeout(() => {
         navigate('/journal');
       }, 1200);
     } catch (e) {
       console.error('Failed to transfer to journal:', e);
-      showToast('Gagal mengirim ide ke journal', 'error');
+      showToast('Failed to dispatch setup to journal', 'error');
     } finally {
       setIsTransferring(false);
     }
@@ -612,7 +612,7 @@ export const PipelinePage: React.FC = () => {
               }}
             >
               <X size={16} />
-              <span>Tutup Preview</span>
+              <span>Close Preview</span>
             </button>
             <img
               src={previewImageUrl}
@@ -645,7 +645,7 @@ export const PipelinePage: React.FC = () => {
             Trade Setup & Validation Lab
           </h1>
           <p style={{ color: 'var(--color-text-secondary)', fontSize: '12px', margin: '4px 0 0' }}>
-            Validasi multi-dimensi sebelum eksekusi: Makro Fed, Tokenomics FDV, Market Structure SMC, & Konfirmasi CVD Coinglass.
+            Multi-dimensional pre-trade validation: Fed Macro, FDV Tokenomics, SMC Market Structure, & Coinglass CVD Confirmation.
           </p>
         </div>
 
@@ -656,7 +656,7 @@ export const PipelinePage: React.FC = () => {
             style={{ height: '34px', fontSize: '12px', padding: '0 12px' }}
           >
             <Plus size={14} />
-            <span>Draft Baru</span>
+            <span>New Draft</span>
           </button>
           <button
             className="btn btn-primary"
@@ -665,7 +665,7 @@ export const PipelinePage: React.FC = () => {
             style={{ height: '34px', fontSize: '12px', padding: '0 16px' }}
           >
             <Sparkles size={14} />
-            <span>{isSaving ? 'Menyimpan...' : selectedIdeaId ? 'Perbarui Setup' : 'Simpan Setup'}</span>
+            <span>{isSaving ? 'Saving...' : selectedIdeaId ? 'Update Setup' : 'Save Setup'}</span>
           </button>
         </div>
       </div>
@@ -685,11 +685,11 @@ export const PipelinePage: React.FC = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <Layers size={13} color="var(--color-accent-primary)" />
             <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', fontWeight: 700, letterSpacing: '0.05em' }}>
-              PIPELINE QUEUE ({ideas.length} SETUP TERSIMPAN)
+              PIPELINE QUEUE ({ideas.length} SAVED SETUPS)
             </span>
           </div>
           <span style={{ fontSize: '10px', color: 'var(--color-text-muted)' }}>
-            Klik kartu untuk memuat atau edit setup
+            Click card to load or edit setup
           </span>
         </div>
 
@@ -753,7 +753,7 @@ export const PipelinePage: React.FC = () => {
 
                   <button
                     onClick={(e) => handleDeleteIdea(item.id, item.symbol, e)}
-                    title="Hapus setup ini"
+                    title="Delete this setup"
                     style={{
                       background: 'transparent',
                       border: 'none',
@@ -867,7 +867,7 @@ export const PipelinePage: React.FC = () => {
               <button
                 className="btn btn-secondary"
                 onClick={() => fetchFundamentalData(coinId)}
-                title="Sinkronisasi Data CoinGecko"
+                title="Sync CoinGecko Data"
                 style={{ height: '34px', padding: '0 10px', fontSize: '12px' }}
                 disabled={isFetchingFundamental}
               >
@@ -1069,7 +1069,7 @@ export const PipelinePage: React.FC = () => {
                 <Activity size={14} color="var(--color-cyan)" />
               </div>
               <h2 style={{ fontSize: '14px', fontWeight: 800, color: '#ffffff', margin: 0 }}>
-                1. Makro Pasar & Likuiditas
+                1. Macro & Global Liquidity
               </h2>
             </div>
             <span className="bullish-badge" style={{ fontSize: '9px', padding: '1px 6px' }}>
@@ -1077,7 +1077,7 @@ export const PipelinePage: React.FC = () => {
             </span>
           </div>
           <p style={{ fontSize: '11px', color: 'var(--color-text-secondary)', margin: 0 }}>
-            Kondisi likuiditas global, proyeksi suku bunga Fed, dan DXY sebelum entry posisi.
+            Global liquidity conditions, Fed target rate trajectory, and DXY bias prior to execution.
           </p>
 
           <div
@@ -1141,7 +1141,7 @@ export const PipelinePage: React.FC = () => {
                   {intel?.macro?.nextFomcDate || '28 Okt 2026'}
                 </span>
                 <span style={{ fontSize: '10px', color: 'var(--color-text-muted)' }}>
-                  ({intel?.macro?.fomcDaysRemaining ?? 8} hari)
+                  ({intel?.macro?.fomcDaysRemaining ?? 8} days)
                 </span>
               </div>
             </div>
@@ -1174,7 +1174,7 @@ export const PipelinePage: React.FC = () => {
 
           {/* Market Regime Segmented Selector */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '11px', color: 'var(--color-text-muted)', fontWeight: 600 }}>Tentukan Regime Pasar:</span>
+            <span style={{ fontSize: '11px', color: 'var(--color-text-muted)', fontWeight: 600 }}>Select Market Regime:</span>
             <div style={{ display: 'flex', gap: '4px' }}>
               {(['RISK_ON', 'RISK_OFF', 'NEUTRAL'] as const).map((r) => (
                 <button
@@ -1204,7 +1204,7 @@ export const PipelinePage: React.FC = () => {
             rows={2}
             value={macroNotes}
             onChange={(e) => setMacroNotes(e.target.value)}
-            placeholder="Catatan personal makro pasar (FOMC bias, DXY resistance, liquidity inflow)..."
+            placeholder="Macro regime personal notes (FOMC bias, DXY resistance, global liquidity flows)..."
             style={{ marginTop: 'auto', fontSize: '11px', minHeight: '52px' }}
           />
         </div>
@@ -1217,7 +1217,7 @@ export const PipelinePage: React.FC = () => {
                 <Coins size={14} color="var(--color-bullish)" />
               </div>
               <h2 style={{ fontSize: '14px', fontWeight: 800, color: '#ffffff', margin: 0 }}>
-                2. Fundamental & Tokenomics
+                2. Fundamentals & Tokenomics
               </h2>
             </div>
             <span className="neutral-badge" style={{ fontSize: '9px', padding: '1px 6px' }}>
@@ -1225,7 +1225,7 @@ export const PipelinePage: React.FC = () => {
             </span>
           </div>
           <p style={{ fontSize: '11px', color: 'var(--color-text-secondary)', margin: 0 }}>
-            Valuasi FDV, sirkulasi suplai, turnover volume, dan potensi risiko cliff unlock token.
+            FDV valuation, circulating supply, volume turnover, and cliff token unlock overhang risk.
           </p>
 
           <div
@@ -1279,9 +1279,9 @@ export const PipelinePage: React.FC = () => {
           {/* Visual Dilution Gap Bar */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px' }}>
-              <span style={{ color: 'var(--color-text-muted)' }}>Dilution Gap (Sirkulasi Suplai):</span>
+              <span style={{ color: 'var(--color-text-muted)' }}>Dilution Gap (Circulating Supply):</span>
               <span className="mono" style={{ color: '#fff', fontWeight: 700 }}>
-                {dilutionCirculatingPercent}% Circulating ({100 - dilutionCirculatingPercent}% Dilusi Masa Depan)
+                {dilutionCirculatingPercent}% Circulating ({100 - dilutionCirculatingPercent}% Future Dilution)
               </span>
             </div>
             <div style={{ width: '100%', height: '6px', backgroundColor: 'var(--color-bg-elevated)', borderRadius: '3px', overflow: 'hidden', display: 'flex' }}>
@@ -1306,7 +1306,7 @@ export const PipelinePage: React.FC = () => {
             rows={2}
             value={fundamentalNotes}
             onChange={(e) => setFundamentalNotes(e.target.value)}
-            placeholder="Catatan jadwal unlock token, vesting investor, utilisasi chain..."
+            placeholder="Token unlock schedule notes, investor vesting, chain metrics & TVL..."
             style={{ marginTop: 'auto', fontSize: '11px', minHeight: '52px' }}
           />
         </div>
@@ -1327,7 +1327,7 @@ export const PipelinePage: React.FC = () => {
             </span>
           </div>
           <p style={{ fontSize: '11px', color: 'var(--color-text-secondary)', margin: 0 }}>
-            Struktur market SMC/ICT, liquidity sweep, order block, dan perhitungan risk/reward.
+            SMC/ICT market structure, liquidity sweeps, order blocks, and risk/reward dynamics.
           </p>
 
           {/* Market Structure Segmented Selector */}
@@ -1428,7 +1428,7 @@ export const PipelinePage: React.FC = () => {
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span style={{ fontSize: '11px', color: 'var(--color-text-muted)', fontWeight: 600 }}>
-                Rasio Risk to Reward:
+                Risk to Reward Ratio:
               </span>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
                 <span
@@ -1480,7 +1480,7 @@ export const PipelinePage: React.FC = () => {
           {/* Confluence Factors Tag Pills */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
             <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', fontWeight: 700 }}>
-              KONFLUENSI TEKNIKAL:
+              TECHNICAL CONFLUENCES:
             </span>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
               {confluences.map((tag) => (
@@ -1515,7 +1515,7 @@ export const PipelinePage: React.FC = () => {
                 type="text"
                 value={newConfluenceInput}
                 onChange={(e) => setNewConfluenceInput(e.target.value)}
-                placeholder="+ Tambah konfluensi (e.g. FVG 4H retest)..."
+                placeholder="+ Add confluence tag (e.g. 4H FVG retest)..."
                 className="form-input"
                 style={{ height: '28px', fontSize: '10px', padding: '2px 8px' }}
               />
@@ -1540,7 +1540,7 @@ export const PipelinePage: React.FC = () => {
                 <Layers size={14} color="#ec4899" />
               </div>
               <h2 style={{ fontSize: '14px', fontWeight: 800, color: '#ffffff', margin: 0 }}>
-                4. Bukti On-Chain & Coinglass
+                4. On-Chain & Coinglass Evidence
               </h2>
             </div>
             <span className="bullish-badge" style={{ fontSize: '9px', padding: '1px 6px' }}>
@@ -1548,7 +1548,7 @@ export const PipelinePage: React.FC = () => {
             </span>
           </div>
           <p style={{ fontSize: '11px', color: 'var(--color-text-secondary)', margin: 0 }}>
-            Paste screenshot analisis chart (<kbd style={{ padding: '1px 4px', background: 'var(--color-border)', borderRadius: '3px' }}>Ctrl + V</kbd>) tersimpan langsung di browser.
+            Paste chart analysis screenshots (<kbd style={{ padding: '1px 4px', background: 'var(--color-border)', borderRadius: '3px' }}>Ctrl + V</kbd>) saved directly to local browser IndexedDB.
           </p>
 
           {/* Paste & Dropzone */}
@@ -1573,7 +1573,7 @@ export const PipelinePage: React.FC = () => {
           >
             <Upload size={18} color="var(--color-accent-primary)" style={{ margin: '0 auto 4px' }} />
             <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)', display: 'block' }}>
-              Tekan <strong style={{ color: 'var(--color-accent-primary)' }}>Ctrl + V</strong> di mana saja atau klik untuk upload screenshot chart
+              Press <strong style={{ color: 'var(--color-accent-primary)' }}>Ctrl + V</strong> anywhere or click to upload chart screenshot
             </span>
             <input
               type="file"
@@ -1691,7 +1691,7 @@ export const PipelinePage: React.FC = () => {
             rows={2}
             value={evidenceNotes}
             onChange={(e) => setEvidenceNotes(e.target.value)}
-            placeholder="Catatan likuidasi Coinglass, heatmap cluster, CVD spot delta..."
+            placeholder="Coinglass liquidation levels, heatmap clusters, CVD spot divergence notes..."
             style={{ marginTop: 'auto', fontSize: '11px', minHeight: '52px' }}
           />
         </div>
@@ -1785,7 +1785,7 @@ export const PipelinePage: React.FC = () => {
               fontWeight: 800,
             }}
           >
-            ● {currentReadiness.count}/4 PILAR
+            ● {currentReadiness.count}/4 PILLARS
           </div>
         </div>
 
@@ -1794,10 +1794,10 @@ export const PipelinePage: React.FC = () => {
             className="btn btn-secondary"
             onClick={handleNavigateToCalculator}
             style={{ height: '34px', fontSize: '12px', padding: '0 12px' }}
-            title="Bawa setup ini ke Risk Calculator & Position Sizer"
+            title="Send setup to Risk Calculator & Position Sizer"
           >
             <Calculator size={14} />
-            <span>Hitung Lot di Sizer</span>
+            <span>Position Sizer</span>
           </button>
 
           <button
@@ -1806,7 +1806,7 @@ export const PipelinePage: React.FC = () => {
             disabled={isSaving}
             style={{ height: '34px', fontSize: '12px', padding: '0 14px' }}
           >
-            <span>{isSaving ? 'Menyimpan...' : 'Simpan Draft'}</span>
+            <span>{isSaving ? 'Saving...' : 'Save Draft'}</span>
           </button>
 
           <button
@@ -1815,7 +1815,7 @@ export const PipelinePage: React.FC = () => {
             disabled={isTransferring}
             style={{ height: '34px', fontSize: '12px', padding: '0 16px', fontWeight: 800 }}
           >
-            <span>{isTransferring ? 'Mengirim...' : 'Kirim ke Journal Trading'}</span>
+            <span>{isTransferring ? 'Dispatching...' : 'Dispatch to Trade Journal'}</span>
             <ArrowRight size={14} />
           </button>
         </div>

@@ -91,22 +91,22 @@ export const CashflowPage: React.FC = () => {
         notes: formNotes,
       });
 
-      showToast('Transaksi kas berhasil dicatat!');
+      showToast('Cashflow transaction recorded successfully!');
       setShowModal(false);
       await loadCashflowData();
     } catch (err) {
       console.error('Failed to create transaction:', err);
-      showToast('Gagal mencatat transaksi kas');
+      showToast('Failed to record cashflow transaction');
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleDeleteTransaction = async (id: string) => {
-    if (!confirm('Yakin ingin menghapus catatan transaksi ini?')) return;
+    if (!confirm('Are you sure you want to delete this cashflow entry?')) return;
     try {
       await api.delete(`/cashflow/${id}`);
-      showToast('Transaksi berhasil dihapus');
+      showToast('Transaction deleted successfully');
       await loadCashflowData();
     } catch (err) {
       console.error('Failed to delete transaction:', err);
@@ -160,7 +160,7 @@ export const CashflowPage: React.FC = () => {
                   FIAT & CAPITAL MUTATION
                 </span>
                 <h2 style={{ fontSize: '16px', fontWeight: 900, color: '#fff', margin: '2px 0 0' }}>
-                  Catat Mutasi Kas Riil
+                  Log Capital Transaction
                 </h2>
               </div>
               <button
@@ -173,7 +173,7 @@ export const CashflowPage: React.FC = () => {
 
             <div>
               <label style={{ fontSize: '10px', color: 'var(--color-text-muted)', display: 'block', marginBottom: '4px', fontWeight: 700 }}>
-                TIPE TRANSAKSI
+                TRANSACTION TYPE
               </label>
               <select
                 value={formType}
@@ -263,7 +263,7 @@ export const CashflowPage: React.FC = () => {
 
             <div>
               <label style={{ fontSize: '10px', color: 'var(--color-text-muted)', display: 'block', marginBottom: '4px', fontWeight: 700 }}>
-                TANGGAL TRANSAKSI
+                TRANSACTION DATE
               </label>
               <input
                 type="date"
@@ -276,13 +276,13 @@ export const CashflowPage: React.FC = () => {
 
             <div>
               <label style={{ fontSize: '10px', color: 'var(--color-text-muted)', display: 'block', marginBottom: '4px', fontWeight: 700 }}>
-                MEMO / CATATAN
+                MEMO / NOTES
               </label>
               <input
                 type="text"
                 value={formNotes}
                 onChange={(e) => setFormNotes(e.target.value)}
-                placeholder="Opsional, e.g. Gaji bulanan, taking profit ETH"
+                placeholder="Optional, e.g. Monthly allocation, ETH profit taking"
                 className="form-input"
                 style={{ height: '34px', fontSize: '12px' }}
               />
@@ -294,7 +294,7 @@ export const CashflowPage: React.FC = () => {
                 onClick={() => setShowModal(false)}
                 style={{ height: '34px', fontSize: '12px' }}
               >
-                Batal
+                Cancel
               </button>
               <button
                 className="btn btn-primary"
@@ -302,7 +302,7 @@ export const CashflowPage: React.FC = () => {
                 disabled={isSubmitting}
                 style={{ height: '34px', fontSize: '12px', fontWeight: 800 }}
               >
-                {isSubmitting ? 'Menyimpan...' : 'Simpan Mutasi'}
+                {isSubmitting ? 'Saving...' : 'Save Transaction'}
               </button>
             </div>
           </div>
@@ -325,14 +325,14 @@ export const CashflowPage: React.FC = () => {
             Cashflow Engine & Capital Allocation
           </h1>
           <p style={{ color: 'var(--color-text-secondary)', fontSize: '12px', margin: '4px 0 0' }}>
-            Buku kas modal riil: Rekap setoran (deposit), penarikan (withdrawal), hasil staking (yield), dan alokasi modal investasi.
+            Capital liquidity ledger: Track deposits, withdrawals, staking yields, and fiat allocation across accounts.
           </p>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <button className="btn btn-primary" onClick={() => setShowModal(true)} style={{ height: '34px', fontSize: '12px', padding: '0 14px' }}>
             <Plus size={14} />
-            <span>Log Mutasi Kas</span>
+            <span>Log Transaction</span>
           </button>
         </div>
       </div>
@@ -353,7 +353,7 @@ export const CashflowPage: React.FC = () => {
         <div className="cardless-cell" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', fontWeight: 700, letterSpacing: '0.04em' }}>
-              TOTAL DEPOSIT (MODAL MASUK)
+              TOTAL DEPOSITS (CAPITAL INFLOW)
             </span>
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
               <ArrowDownLeft size={13} color="var(--color-bullish)" />
@@ -366,7 +366,7 @@ export const CashflowPage: React.FC = () => {
             <DualCurrencyValue usd={summary?.totalDepositsUsd || 0} idr={summary?.totalDepositsIdr || 0} size="lg" sentiment="bullish" />
           </div>
           <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', marginTop: '2px' }}>
-            Akumulasi modal segar disetor ke exchange
+            Cumulative fresh capital injected into exchanges
           </span>
         </div>
 
@@ -374,7 +374,7 @@ export const CashflowPage: React.FC = () => {
         <div className="cardless-cell" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', fontWeight: 700, letterSpacing: '0.04em' }}>
-              TOTAL WITHDRAWAL (PENARIKAN)
+              TOTAL WITHDRAWALS (CAPITAL OUTFLOW)
             </span>
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
               <ArrowUpRight size={13} color="var(--color-bearish)" />
@@ -387,7 +387,7 @@ export const CashflowPage: React.FC = () => {
             <DualCurrencyValue usd={summary?.totalWithdrawalsUsd || 0} idr={summary?.totalWithdrawalsIdr || 0} size="lg" sentiment="bearish" />
           </div>
           <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', marginTop: '2px' }}>
-            Profit diambil atau penarikan likuiditas riil
+            Realized profits extracted or liquidity withdrawn
           </span>
         </div>
 
@@ -413,7 +413,7 @@ export const CashflowPage: React.FC = () => {
             />
           </div>
           <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', marginTop: '2px' }}>
-            Deposit bersih (Deposit dikurangi Withdrawal)
+            Net capital deployed (Deposits minus Withdrawals)
           </span>
         </div>
 
@@ -439,7 +439,7 @@ export const CashflowPage: React.FC = () => {
             />
           </div>
           <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', marginTop: '2px' }}>
-            Total {summary?.transactionCount || 0} riwayat mutasi kas dicatat
+            Total {summary?.transactionCount || 0} cashflow transactions recorded
           </span>
         </div>
       </div>
@@ -469,16 +469,16 @@ export const CashflowPage: React.FC = () => {
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <h2 style={{ fontSize: '13px', fontWeight: 800, color: '#fff', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-              Riwayat Mutasi Kas Riil
+              Capital Transaction Ledger
             </h2>
             <span style={{ fontSize: '11px', color: 'var(--color-text-muted)', fontFamily: 'JetBrains Mono, monospace' }}>
-              [{transactions.length} mutasi]
+              [{transactions.length} entries]
             </span>
           </div>
 
           <div style={{ display: 'flex', gap: '4px', overflowX: 'auto' }}>
             {[
-              { key: 'ALL', label: 'SEMUA' },
+              { key: 'ALL', label: 'ALL' },
               { key: 'DEPOSIT', label: 'DEPOSIT' },
               { key: 'WITHDRAWAL', label: 'WITHDRAWAL' },
               { key: 'STAKING_YIELD', label: 'STAKING YIELD' },
@@ -517,13 +517,13 @@ export const CashflowPage: React.FC = () => {
           <table className="cardless-table" style={{ width: '100%' }}>
             <thead>
               <tr>
-                <th style={{ width: '130px' }}>TANGGAL</th>
-                <th style={{ width: '120px' }}>TIPE</th>
-                <th>SUMBER / TUJUAN</th>
-                <th style={{ width: '140px' }}>DESTINASI EXCHANGE</th>
-                <th style={{ textAlign: 'right', width: '220px' }}>NILAI NOMINAL</th>
-                <th>MEMO / CATATAN</th>
-                <th style={{ textAlign: 'center', width: '70px' }}>AKSI</th>
+                <th style={{ width: '130px' }}>DATE</th>
+                <th style={{ width: '120px' }}>TYPE</th>
+                <th>SOURCE / DESTINATION</th>
+                <th style={{ width: '140px' }}>DESTINATION EXCHANGE</th>
+                <th style={{ textAlign: 'right', width: '220px' }}>AMOUNT</th>
+                <th>MEMO / NOTES</th>
+                <th style={{ textAlign: 'center', width: '70px' }}>ACTIONS</th>
               </tr>
             </thead>
             <tbody>
@@ -532,8 +532,8 @@ export const CashflowPage: React.FC = () => {
                   <td colSpan={7} style={{ padding: '48px 16px', textAlign: 'center', color: 'var(--color-text-muted)' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
                       <CreditCard size={28} strokeWidth={1.5} color="var(--color-text-muted)" />
-                      <span style={{ fontSize: '13px', fontWeight: 600 }}>Belum ada catatan mutasi kas untuk kategori ini</span>
-                      <span style={{ fontSize: '11px' }}>Klik tombol "Log Mutasi Kas" di atas untuk menambahkan deposit atau penarikan baru.</span>
+                      <span style={{ fontSize: '13px', fontWeight: 600 }}>No cashflow transactions found for this category</span>
+                      <span style={{ fontSize: '11px' }}>Click the "Log Transaction" button above to record a new deposit or withdrawal.</span>
                     </div>
                   </td>
                 </tr>
@@ -542,7 +542,7 @@ export const CashflowPage: React.FC = () => {
                   <tr key={t.id}>
                     {/* Tanggal */}
                     <td style={{ color: 'var(--color-text-muted)', fontSize: '11px' }} className="mono">
-                      {new Date(t.transactionDate).toLocaleDateString('id-ID', {
+                      {new Date(t.transactionDate).toLocaleDateString('en-US', {
                         year: 'numeric',
                         month: 'short',
                         day: 'numeric',
@@ -572,7 +572,7 @@ export const CashflowPage: React.FC = () => {
                     {/* Sumber / Tujuan */}
                     <td>
                       <span style={{ fontWeight: 700, color: '#fff', fontSize: '12px' }}>
-                        {t.sourceOrDestination || 'Kas Internal'}
+                        {t.sourceOrDestination || 'Internal Treasury'}
                       </span>
                     </td>
 
@@ -631,7 +631,7 @@ export const CashflowPage: React.FC = () => {
                         }}
                         onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--color-bearish)')}
                         onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--color-text-muted)')}
-                        title="Hapus Mutasi"
+                        title="Delete Entry"
                       >
                         <Trash2 size={13} />
                       </button>

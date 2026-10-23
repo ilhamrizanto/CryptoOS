@@ -58,7 +58,7 @@ export const CalculatorPage: React.FC = () => {
       if (state.takeProfitPrice) setTakeProfitPrice(state.takeProfitPrice);
       if (state.riskPercent) setRiskPercent(state.riskPercent);
 
-      setNotification(`Setup ${state.ticker || ''} (${state.direction || 'LONG'}) berhasil diimpor dari Pipeline!`);
+      setNotification(`Setup ${state.ticker || ''} (${state.direction || 'LONG'}) successfully imported from Pipeline!`);
       setTimeout(() => setNotification(null), 4000);
     }
   }, [location.state]);
@@ -75,7 +75,7 @@ export const CalculatorPage: React.FC = () => {
     if (idea.stopLossPrice) setStopLossPrice(idea.stopLossPrice);
     if (idea.tp1Price) setTakeProfitPrice(idea.tp1Price);
     if (idea.riskPercent) setRiskPercent(idea.riskPercent);
-    showToast(`Setup ${idea.symbol} (${idea.direction}) berhasil dimuat ke Sizer!`);
+    showToast(`Setup ${idea.symbol} (${idea.direction}) successfully loaded into Sizer!`);
   };
 
   // Math Calculations
@@ -131,7 +131,7 @@ Max Risk: $${riskAmountUsd.toFixed(2)} (${riskPercent}%)`;
 
     navigator.clipboard.writeText(text);
     setCopied(true);
-    showToast('Parameter eksekusi disalin ke clipboard!');
+    showToast('Execution parameters copied to clipboard!');
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -161,7 +161,7 @@ Max Risk: $${riskAmountUsd.toFixed(2)} (${riskPercent}%)`;
             Position Sizer & Risk Calculator
           </h1>
           <p style={{ color: 'var(--color-text-secondary)', fontSize: '12px', margin: '4px 0 0' }}>
-            Kalkulasi lot size presisi, simulasi leverage, proteksi likuidasi dini, dan optimasi Half-Kelly Criterion.
+            Precision lot sizing, leverage simulation, early liquidation defense, and Half-Kelly Criterion optimization.
           </p>
         </div>
 
@@ -172,7 +172,7 @@ Max Risk: $${riskAmountUsd.toFixed(2)} (${riskPercent}%)`;
             style={{ height: '34px', fontSize: '12px', padding: '0 12px' }}
           >
             {copied ? <Check size={14} color="var(--color-bullish)" /> : <Copy size={14} />}
-            <span>{copied ? 'Tersalin' : 'Salin Parameter'}</span>
+            <span>{copied ? 'Copied' : 'Copy Parameters'}</span>
           </button>
           <button
             className="btn btn-primary"
@@ -180,7 +180,7 @@ Max Risk: $${riskAmountUsd.toFixed(2)} (${riskPercent}%)`;
             style={{ height: '34px', fontSize: '12px', padding: '0 14px' }}
           >
             <Layers size={14} />
-            <span>Buka Pipeline Lab</span>
+            <span>Open Pipeline Lab</span>
           </button>
         </div>
       </div>
@@ -201,7 +201,7 @@ Max Risk: $${riskAmountUsd.toFixed(2)} (${riskPercent}%)`;
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap' }}>
             <Layers size={13} color="var(--color-accent-primary)" />
             <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', fontWeight: 700, letterSpacing: '0.04em' }}>
-              IMPORT DARI PIPELINE:
+              IMPORT FROM PIPELINE:
             </span>
           </div>
           <div style={{ display: 'flex', gap: '8px' }}>
@@ -264,7 +264,7 @@ Max Risk: $${riskAmountUsd.toFixed(2)} (${riskPercent}%)`;
                 <Calculator size={14} color="var(--color-accent-primary)" />
               </div>
               <h2 style={{ fontSize: '14px', fontWeight: 800, color: '#ffffff', margin: 0 }}>
-                Parameter Posisi & Risiko
+                Position & Risk Parameters
               </h2>
             </div>
             <span className="bullish-badge" style={{ fontSize: '9px', padding: '1px 6px' }}>
@@ -275,7 +275,7 @@ Max Risk: $${riskAmountUsd.toFixed(2)} (${riskPercent}%)`;
           {/* Trade Direction Segmented Toggle */}
           <div>
             <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', display: 'block', marginBottom: '4px', fontWeight: 700, letterSpacing: '0.04em' }}>
-              ARAH EKSEKUSI (DIRECTION)
+              EXECUTION DIRECTION
             </span>
             <div style={{ display: 'flex', background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: '2px' }}>
               <button
@@ -344,7 +344,7 @@ Max Risk: $${riskAmountUsd.toFixed(2)} (${riskPercent}%)`;
             </div>
             <div>
               <label style={{ fontSize: '10px', color: 'var(--color-text-muted)', display: 'block', marginBottom: '4px', fontWeight: 700, letterSpacing: '0.04em' }}>
-                MODAL PORTFOLIO (USD)
+                PORTFOLIO CAPITAL (USD)
               </label>
               <input
                 type="number"
@@ -360,7 +360,7 @@ Max Risk: $${riskAmountUsd.toFixed(2)} (${riskPercent}%)`;
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
               <label style={{ fontSize: '10px', color: 'var(--color-text-muted)', fontWeight: 700, letterSpacing: '0.04em' }}>
-                TOLERANSI RISIKO PER TRADE (%)
+                RISK TOLERANCE PER TRADE (%)
               </label>
               <span className="value-number" style={{ fontSize: '11px', color: 'var(--color-accent-primary)', fontWeight: 800 }}>
                 {riskPercent}% (${riskAmountUsd.toLocaleString()})
@@ -490,7 +490,7 @@ Max Risk: $${riskAmountUsd.toFixed(2)} (${riskPercent}%)`;
         <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--color-border)', paddingBottom: '10px' }}>
             <h2 style={{ fontSize: '14px', fontWeight: 800, color: '#ffffff', margin: 0 }}>
-              Rekomendasi Eksekusi & Lot Size
+              Execution Recommendation & Lot Size
             </h2>
             <span
               style={{
@@ -520,7 +520,7 @@ Max Risk: $${riskAmountUsd.toFixed(2)} (${riskPercent}%)`;
             }}
           >
             <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', fontWeight: 700, letterSpacing: '0.04em' }}>
-              UKURAN POSISI MAKSIMAL (POSITION SIZE)
+              MAXIMUM POSITION SIZE
             </span>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px' }}>
               <span className="value-number" style={{ fontSize: '26px', fontWeight: 900, color: 'var(--color-accent-primary)' }}>
@@ -528,11 +528,11 @@ Max Risk: $${riskAmountUsd.toFixed(2)} (${riskPercent}%)`;
               </span>
             </div>
             <div style={{ marginTop: '4px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>Nilai Eksekusi Total:</span>
+              <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>Total Execution Value:</span>
               <DualCurrencyValue usd={totalPositionValueUsd} layout="row" size="sm" />
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>Margin Diperlukan ({selectedLeverage}x):</span>
+              <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>Required Margin ({selectedLeverage}x):</span>
               <DualCurrencyValue usd={marginRequiredUsd} layout="row" size="sm" />
             </div>
           </div>
@@ -547,7 +547,7 @@ Max Risk: $${riskAmountUsd.toFixed(2)} (${riskPercent}%)`;
                 borderRadius: 'var(--radius-sm)',
               }}
             >
-              <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', display: 'block' }}>MAKSIMAL RISIKO MODAL</span>
+              <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', display: 'block' }}>MAXIMUM CAPITAL RISK</span>
               <div style={{ marginTop: '2px' }}>
                 <DualCurrencyValue usd={riskAmountUsd} size="md" sentiment="bearish" layout="row" />
               </div>
@@ -561,7 +561,7 @@ Max Risk: $${riskAmountUsd.toFixed(2)} (${riskPercent}%)`;
                 borderRadius: 'var(--radius-sm)',
               }}
             >
-              <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', display: 'block' }}>POTENSI PROFIT (TP1)</span>
+              <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', display: 'block' }}>POTENTIAL PROFIT (TP1)</span>
               <div style={{ marginTop: '2px' }}>
                 <DualCurrencyValue usd={rewardUsd} size="md" sentiment="bullish" layout="row" />
               </div>
@@ -630,7 +630,7 @@ Max Risk: $${riskAmountUsd.toFixed(2)} (${riskPercent}%)`;
                     color: isStopLossSafeFromLiquidation ? 'var(--color-bullish)' : 'var(--color-bearish)',
                   }}
                 >
-                  {isStopLossSafeFromLiquidation ? 'Stop Loss Terlindungi dari Likuidasi' : 'PERINGATAN LIKUIDASI DINI!'}
+                  {isStopLossSafeFromLiquidation ? 'Stop Loss Protected from Liquidation' : 'EARLY LIQUIDATION WARNING!'}
                 </span>
               </div>
               <span className="mono" style={{ fontSize: '11px', color: '#fff' }}>
@@ -639,8 +639,8 @@ Max Risk: $${riskAmountUsd.toFixed(2)} (${riskPercent}%)`;
             </div>
             <p style={{ fontSize: '10px', color: 'var(--color-text-secondary)', margin: 0 }}>
               {isStopLossSafeFromLiquidation
-                ? `Stop Loss Anda di $${stopLossPrice} akan terpicu sebelum harga mencapai level likuidasi di $${liquidationPrice.toFixed(2)}.`
-                : `Level likuidasi ($${liquidationPrice.toFixed(2)}) terpicu sebelum Stop Loss ($${stopLossPrice})! Harap turunkan leverage!`}
+                ? `Your Stop Loss at $${stopLossPrice} will trigger before the price reaches the liquidation level at $${liquidationPrice.toFixed(2)}.`
+                : `Liquidation price ($${liquidationPrice.toFixed(2)}) is hit before Stop Loss ($${stopLossPrice})! Please reduce leverage!`}
             </p>
           </div>
 
@@ -676,7 +676,7 @@ Max Risk: $${riskAmountUsd.toFixed(2)} (${riskPercent}%)`;
               </span>
             </div>
             <p style={{ fontSize: '10px', color: 'var(--color-text-secondary)', margin: 0 }}>
-              Model Kelly merekomendasikan alokasi modal optimal <strong>{halfKellyPercent.toFixed(1)}%</strong> demi memaksimalkan pertumbuhan geometri modal tanpa risiko ruin.
+              The Kelly model recommends an optimal capital allocation of <strong>{halfKellyPercent.toFixed(1)}%</strong> to maximize geometric capital growth without risk of ruin.
             </p>
           </div>
         </div>

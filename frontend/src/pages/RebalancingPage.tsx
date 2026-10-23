@@ -13,6 +13,7 @@ import {
 import { api } from '../services/api';
 import { useSettingsStore } from '../store/settings.store';
 import { DualCurrencyValue } from '../components/ui/DualCurrencyValue';
+import { TokenIcon } from '../components/common/TokenIcon';
 
 interface Holding {
   id: string;
@@ -157,12 +158,12 @@ export const RebalancingPage: React.FC = () => {
       for (const [id, targetPercent] of Object.entries(targets)) {
         await api.put(`/portfolio/holdings/${id}`, { targetPercent });
       }
-      showToast('Target alokasi portofolio berhasil diperbarui!');
+      showToast('Portfolio target allocations updated successfully!');
       setShowTargetModal(false);
       await loadData();
     } catch (err) {
       console.error('Failed to save targets:', err);
-      showToast('Gagal menyimpan target alokasi');
+      showToast('Failed to save target allocations');
     } finally {
       setIsSavingTargets(false);
     }
@@ -170,7 +171,7 @@ export const RebalancingPage: React.FC = () => {
 
   const handleMarkRebalancedToday = () => {
     setDaysRemaining(cycleDays);
-    showToast('Siklus rebalance berhasil di-reset ke 60 hari penuh!');
+    showToast('Rebalancing cycle reset to 60 days!');
   };
 
   const totalTargetSum = Object.values(targets).reduce((sum, val) => sum + (Number(val) || 0), 0);
@@ -221,7 +222,7 @@ export const RebalancingPage: React.FC = () => {
                   TARGET CONFIGURATION
                 </span>
                 <h2 style={{ fontSize: '16px', fontWeight: 900, color: '#fff', margin: '2px 0 0' }}>
-                  Atur Target Alokasi Portofolio
+                  Configure Portfolio Target Allocation
                 </h2>
               </div>
               <button
@@ -233,7 +234,7 @@ export const RebalancingPage: React.FC = () => {
             </div>
 
             <p style={{ fontSize: '11px', color: 'var(--color-text-secondary)', margin: 0 }}>
-              Tentukan target persentase ideal untuk setiap aset (total ideal akumulatif = 100%).
+              Set your ideal target allocation percentage for each asset (cumulative ideal = 100%).
             </p>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '280px', overflowY: 'auto' }}>
@@ -250,13 +251,16 @@ export const RebalancingPage: React.FC = () => {
                     borderRadius: 'var(--radius-sm)',
                   }}
                 >
-                  <div>
-                    <span style={{ fontWeight: 800, color: '#fff', fontSize: '12px', fontFamily: 'var(--font-mono)' }}>
-                      {h.symbol}
-                    </span>
-                    <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', display: 'block' }}>
-                      {h.exchange}
-                    </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <TokenIcon symbol={h.symbol} size={18} />
+                    <div>
+                      <span style={{ fontWeight: 800, color: '#fff', fontSize: '12px', fontFamily: 'var(--font-mono)' }}>
+                        {h.symbol}
+                      </span>
+                      <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', display: 'block' }}>
+                        {h.exchange}
+                      </span>
+                    </div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <input
@@ -285,13 +289,13 @@ export const RebalancingPage: React.FC = () => {
                   color: totalTargetSum === 100 ? 'var(--color-bullish)' : 'var(--color-amber)',
                 }}
               >
-                {totalTargetSum}% {totalTargetSum === 100 ? '✓ (100% Ideal)' : `(${100 - totalTargetSum}% selisih)`}
+                {totalTargetSum}% {totalTargetSum === 100 ? '✓ (100% Ideal)' : `(${100 - totalTargetSum}% diff)`}
               </span>
             </div>
 
             <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
               <button className="btn btn-secondary" onClick={() => setShowTargetModal(false)} style={{ height: '34px', fontSize: '12px' }}>
-                Batal
+                Cancel
               </button>
               <button
                 className="btn btn-primary"
@@ -299,7 +303,7 @@ export const RebalancingPage: React.FC = () => {
                 disabled={isSavingTargets}
                 style={{ height: '34px', fontSize: '12px', fontWeight: 800 }}
               >
-                {isSavingTargets ? 'Menyimpan...' : 'Simpan Target'}
+                {isSavingTargets ? 'Saving...' : 'Save Targets'}
               </button>
             </div>
           </div>
@@ -322,7 +326,7 @@ export const RebalancingPage: React.FC = () => {
             Rebalancing Matrix & Asset Drift
           </h1>
           <p style={{ color: 'var(--color-text-secondary)', fontSize: '12px', margin: '4px 0 0' }}>
-            Siklus rebalance periodik, audit deviasi bobot aktual terhadap target alokasi, dan rekomendasi order otomatis.
+            Periodic rebalancing cycles, actual vs. target weight deviation audit, and automated order recommendations.
           </p>
         </div>
 
@@ -333,7 +337,7 @@ export const RebalancingPage: React.FC = () => {
             style={{ height: '34px', fontSize: '12px', padding: '0 12px' }}
           >
             <Wallet size={13} />
-            <span>Lihat Portfolio</span>
+            <span>View Portfolio</span>
           </button>
           <button
             className="btn btn-secondary"
@@ -341,7 +345,7 @@ export const RebalancingPage: React.FC = () => {
             style={{ height: '34px', fontSize: '12px', padding: '0 12px' }}
           >
             <CheckCircle2 size={13} color="var(--color-bullish)" />
-            <span>Reset Siklus 60 Hari</span>
+            <span>Reset 60-Day Cycle</span>
           </button>
           <button
             className="btn btn-primary"
@@ -349,7 +353,7 @@ export const RebalancingPage: React.FC = () => {
             style={{ height: '34px', fontSize: '12px', padding: '0 14px' }}
           >
             <SlidersHorizontal size={14} />
-            <span>Atur Target Alokasi</span>
+            <span>Configure Targets</span>
           </button>
         </div>
       </div>
@@ -370,16 +374,16 @@ export const RebalancingPage: React.FC = () => {
         <div className="cardless-cell" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', fontWeight: 700, letterSpacing: '0.04em' }}>
-              SIKLUS REBALANCE PERIODIK
+              REBALANCING CYCLE
             </span>
             <Calendar size={13} color="var(--color-accent-primary)" />
           </div>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginTop: '2px' }}>
             <span className="value-number" style={{ fontSize: '24px', fontWeight: 900, color: '#ffffff' }}>
-              {daysRemaining} Hari
+              {daysRemaining} Days
             </span>
             <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>
-              tersisa dari {cycleDays} hari
+              remaining of {cycleDays} days
             </span>
           </div>
           <div style={{ width: '100%', height: '3px', backgroundColor: 'var(--color-bg-elevated)', borderRadius: '2px', overflow: 'hidden', marginTop: '4px' }}>
@@ -421,11 +425,11 @@ export const RebalancingPage: React.FC = () => {
               ±{maxDeviation.toFixed(1)}%
             </span>
             <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>
-              Ambang batas ±2.5%
+              Threshold ±2.5%
             </span>
           </div>
           <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', marginTop: '4px' }}>
-            {maxDeviation >= 3.0 ? 'Penyimpangan bobot melebihi batas toleransi' : 'Bobot portofolio masih dalam batas aman'}
+            {maxDeviation >= 3.0 ? 'Weight deviation exceeds tolerance threshold' : 'Portfolio weights within safe tolerance'}
           </span>
         </div>
 
@@ -445,7 +449,7 @@ export const RebalancingPage: React.FC = () => {
             />
           </div>
           <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', marginTop: '2px' }}>
-            Estimasi volume penyesuaian aset spot
+            Estimated spot adjustment volume
           </span>
         </div>
 
@@ -453,7 +457,7 @@ export const RebalancingPage: React.FC = () => {
         <div className="cardless-cell" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', fontWeight: 700, letterSpacing: '0.04em' }}>
-              BASIS NET WORTH PORTOFOLIO
+              PORTFOLIO VALUATION BASIS
             </span>
             <span className="bullish-badge" style={{ fontSize: '9px', padding: '1px 5px' }}>
               MULTI-EXCHANGE
@@ -461,8 +465,8 @@ export const RebalancingPage: React.FC = () => {
           </div>
           <div style={{ marginTop: '2px' }}>
             <DualCurrencyValue
-              usd={summary?.totalNetWorthUsd || 138817.5}
-              idr={summary?.totalNetWorthIdr || 2255784375}
+              usd={summary?.totalNetWorthUsd || 0}
+              idr={summary?.totalNetWorthIdr || 0}
               size="lg"
             />
           </div>
@@ -477,14 +481,14 @@ export const RebalancingPage: React.FC = () => {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 4px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={{ fontSize: '12px', fontWeight: 800, color: '#ffffff', letterSpacing: '0.04em' }}>
-              MATRIKS REBALANCING & DRIFT AUDIT
+              REBALANCING MATRIX & DRIFT AUDIT
             </span>
             <span className="neutral-badge" style={{ fontSize: '9px', padding: '1px 5px' }}>
-              {assetList.length} ASET AUDIT
+              {assetList.length} ASSETS AUDITED
             </span>
           </div>
           <span style={{ fontSize: '10px', color: 'var(--color-text-muted)' }}>
-            Rebalancing teratur membatasi drawdown & mengunci profit secara mekanis
+            Systematic rebalancing mitigates drawdown and locks in profits mechanically
           </span>
         </div>
 
@@ -492,124 +496,132 @@ export const RebalancingPage: React.FC = () => {
           <table className="cardless-table" style={{ fontSize: '11px' }}>
             <thead>
               <tr>
-                <th style={{ textAlign: 'left' }}>ASET</th>
-                <th style={{ textAlign: 'right' }}>HARGA SAAT INI</th>
-                <th style={{ textAlign: 'right' }}>TOTAL NILAI AKTUAL</th>
-                <th style={{ textAlign: 'right' }}>ALOKASI AKTUAL VS TARGET</th>
-                <th style={{ textAlign: 'right' }}>DEVIASI (DRIFT)</th>
-                <th style={{ textAlign: 'left' }}>REKOMENDASI AKSI EKSEKUSI</th>
-                <th style={{ textAlign: 'center' }}>AKSI</th>
+                <th style={{ textAlign: 'left' }}>ASSET</th>
+                <th style={{ textAlign: 'right' }}>CURRENT PRICE</th>
+                <th style={{ textAlign: 'right' }}>ACTUAL TOTAL VALUE</th>
+                <th style={{ textAlign: 'right' }}>ACTUAL VS TARGET ALLOCATION</th>
+                <th style={{ textAlign: 'right' }}>DEVIATION (DRIFT)</th>
+                <th style={{ textAlign: 'left' }}>RECOMMENDED ACTION</th>
+                <th style={{ textAlign: 'center' }}>ACTIONS</th>
               </tr>
             </thead>
             <tbody>
-              {assetList.map((asset) => {
-                const order = suggestedOrders.find((o) => o.symbol === asset.symbol);
-                const isOver = asset.deviationPercent > 0;
-                const isSig = Math.abs(asset.deviationPercent) >= 2.5;
+              {assetList.length === 0 ? (
+                <tr>
+                  <td colSpan={7} style={{ textAlign: 'center', padding: '36px 0', color: 'var(--color-text-muted)', fontSize: '11px' }}>
+                    No spot holdings to rebalance. Add asset positions in Portfolio Tracker first.
+                  </td>
+                </tr>
+              ) : (
+                assetList.map((asset) => {
+                  const order = suggestedOrders.find((o) => o.symbol === asset.symbol);
+                  const isOver = asset.deviationPercent > 0;
+                  const isSig = Math.abs(asset.deviationPercent) >= 2.5;
 
-                return (
-                  <tr key={asset.symbol}>
-                    <td style={{ fontWeight: 800 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span style={{ color: 'var(--color-accent-primary)', fontSize: '14px' }}>✦</span>
-                        <span style={{ color: '#fff', fontSize: '12px', fontFamily: 'var(--font-mono)' }}>{asset.symbol}</span>
-                      </div>
-                    </td>
-                    <td style={{ textAlign: 'right' }} className="value-number">
-                      ${asset.currentPriceUsd.toLocaleString()}
-                    </td>
-                    <td style={{ textAlign: 'right' }}>
-                      <DualCurrencyValue usd={asset.currentValueUsd} layout="row" size="sm" />
-                    </td>
-                    <td style={{ textAlign: 'right' }}>
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px' }}>
-                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
-                          <span className="value-number" style={{ fontWeight: 800, color: '#fff' }}>
-                            {asset.actualPercent}%
-                          </span>
-                          <span style={{ fontSize: '9px', color: 'var(--color-text-muted)' }}>
-                            / Target {asset.targetPercent}%
-                          </span>
+                  return (
+                    <tr key={asset.symbol}>
+                      <td style={{ fontWeight: 800 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <TokenIcon symbol={asset.symbol} size={20} />
+                          <span style={{ color: '#fff', fontSize: '12px', fontFamily: 'var(--font-mono)' }}>{asset.symbol}</span>
                         </div>
-                        <div style={{ width: '80px', height: '3px', backgroundColor: 'var(--color-bg-elevated)', borderRadius: '2px', overflow: 'hidden' }}>
-                          <div
-                            style={{
-                              width: `${Math.min(100, asset.actualPercent)}%`,
-                              height: '100%',
-                              backgroundColor: isSig ? (isOver ? 'var(--color-amber)' : 'var(--color-cyan)') : 'var(--color-bullish)',
-                            }}
-                          />
+                      </td>
+                      <td style={{ textAlign: 'right' }} className="value-number">
+                        ${asset.currentPriceUsd.toLocaleString()}
+                      </td>
+                      <td style={{ textAlign: 'right' }}>
+                        <DualCurrencyValue usd={asset.currentValueUsd} layout="row" size="sm" />
+                      </td>
+                      <td style={{ textAlign: 'right' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px' }}>
+                          <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+                            <span className="value-number" style={{ fontWeight: 800, color: '#fff' }}>
+                              {asset.actualPercent}%
+                            </span>
+                            <span style={{ fontSize: '9px', color: 'var(--color-text-muted)' }}>
+                              / Target {asset.targetPercent}%
+                            </span>
+                          </div>
+                          <div style={{ width: '80px', height: '3px', backgroundColor: 'var(--color-bg-elevated)', borderRadius: '2px', overflow: 'hidden' }}>
+                            <div
+                              style={{
+                                width: `${Math.min(100, asset.actualPercent)}%`,
+                                height: '100%',
+                                backgroundColor: isSig ? (isOver ? 'var(--color-amber)' : 'var(--color-cyan)') : 'var(--color-bullish)',
+                              }}
+                            />
+                          </div>
                         </div>
-                      </div>
-                    </td>
-                    <td style={{ textAlign: 'right' }}>
-                      <span
-                        className="mono"
-                        style={{
-                          fontWeight: 900,
-                          fontSize: '12px',
-                          color: isSig
-                            ? isOver
-                              ? 'var(--color-amber)'
-                              : 'var(--color-cyan)'
-                            : 'var(--color-text-secondary)',
-                        }}
-                      >
-                        {asset.deviationPercent > 0 ? '+' : ''}{asset.deviationPercent}%
-                      </span>
-                    </td>
-                    <td>
-                      {order && order.action === 'SELL' && (
-                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                          <span className="bearish-badge" style={{ fontSize: '9px', padding: '2px 6px' }}>
-                            JUAL (TRIM)
-                          </span>
-                          <span className="mono" style={{ fontSize: '11px', color: '#fff', fontWeight: 700 }}>
-                            ${order.diffUsd.toLocaleString(undefined, { maximumFractionDigits: 0 })} ({order.diffCoins.toFixed(3)} {asset.symbol})
-                          </span>
-                        </div>
-                      )}
-                      {order && order.action === 'BUY' && (
-                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                          <span className="bullish-badge" style={{ fontSize: '9px', padding: '2px 6px' }}>
-                            BELI (ADD)
-                          </span>
-                          <span className="mono" style={{ fontSize: '11px', color: '#fff', fontWeight: 700 }}>
-                            ${order.diffUsd.toLocaleString(undefined, { maximumFractionDigits: 0 })} ({order.diffCoins.toFixed(3)} {asset.symbol})
-                          </span>
-                        </div>
-                      )}
-                      {order && order.action === 'HOLD' && (
-                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                          <span className="neutral-badge" style={{ fontSize: '9px', padding: '2px 6px' }}>
-                            TAHANKAN (HOLD)
-                          </span>
-                          <span style={{ fontSize: '10px', color: 'var(--color-text-muted)' }}>
-                            Dalam rentang target aman
-                          </span>
-                        </div>
-                      )}
-                    </td>
-                    <td style={{ textAlign: 'center' }}>
-                      <button
-                        onClick={() => navigate('/calculator', {
-                          state: {
-                            ticker: `${asset.symbol}USDT`,
-                            direction: order?.action === 'SELL' ? 'SHORT' : 'LONG',
-                            entryPrice: asset.currentPriceUsd,
-                          },
-                        })}
-                        className="btn btn-secondary"
-                        style={{ height: '28px', fontSize: '10px', padding: '0 8px' }}
-                        title="Bawa parameter ke Position Sizer"
-                      >
-                        <Calculator size={12} />
-                        <span>Hitung Lot</span>
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
+                      </td>
+                      <td style={{ textAlign: 'right' }}>
+                        <span
+                          className="mono"
+                          style={{
+                            fontWeight: 900,
+                            fontSize: '12px',
+                            color: isSig
+                              ? isOver
+                                ? 'var(--color-amber)'
+                                : 'var(--color-cyan)'
+                              : 'var(--color-text-secondary)',
+                          }}
+                        >
+                          {asset.deviationPercent > 0 ? '+' : ''}{asset.deviationPercent}%
+                        </span>
+                      </td>
+                      <td>
+                        {order && order.action === 'SELL' && (
+                          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                            <span className="bearish-badge" style={{ fontSize: '9px', padding: '2px 6px' }}>
+                              TRIM (SELL)
+                            </span>
+                            <span className="mono" style={{ fontSize: '11px', color: '#fff', fontWeight: 700 }}>
+                              ${order.diffUsd.toLocaleString(undefined, { maximumFractionDigits: 0 })} ({order.diffCoins.toFixed(3)} {asset.symbol})
+                            </span>
+                          </div>
+                        )}
+                        {order && order.action === 'BUY' && (
+                          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                            <span className="bullish-badge" style={{ fontSize: '9px', padding: '2px 6px' }}>
+                              ACCUMULATE (BUY)
+                            </span>
+                            <span className="mono" style={{ fontSize: '11px', color: '#fff', fontWeight: 700 }}>
+                              ${order.diffUsd.toLocaleString(undefined, { maximumFractionDigits: 0 })} ({order.diffCoins.toFixed(3)} {asset.symbol})
+                            </span>
+                          </div>
+                        )}
+                        {order && order.action === 'HOLD' && (
+                          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                            <span className="neutral-badge" style={{ fontSize: '9px', padding: '2px 6px' }}>
+                              HOLD (BALANCED)
+                            </span>
+                            <span style={{ fontSize: '10px', color: 'var(--color-text-muted)' }}>
+                              Within safe target range
+                            </span>
+                          </div>
+                        )}
+                      </td>
+                      <td style={{ textAlign: 'center' }}>
+                        <button
+                          onClick={() => navigate('/calculator', {
+                            state: {
+                              ticker: `${asset.symbol}USDT`,
+                              direction: order?.action === 'SELL' ? 'SHORT' : 'LONG',
+                              entryPrice: asset.currentPriceUsd,
+                            },
+                          })}
+                          className="btn btn-secondary"
+                          style={{ height: '28px', fontSize: '10px', padding: '0 8px' }}
+                          title="Export parameters to Position Sizer"
+                        >
+                          <Calculator size={12} />
+                          <span>Size Position</span>
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>

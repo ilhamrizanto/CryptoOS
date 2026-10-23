@@ -36,8 +36,46 @@ export interface MarketIntelResponse {
     cpiYoy: {
       value: number;
       previous?: number;
+      change?: number;
       expectation?: number;
       status?: string;
+      source?: string;
+      seriesId?: string;
+      releaseDate?: string;
+      updatedAt: number;
+      isLive: boolean;
+    };
+    coreCpi?: {
+      value: number;
+      previous?: number;
+      change?: number;
+      status?: string;
+      source?: string;
+      seriesId?: string;
+      releaseDate?: string;
+      updatedAt: number;
+      isLive: boolean;
+    };
+    pceYoy?: {
+      value: number;
+      previous?: number;
+      change?: number;
+      status?: string;
+      source?: string;
+      seriesId?: string;
+      releaseDate?: string;
+      updatedAt: number;
+      isLive: boolean;
+    };
+    corePce?: {
+      value: number;
+      previous?: number;
+      change?: number;
+      target?: number;
+      status?: string;
+      source?: string;
+      seriesId?: string;
+      releaseDate?: string;
       updatedAt: number;
       isLive: boolean;
     };
@@ -49,14 +87,35 @@ export interface MarketIntelResponse {
       updatedAt: number;
       isLive: boolean;
     };
+    fomcCalendar?: Array<{
+      date: string;
+      daysRemaining: number;
+      targetRate: string;
+      pauseProb: number;
+      hikeProb: number;
+      cutProb: number;
+      bias: string;
+    }>;
     macroRegime?: string;
+    regimeExplanation?: string;
   };
   fedwatch: {
+    meetingDate?: string;
+    targetRate?: string;
     easeProb: number;
     noChangeProb: number;
     hikeProb: number;
+    nextMeetingForward?: {
+      date: string;
+      daysRemaining: number;
+      targetRate: string;
+      hikeProb: number;
+      noChangeProb: number;
+      easeProb: number;
+    };
     manuallyUpdatedAt: number | null;
     notes?: string;
+    source?: string;
     cmeFedwatchUrl: string;
   };
   sentiment: {
@@ -109,13 +168,13 @@ export interface FedWatchUpdateInput {
 
 export function useMarketData() {
   const queryClient = useQueryClient();
-  const { setUsdToIdrRate } = useSettingsStore();
+  const { setUsdToIdrRate, syncIntervalMs } = useSettingsStore();
 
   const query = useQuery<MarketIntelResponse>({
     queryKey: ['market', 'intel'],
     queryFn: () => api.get<MarketIntelResponse>('/market/intel'),
-    refetchInterval: 300_000, // 5 minutes polling
-    staleTime: 60_000,
+    refetchInterval: syncIntervalMs || 300_000, // Dynamic polling based on user setting
+    staleTime: Math.min(60_000, (syncIntervalMs || 300_000) / 2),
   });
 
   // Automatically synchronize USD/IDR rate to global settings store

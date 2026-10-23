@@ -161,7 +161,7 @@ export const Topbar: React.FC = () => {
                 borderColor: isTokyoOpen ? 'rgba(16, 185, 129, 0.35)' : 'rgba(255, 255, 255, 0.05)',
                 boxSizing: 'border-box',
               }}
-              title="Tokyo Session: 00:00 - 09:00 UTC (07:00 - 16:00 WIB)"
+              title="Tokyo Session: 00:00 - 09:00 UTC"
             >
               <span
                 style={{
@@ -199,7 +199,7 @@ export const Topbar: React.FC = () => {
                 borderColor: isLondonOpen ? 'rgba(16, 185, 129, 0.35)' : 'rgba(255, 255, 255, 0.05)',
                 boxSizing: 'border-box',
               }}
-              title="London Session: 08:00 - 16:00 UTC (15:00 - 23:00 WIB)"
+              title="London Session: 08:00 - 16:00 UTC"
             >
               <span
                 style={{
@@ -237,7 +237,7 @@ export const Topbar: React.FC = () => {
                 borderColor: isNewYorkOpen ? 'rgba(16, 185, 129, 0.35)' : 'rgba(255, 255, 255, 0.05)',
                 boxSizing: 'border-box',
               }}
-              title="New York Session: 13:00 - 21:00 UTC (20:00 - 04:00 WIB)"
+              title="New York Session: 13:00 - 21:00 UTC"
             >
               <span
                 style={{
@@ -272,7 +272,7 @@ export const Topbar: React.FC = () => {
                   display: 'inline-flex',
                   alignItems: 'center',
                 }}
-                title="London + New York overlap: Periode likuiditas pasar tertinggi"
+                title="London + New York overlap: Peak market liquidity window"
               >
                 OVERLAP
               </span>
@@ -316,7 +316,7 @@ export const Topbar: React.FC = () => {
           {/* Local User Device Clock Slot (Dynamically named UTC+9, UTC+7, etc.) */}
           <div
             style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
-            title={`Waktu Lokal Perangkat: ${localTimezoneLabel} (${detectedTimezoneName})`}
+            title={`Device Local Time: ${localTimezoneLabel} (${detectedTimezoneName})`}
           >
             <span
               style={{
@@ -424,7 +424,7 @@ export const Topbar: React.FC = () => {
               logout();
               navigate('/login');
             }}
-            title="Keluar dari CryptoOS Terminal"
+            title="Log out from CryptoOS Terminal"
             style={{
               width: '32px',
               height: '32px',

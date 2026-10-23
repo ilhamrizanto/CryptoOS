@@ -49,3 +49,18 @@ export function formatCompactUsd(val?: number | null): string {
   }
   return formatUsd(val, 2);
 }
+
+export function formatCompactIdr(val?: number | null): string {
+  if (val === undefined || val === null || isNaN(val)) return 'Rp 0';
+  if (Math.abs(val) >= 1_000_000_000_000) {
+    return `Rp ${(val / 1_000_000_000_000).toFixed(2)} T`;
+  }
+  if (Math.abs(val) >= 1_000_000_000) {
+    return `Rp ${(val / 1_000_000_000).toFixed(2)} M`;
+  }
+  if (Math.abs(val) >= 1_000_000) {
+    return `Rp ${(val / 1_000_000).toFixed(1)} Jt`;
+  }
+  return formatIdr(val);
+}
+

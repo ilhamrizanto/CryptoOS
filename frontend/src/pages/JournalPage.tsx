@@ -47,7 +47,7 @@ export const JournalPage: React.FC = () => {
   const [newPositionSize, setNewPositionSize] = useState<number>(0.5);
   const [newStopLoss, setNewStopLoss] = useState<number>(92000);
   const [newTakeProfit, setNewTakeProfit] = useState<number>(104000);
-  const [newPsychology, setNewPsychology] = useState<string>('TENANG');
+  const [newPsychology, setNewPsychology] = useState<string>('CALM');
   const [newNotes, setNewNotes] = useState<string>('');
   const [isSubmittingNew, setIsSubmittingNew] = useState(false);
 
@@ -55,7 +55,7 @@ export const JournalPage: React.FC = () => {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [activeScreenshots, setActiveScreenshots] = useState<Array<{ id: string; url: string; caption?: string }>>([]);
 
-  const showToast = (msg: string) => {
+  const showToast = (msg: string, _type?: string) => {
     setNotification(msg);
     setTimeout(() => setNotification(null), 3500);
   };
@@ -109,12 +109,12 @@ export const JournalPage: React.FC = () => {
         usdToIdrRate,
       });
 
-      showToast(`Posisi ${closingEntry.symbol} berhasil ditutup & PnL direalisasikan!`);
+      showToast(`Position ${closingEntry.symbol} closed & PnL realized!`);
       setClosingEntry(null);
       await loadJournalData();
     } catch (err) {
       console.error('Failed to close entry:', err);
-      showToast('Gagal menutup transaksi di jurnal');
+      showToast('Failed to close transaction in journal', 'error');
     } finally {
       setIsSubmittingClose(false);
     }
@@ -134,12 +134,12 @@ export const JournalPage: React.FC = () => {
         psychologicalState: `[${newPsychology}] ${newNotes}`,
       });
 
-      showToast(`Posisi baru ${newSymbol} berhasil ditambahkan ke Jurnal!`);
+      showToast(`New position ${newSymbol} added to Journal!`);
       setShowNewModal(false);
       await loadJournalData();
     } catch (err) {
       console.error('Failed to create journal entry:', err);
-      showToast('Gagal menambahkan posisi ke jurnal');
+      showToast('Failed to add position to journal', 'error');
     } finally {
       setIsSubmittingNew(false);
     }
@@ -147,10 +147,10 @@ export const JournalPage: React.FC = () => {
 
   // Delete Entry
   const handleDeleteEntry = async (id: string) => {
-    if (!window.confirm('Yakin ingin menghapus catatan trade ini dari jurnal?')) return;
+    if (!window.confirm('Are you sure you want to delete this trade entry from the journal?')) return;
     try {
       await api.delete(`/journal/${id}`);
-      showToast('Catatan trade dihapus');
+      showToast('Trade entry deleted');
       await loadJournalData();
     } catch (err) {
       console.error('Failed to delete trade:', err);
@@ -168,7 +168,7 @@ export const JournalPage: React.FC = () => {
         setActiveScreenshots(items);
         setPreviewImage(items[0].url);
       } else {
-        showToast('Tidak ada screenshot bukti chart untuk setup ini');
+        showToast('No chart screenshot proof recorded for this setup');
       }
     } catch (err) {
       console.error('Error fetching screenshots from IndexedDB:', err);
@@ -187,19 +187,19 @@ export const JournalPage: React.FC = () => {
     : 0;
 
   // Key Analytics Metric Values
-  const winRate = analytics?.totalTrades > 0 ? analytics.winRate : 85;
-  const winCount = analytics?.totalTrades > 0 ? analytics.winCount : 17;
-  const lossCount = analytics?.totalTrades > 0 ? analytics.lossCount : 2;
   const totalTrades = analytics?.totalTrades > 0 ? analytics.totalTrades : closedEntries.length;
-  const profitFactor = analytics?.totalTrades > 0 ? analytics.profitFactor : 2.85;
+  const winRate = totalTrades > 0 ? (analytics?.winRate ?? 0) : 0;
+  const winCount = totalTrades > 0 ? (analytics?.winCount ?? 0) : 0;
+  const lossCount = totalTrades > 0 ? (analytics?.lossCount ?? 0) : 0;
+  const profitFactor = totalTrades > 0 ? (analytics?.profitFactor ?? 0) : 0;
   const totalPnlUsd = analytics?.totalPnlUsd || 0;
   const totalPnlIdr = analytics?.totalPnlIdr || (totalPnlUsd * (usdToIdrRate || 16300));
-  const avgRMultiple = analytics?.averageRMultiple ?? 3.38;
+  const avgRMultiple = totalTrades > 0 ? (analytics?.averageRMultiple ?? 0) : 0;
 
   // Render SVG Sparkline for Equity Curve
   const equityPoints = analytics?.equityCurve && analytics.equityCurve.length > 1
     ? analytics.equityCurve.map((c: any) => c.cumulativePnlUsd)
-    : [0, 850, 600, 1400, 2200, 1900, 2800, 3600, 4200];
+    : [0, 0];
 
   const minEquity = Math.min(...equityPoints);
   const maxEquity = Math.max(...equityPoints);
@@ -261,7 +261,7 @@ export const JournalPage: React.FC = () => {
               }}
             >
               <X size={16} />
-              <span>Tutup Preview</span>
+              <span>Close Preview</span>
             </button>
             <img
               src={previewImage}
@@ -335,10 +335,10 @@ export const JournalPage: React.FC = () => {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
                 <span style={{ fontSize: '10px', color: 'var(--color-accent-primary)', fontWeight: 800, letterSpacing: '0.04em' }}>
-                  REKONSILIASI EKSEKUSI
+                  EXECUTION RECONCILIATION
                 </span>
                 <h2 style={{ fontSize: '16px', fontWeight: 900, color: '#fff', margin: '2px 0 0' }}>
-                  Tutup Posisi: {closingEntry.symbol} ({closingEntry.direction})
+                  Close Position: {closingEntry.symbol} ({closingEntry.direction})
                 </h2>
               </div>
               <button
@@ -363,7 +363,7 @@ export const JournalPage: React.FC = () => {
             {/* Exit Price Input */}
             <div>
               <label style={{ fontSize: '11px', color: 'var(--color-text-muted)', display: 'block', marginBottom: '4px', fontWeight: 700 }}>
-                HARGA EXIT / CLOSING ($)
+                EXIT / CLOSING PRICE ($)
               </label>
               <input
                 type="number"
@@ -388,7 +388,7 @@ export const JournalPage: React.FC = () => {
               }}
             >
               <div>
-                <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', display: 'block' }}>ESTIMASI REALIZED PNL</span>
+                <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', display: 'block' }}>ESTIMATED REALIZED P&L</span>
                 <div style={{ marginTop: '2px' }}>
                   <DualCurrencyValue usd={previewPnlUsd} size="md" sentiment={previewPnlUsd >= 0 ? 'bullish' : 'bearish'} layout="row" />
                 </div>
@@ -408,7 +408,7 @@ export const JournalPage: React.FC = () => {
             {/* Exit Reason */}
             <div>
               <label style={{ fontSize: '11px', color: 'var(--color-text-muted)', display: 'block', marginBottom: '4px', fontWeight: 700 }}>
-                ALASAN PENUTUPAN POSISI
+                EXIT REASON & RATIONALE
               </label>
               <select
                 value={exitReason}
@@ -416,32 +416,32 @@ export const JournalPage: React.FC = () => {
                 className="form-input"
                 style={{ height: '36px', fontSize: '12px' }}
               >
-                <option value="TP_HIT">Target Profit Tercapai (TP Hit)</option>
-                <option value="SL_HIT">Stop Loss Terkena (SL Hit)</option>
-                <option value="TRAILING_SL">Trailing Stop Terpicu</option>
+                <option value="TP_HIT">Take Profit Target Reached (TP Hit)</option>
+                <option value="SL_HIT">Stop Loss Triggered (SL Hit)</option>
+                <option value="TRAILING_SL">Trailing Stop Triggered</option>
                 <option value="MANUAL_EXIT">Manual Discretionary Exit</option>
-                <option value="TIME_STOP">Invalidasi Waktu / Reversal Signal</option>
+                <option value="TIME_STOP">Time Invalidation / Reversal Signal</option>
               </select>
             </div>
 
             {/* Lessons Learned */}
             <div>
               <label style={{ fontSize: '11px', color: 'var(--color-text-muted)', display: 'block', marginBottom: '4px', fontWeight: 700 }}>
-                CATATAN EVALUASI & LESSONS LEARNED
+                EVALUATION & LESSONS LEARNED
               </label>
               <textarea
                 className="form-textarea"
                 rows={2}
                 value={lessonsLearned}
                 onChange={(e) => setLessonsLearned(e.target.value)}
-                placeholder="Apa yang dieksekusi dengan baik? Adakah emosi/kesalahan teknikal?..."
+                placeholder="What was executed well? Any emotional bias or technical deviation?..."
                 style={{ fontSize: '11px' }}
               />
             </div>
 
             <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '6px' }}>
               <button className="btn btn-secondary" onClick={() => setClosingEntry(null)} style={{ height: '34px', fontSize: '12px' }}>
-                Batal
+                Cancel
               </button>
               <button
                 className="btn btn-primary"
@@ -449,7 +449,7 @@ export const JournalPage: React.FC = () => {
                 disabled={isSubmittingClose}
                 style={{ height: '34px', fontSize: '12px', fontWeight: 800 }}
               >
-                {isSubmittingClose ? 'Menutup...' : 'Konfirmasi Realisasi PnL'}
+                {isSubmittingClose ? 'Closing...' : 'Confirm Realized P&L'}
               </button>
             </div>
           </div>
@@ -489,10 +489,10 @@ export const JournalPage: React.FC = () => {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
                 <span style={{ fontSize: '10px', color: 'var(--color-accent-primary)', fontWeight: 800, letterSpacing: '0.04em' }}>
-                  CATATAN EKSEKUSI
+                  EXECUTION LOG ENTRY
                 </span>
                 <h2 style={{ fontSize: '16px', fontWeight: 900, color: '#fff', margin: '2px 0 0' }}>
-                  Entri Jurnal Trading Baru
+                  New Trade Journal Entry
                 </h2>
               </div>
               <button
@@ -593,7 +593,7 @@ export const JournalPage: React.FC = () => {
 
             <div>
               <label style={{ fontSize: '10px', color: 'var(--color-text-muted)', display: 'block', marginBottom: '4px', fontWeight: 700 }}>
-                KONDISI PSIKOLOGI / EMOSI ENTRY
+                ENTRY EMOTION & PSYCHOLOGY
               </label>
               <select
                 value={newPsychology}
@@ -601,31 +601,31 @@ export const JournalPage: React.FC = () => {
                 className="form-input"
                 style={{ height: '34px', fontSize: '12px' }}
               >
-                <option value="TENANG">😌 Tenang & Mengikuti Rencana Trading</option>
-                <option value="FOMO">⚡ Takut Ketinggalan Gerakan (FOMO)</option>
-                <option value="BALAS_DENDAM">🔥 Revenge Trading (Ingin Cepat Balik Modal)</option>
-                <option value="RAGU">🤔 Ragu-ragu / Kurang Percaya Diri</option>
-                <option value="TERLALU_PD">🚀 Terlalu Percaya Diri (Overconfident)</option>
+                <option value="CALM">😌 Calm & Following Trading Plan</option>
+                <option value="FOMO">⚡ Fear of Missing Out (FOMO)</option>
+                <option value="REVENGE">🔥 Revenge Trading (Seeking Quick Recovery)</option>
+                <option value="HESITANT">🤔 Hesitant / Low Conviction</option>
+                <option value="OVERCONFIDENT">🚀 Overconfident / Aggressive</option>
               </select>
             </div>
 
             <div>
               <label style={{ fontSize: '10px', color: 'var(--color-text-muted)', display: 'block', marginBottom: '4px', fontWeight: 700 }}>
-                CATATAN SETUP
+                SETUP NOTES
               </label>
               <textarea
                 className="form-textarea"
                 rows={2}
                 value={newNotes}
                 onChange={(e) => setNewNotes(e.target.value)}
-                placeholder="Alasan teknikal & dasar pembukaan posisi..."
+                placeholder="Technical rationale & basis for position entry..."
                 style={{ fontSize: '11px' }}
               />
             </div>
 
             <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '4px' }}>
               <button className="btn btn-secondary" onClick={() => setShowNewModal(false)} style={{ height: '34px', fontSize: '12px' }}>
-                Batal
+                Cancel
               </button>
               <button
                 className="btn btn-primary"
@@ -633,7 +633,7 @@ export const JournalPage: React.FC = () => {
                 disabled={isSubmittingNew}
                 style={{ height: '34px', fontSize: '12px', fontWeight: 800 }}
               >
-                {isSubmittingNew ? 'Menyimpan...' : 'Simpan ke Jurnal'}
+                {isSubmittingNew ? 'Saving...' : 'Save to Journal'}
               </button>
             </div>
           </div>
@@ -656,7 +656,7 @@ export const JournalPage: React.FC = () => {
             Trading Journal & Psychology
           </h1>
           <p style={{ color: 'var(--color-text-secondary)', fontSize: '12px', margin: '4px 0 0' }}>
-            Audit posisi aktif, realisasi PnL portofolio, metrik win rate & profit factor, serta catatan psikologi emosi trading.
+            Audit open positions, track realized portfolio P&L, monitor win rate & profit factor, and record trading psychology.
           </p>
         </div>
 
@@ -675,7 +675,7 @@ export const JournalPage: React.FC = () => {
             style={{ height: '34px', fontSize: '12px', padding: '0 14px' }}
           >
             <Plus size={14} />
-            <span>Catat Trade Manual</span>
+            <span>Log Manual Trade</span>
           </button>
         </div>
       </div>
@@ -696,13 +696,13 @@ export const JournalPage: React.FC = () => {
         <div className="cardless-cell" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', fontWeight: 700, letterSpacing: '0.04em' }}>
-              REALIZED NET PNL
+              REALIZED NET P&L
             </span>
             <span
               className={totalPnlUsd >= 0 ? 'bullish-badge' : 'bearish-badge'}
               style={{ fontSize: '9px', padding: '1px 5px' }}
             >
-              {totalTrades} Selesai
+              {totalTrades} Closed
             </span>
           </div>
           <div style={{ marginTop: '2px' }}>
@@ -714,7 +714,7 @@ export const JournalPage: React.FC = () => {
             />
           </div>
           <span style={{ fontSize: '10px', color: 'var(--color-text-secondary)', marginTop: '2px' }}>
-            Total keuntungan bersih terealisasi
+            Total cumulative realized net profit
           </span>
         </div>
 
@@ -745,20 +745,20 @@ export const JournalPage: React.FC = () => {
         <div className="cardless-cell" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', fontWeight: 700, letterSpacing: '0.04em' }}>
-              RATA-RATA R-MULTIPLE
+              AVERAGE R-MULTIPLE
             </span>
             <Target size={13} color="var(--color-accent-primary)" />
           </div>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginTop: '2px' }}>
             <span className="value-number bullish-text" style={{ fontSize: '24px', fontWeight: 900 }}>
-              +{avgRMultiple} R
+              {totalTrades > 0 ? `+${avgRMultiple} R` : '0.00 R'}
             </span>
             <span className="value-number" style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>
-              +$1,420 / trade
+              {analytics?.expectancyUsd !== undefined && totalTrades > 0 ? `${analytics.expectancyUsd >= 0 ? '+' : ''}$${analytics.expectancyUsd.toFixed(0)} / trade` : '$0 / trade'}
             </span>
           </div>
           <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', marginTop: '4px' }}>
-            Ekspektansi matematika positif jangka panjang
+            {totalTrades > 0 ? 'Positive mathematical expectancy over time' : 'Awaiting closed trade evaluations'}
           </span>
         </div>
 
@@ -783,7 +783,7 @@ export const JournalPage: React.FC = () => {
             </svg>
           </div>
           <span style={{ fontSize: '10px', color: 'var(--color-text-secondary)' }}>
-            Tren pertumbuhan modal kumulatif
+            Cumulative equity trajectory
           </span>
         </div>
       </div>
@@ -817,7 +817,7 @@ export const JournalPage: React.FC = () => {
               transition: 'background-color var(--transition-fast), color var(--transition-fast)',
             }}
           >
-            POSISI TERBUKA ({openEntries.length})
+            OPEN POSITIONS ({openEntries.length})
           </button>
           <button
             type="button"
@@ -834,7 +834,7 @@ export const JournalPage: React.FC = () => {
               transition: 'background-color var(--transition-fast), color var(--transition-fast)',
             }}
           >
-            RIWAYAT SELESAI ({closedEntries.length})
+            CLOSED HISTORY ({closedEntries.length})
           </button>
           <button
             type="button"
@@ -851,7 +851,7 @@ export const JournalPage: React.FC = () => {
               transition: 'background-color var(--transition-fast), color var(--transition-fast)',
             }}
           >
-            SEMUA ({entries.length})
+            ALL ({entries.length})
           </button>
         </div>
 
@@ -863,7 +863,7 @@ export const JournalPage: React.FC = () => {
               type="text"
               value={searchFilter}
               onChange={(e) => setSearchFilter(e.target.value)}
-              placeholder="Cari simbol (e.g. BTC)..."
+              placeholder="Search symbol (e.g. BTC)..."
               className="form-input mono"
               style={{ width: '180px', height: '32px', fontSize: '11px', paddingLeft: '30px' }}
             />
@@ -877,7 +877,7 @@ export const JournalPage: React.FC = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <Layers size={13} color="var(--color-bullish)" />
             <span style={{ fontSize: '11px', color: 'var(--color-bullish)', fontWeight: 800, letterSpacing: '0.04em' }}>
-              POSISI AKTIF BERJALAN ({openEntries.length})
+              ACTIVE RUNNING POSITIONS ({openEntries.length})
             </span>
           </div>
 
@@ -952,7 +952,7 @@ export const JournalPage: React.FC = () => {
                         </span>
                       </div>
                       <div style={{ fontSize: '10px', color: 'var(--color-text-muted)', marginTop: '2px' }}>
-                        Dibuka: {new Date(trade.openedAt).toLocaleDateString()} {new Date(trade.openedAt).toLocaleTimeString()}
+                        Opened: {new Date(trade.openedAt).toLocaleDateString()} {new Date(trade.openedAt).toLocaleTimeString()}
                       </div>
                     </div>
                   </div>
@@ -989,7 +989,7 @@ export const JournalPage: React.FC = () => {
                       <button
                         className="btn btn-secondary"
                         onClick={() => handleViewScreenshots(trade)}
-                        title="Lihat Bukti Chart On-Chain di IndexedDB"
+                        title="View On-Chain Evidence Chart in IndexedDB"
                         style={{ height: '32px', padding: '0 8px' }}
                       >
                         <ImageIcon size={14} />
@@ -1001,12 +1001,12 @@ export const JournalPage: React.FC = () => {
                       style={{ height: '32px', fontSize: '11px', fontWeight: 800, padding: '0 12px' }}
                     >
                       <CheckCircle size={13} />
-                      <span>Tutup Posisi</span>
+                      <span>Close Position</span>
                     </button>
                     <button
                       className="btn btn-secondary"
                       onClick={() => handleDeleteEntry(trade.id)}
-                      title="Hapus"
+                      title="Delete"
                       style={{ height: '32px', padding: '0 8px', color: 'var(--color-bearish)' }}
                     >
                       <Trash2 size={13} />
@@ -1023,18 +1023,18 @@ export const JournalPage: React.FC = () => {
       {activeTab === 'OPEN' && openEntries.length === 0 && (
         <div className="card-panel" style={{ textAlign: 'center', padding: '48px 24px', background: 'var(--color-bg-surface)' }}>
           <Layers size={36} color="var(--color-text-muted)" style={{ margin: '0 auto 12px' }} />
-          <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#fff' }}>Belum Ada Posisi Terbuka</h3>
+          <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#fff' }}>No Open Positions</h3>
           <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', maxWidth: '420px', margin: '4px auto 16px' }}>
-            Kirim setup yang sudah matang dari Pipeline Incubator atau klik tombol di bawah untuk mencatat posisi baru secara manual.
+            Dispatch mature setups from Pipeline Incubator or click below to log a new position manually.
           </p>
           <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
             <button className="btn btn-secondary" onClick={() => navigate('/pipeline')} style={{ height: '34px', fontSize: '12px' }}>
               <Compass size={14} />
-              <span>Buka Pipeline Incubator</span>
+              <span>Open Pipeline Incubator</span>
             </button>
             <button className="btn btn-primary" onClick={() => setShowNewModal(true)} style={{ height: '34px', fontSize: '12px' }}>
               <Plus size={14} />
-              <span>Catat Posisi Manual</span>
+              <span>Log Manual Position</span>
             </button>
           </div>
         </div>
@@ -1047,7 +1047,7 @@ export const JournalPage: React.FC = () => {
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '10px' }}>
               <CheckCircle size={13} color="var(--color-accent-primary)" />
               <span style={{ fontSize: '11px', color: 'var(--color-accent-primary)', fontWeight: 800, letterSpacing: '0.04em' }}>
-                RIWAYAT TRANSAKSI SELESAI ({closedEntries.length})
+                CLOSED TRANSACTION HISTORY ({closedEntries.length})
               </span>
             </div>
           )}
@@ -1055,9 +1055,9 @@ export const JournalPage: React.FC = () => {
           {closedEntries.length === 0 ? (
             <div className="card-panel" style={{ textAlign: 'center', padding: '48px 24px', background: 'var(--color-bg-surface)' }}>
               <BookOpen size={36} color="var(--color-text-muted)" style={{ margin: '0 auto 12px' }} />
-              <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#fff' }}>Belum Ada Riwayat Trade Selesai</h3>
+              <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#fff' }}>No Closed Trades History</h3>
               <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', margin: '4px 0 0' }}>
-                Posisi yang Anda tutup akan otomatis tercatat di sini lengkap dengan audit R-Multiple dan PnL terealisasi.
+                Positions you close are automatically recorded here with quantitative R-Multiple metrics and realized P&L audit.
               </p>
             </div>
           ) : (
@@ -1065,12 +1065,12 @@ export const JournalPage: React.FC = () => {
               <table className="cardless-table" style={{ fontSize: '11px' }}>
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--color-border)', backgroundColor: 'var(--color-bg-subtle)' }}>
-                    <th style={{ padding: '10px 14px', textAlign: 'left', color: 'var(--color-text-muted)', fontSize: '10px', fontWeight: 700 }}>SYMBOL & ARAH</th>
+                    <th style={{ padding: '10px 14px', textAlign: 'left', color: 'var(--color-text-muted)', fontSize: '10px', fontWeight: 700 }}>SYMBOL & DIRECTION</th>
                     <th style={{ padding: '10px 14px', textAlign: 'right', color: 'var(--color-text-muted)', fontSize: '10px', fontWeight: 700 }}>ENTRY & EXIT</th>
                     <th style={{ padding: '10px 14px', textAlign: 'right', color: 'var(--color-text-muted)', fontSize: '10px', fontWeight: 700 }}>R-MULTIPLE</th>
-                    <th style={{ padding: '10px 14px', textAlign: 'right', color: 'var(--color-text-muted)', fontSize: '10px', fontWeight: 700 }}>REALIZED PNL</th>
-                    <th style={{ padding: '10px 14px', textAlign: 'left', color: 'var(--color-text-muted)', fontSize: '10px', fontWeight: 700 }}>PSIKOLOGI & EVALUASI</th>
-                    <th style={{ padding: '10px 14px', textAlign: 'center', color: 'var(--color-text-muted)', fontSize: '10px', fontWeight: 700 }}>AKSI</th>
+                    <th style={{ padding: '10px 14px', textAlign: 'right', color: 'var(--color-text-muted)', fontSize: '10px', fontWeight: 700 }}>REALIZED P&L</th>
+                    <th style={{ padding: '10px 14px', textAlign: 'left', color: 'var(--color-text-muted)', fontSize: '10px', fontWeight: 700 }}>PSYCHOLOGY & EVALUATION</th>
+                    <th style={{ padding: '10px 14px', textAlign: 'center', color: 'var(--color-text-muted)', fontSize: '10px', fontWeight: 700 }}>ACTIONS</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1141,7 +1141,7 @@ export const JournalPage: React.FC = () => {
                               <button
                                 onClick={() => handleViewScreenshots(trade)}
                                 style={{ background: 'none', border: 'none', color: 'var(--color-accent-primary)', cursor: 'pointer', padding: '2px' }}
-                                title="Lihat Bukti Chart On-Chain"
+                                title="View Chart Evidence"
                               >
                                 <ImageIcon size={13} />
                               </button>
@@ -1149,7 +1149,7 @@ export const JournalPage: React.FC = () => {
                             <button
                               onClick={() => handleDeleteEntry(trade.id)}
                               style={{ background: 'none', border: 'none', color: 'var(--color-bearish)', cursor: 'pointer', padding: '2px' }}
-                              title="Hapus"
+                              title="Delete"
                             >
                               <Trash2 size={13} />
                             </button>
