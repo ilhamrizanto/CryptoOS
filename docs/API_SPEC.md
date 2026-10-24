@@ -512,58 +512,144 @@ Summary kalkulasi arus kas.
 
 ---
 
-## 8. Settings
+## 8. Settings, Disaster Recovery & Webhook Dispatchers
 
-### GET /api/settings
-Ambil semua settings.
+### GET /api/settings/backup/export
+Mengekspor seluruh rekaman database terisolasi milik user yang terotentikasi (`trade_ideas`, `journal_entries`, `portfolio_holdings`, `cashflow_ledger`) sebagai arsip snapshot JSON portabel master.
+
+**Response (200):**
+```json
+{
+  "version": "2.0.0",
+  "exportTimestamp": "2026-10-24T04:28:19.000Z",
+  "userId": "usr_99182a",
+  "records": {
+    "tradeIdeas": [ ... ],
+    "journalEntries": [ ... ],
+    "portfolioHoldings": [ ... ],
+    "cashflowLedger": [ ... ]
+  }
+}
+```
+
+---
+
+### POST /api/settings/backup/import
+Memulihkan (*restore*) database akun dari file snapshot JSON master secara atomik dengan proteksi transaksi.
+
+**Request Body:**
+```json
+{
+  "backup": {
+    "version": "2.0.0",
+    "exportTimestamp": "2026-10-24T04:28:19.000Z",
+    "records": {
+      "tradeIdeas": [ ... ],
+      "journalEntries": [ ... ],
+      "portfolioHoldings": [ ... ],
+      "cashflowLedger": [ ... ]
+    }
+  },
+  "mode": "merge" // Opsi: "merge" (append rekaman baru) atau "overwrite" (wipe & replace)
+}
+```
 
 **Response (200):**
 ```json
 {
   "success": true,
-  "data": {
-    "defaultRiskPercent": 1.0,
-    "maxTotalExposurePercent": 5.0,
-    "rebalancingCycleDays": 60,
-    "timezone": "Asia/Jakarta",
-    "exchanges": [
-      { "name": "Binance", "configured": true },
-      { "name": "Bybit", "configured": false },
-      { "name": "OKX", "configured": false }
-    ]
+  "counts": {
+    "total": 45,
+    "journalEntries": 18,
+    "portfolioHoldings": 12,
+    "cashflowLedger": 9,
+    "tradeIdeas": 6
   }
 }
 ```
 
-### PATCH /api/settings
-Update settings (partial).
+---
 
-### POST /api/settings/exchange
-Simpan API Key exchange (hanya mengupdate .env runtime, atau simpan terenkripsi di DB).
+### POST /api/settings/webhook/telegram
+Mengirim pesan tes ping ke bot Telegram terkonfigurasi.
 
 **Request Body:**
 ```json
 {
-  "exchange": "Binance",
-  "apiKey": "string",
-  "apiSecret": "string"
+  "botToken": "7182910382:AAH9f28_x9...",
+  "chatId": "109283741",
+  "testMessage": "🔔 [CryptoOS Test Ping] Terminal notification bridge active."
 }
 ```
 
-### POST /api/settings/exchange/:name/test
-Test koneksi ke exchange.
-
 **Response (200):**
 ```json
-{ "success": true, "data": { "connected": true, "accountType": "SPOT", "message": "Terhubung ke Binance Spot" } }
+{
+  "success": true,
+  "message": "Telegram ping sent successfully"
+}
 ```
-
-### GET /api/settings/export
-Export seluruh data (ideas, journal, cashflow, settings) sebagai JSON.
-
-### POST /api/settings/import
-Import data dari file JSON backup.
 
 ---
 
-*API Spec ini akan diperbarui seiring development. Seluruh endpoint dilindungi JWT kecuali /auth/login.*
+### POST /api/settings/webhook/discord
+Mengirim pesan embed tes ke webhook channel Discord terkonfigurasi.
+
+**Request Body:**
+```json
+{
+  "webhookUrl": "https://discord.com/api/webhooks/12984.../aX9...",
+  "testMessage": "🔔 [CryptoOS Sentinel] Webhook test ping dispatched."
+}
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "message": "Discord webhook embed dispatched successfully"
+}
+```
+
+---
+
+### GET /api/settings/exchanges
+Melihat status konfigurasi API Key bursa (Binance, Bybit, OKX). Hanya mengembalikan metadata status boolean tanpa membocorkan API Secret.
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": [
+    { "name": "Binance", "configured": true, "permission": "READ_ONLY" },
+    { "name": "Bybit", "configured": false, "permission": "NONE" },
+    { "name": "OKX", "configured": false, "permission": "NONE" }
+  ]
+}
+```
+
+---
+
+### POST /api/settings/exchanges/test
+Menguji konektivitas read-only ke bursa eksternal.
+
+**Request Body:**
+```json
+{
+  "exchange": "Binance"
+}
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "connected": true,
+  "message": "Binance spot read-only API connection verified."
+}
+```
+
+---
+
+*API Spec ini diperbarui untuk CryptoOS v2.0. Seluruh endpoint dilindungi header JWT Bearer Authorization kecuali /auth/login.*
+

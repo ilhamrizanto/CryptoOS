@@ -48,27 +48,28 @@
 ### Frontend
 | Layer | Technology | Alasan |
 |---|---|---|
-| Framework | React 18 + TypeScript | Component model ideal untuk dashboard kompleks |
-| Build Tool | Vite | HMR cepat, build optimal |
-| State Management | Zustand | Ringan, simple API, cocok untuk personal app |
+| Framework | React 19 + TypeScript 5.7+ | Concurrent features, modern component model ideal untuk dashboard kuantitatif |
+| Build Tool | Vite 6 | HMR instan, optimal bundle splitting |
+| State Management | Zustand | Ringan, simple API, cocok untuk personal trading workstation |
 | Server State | TanStack Query (React Query) | Caching, background refetch, stale-while-revalidate |
 | Routing | React Router v6 | SPA routing standar |
-| Styling | Vanilla CSS + CSS Variables | Full control, zero runtime overhead, dark theme native |
-| Charts | Recharts | React-native, ringan, customizable |
-| Storage (Screenshots) | idb (IndexedDB wrapper) | Simpan blob image tanpa limit 5MB |
-| Icons | Lucide React | Modern, tree-shakeable |
+| Styling | Vanilla CSS + Design Tokens | Pure Black OLED (#000000), Apple-inspired grouped insets, zero bloated runtime |
+| Charts | Recharts | React-native, performa tinggi, fully customizable |
+| Storage (Screenshots) | Dexie.js (IndexedDB wrapper) | Penyimpanan client-side blob image chart proof tanpa limit 5MB |
+| Icons | Lucide React | Modern, clean terminal iconography |
 | Date | date-fns | Lightweight, immutable |
 
 ### Backend
 | Layer | Technology | Alasan |
 |---|---|---|
-| Runtime | Node.js 20 LTS | Stable, LTS |
-| Framework | Express 4 + TypeScript | Minimal overhead, full control |
-| ORM | Drizzle ORM | Type-safe, SQL-first, migration ringan |
-| Database | SQLite | Zero-ops, single-file, perfect untuk single-user |
-| Auth | JWT (jsonwebtoken) + bcrypt | Simple, stateless |
-| Validation | Zod | Schema validation + TypeScript inference |
-| HTTP Client | Axios | Untuk proxy request ke exchange API |
+| Runtime | Node.js 26 LTS | Engine genap Active LTS terbaru dengan patch keamanan modern |
+| Framework | Express 4 + TypeScript | Minimal overhead, modular router architecture |
+| ORM | Drizzle ORM | Type-safe, SQL-first, zero overhead migrations |
+| Database | SQLite via `@libsql/client` | Zero-ops, embedded serverless client, ACID compliant dengan WAL mode |
+| Auth | JWT (jsonwebtoken) + bcryptjs | Stateless, per-user cryptographic isolation |
+| Validation | Zod | Schema validation + TypeScript static inference |
+| HTTP Client | Axios | Provider proxy untuk ECB Forex, CoinGecko, Telegram & Discord webhooks |
+| Disaster Recovery | CryptoOS Vault Snapshot Engine | Ekspor/impor snapshot JSON mandiri per user dengan mode Merge & Clean Rebuild |
 | Env | dotenv | Environment variable management |
 
 ### Infrastructure

@@ -18,13 +18,12 @@ export interface AuthSession {
 
 export class AuthService {
   private static readonly DEFAULT_HASH =
-    '$2a$10$N.QG7Vq2h9W4K6u9q/w2r.4rYqL7Wn5oB6B8R1x5f5Z8b8v0c1c2e';
+    '$2b$10$Fz7oBbbyy5VP5tMm0vs7t.95VbCeA6xRBlKIY25zpe3k1yz59Bs3S'; // bcrypt for cryptoos2026
 
   /**
    * Verify password and generate JWT session token
-   * Supports:
-   * - Master password ('cryptoos2026', 'admin') -> user-ilhamgb11 (OWNER)
-   * - Test / Demo password ('newuser', 'demo') -> user-demo-clean (USER - 0 records / empty state)
+   * - Master password hash verified via bcrypt against env.MASTER_PASSWORD_HASH -> OWNER
+   * - Test / Demo password in development only -> USER (user-demo-clean)
    */
   public async login(password: string): Promise<AuthSession> {
     if (!password) {
@@ -37,20 +36,16 @@ export class AuthService {
     try {
       isOwner = await bcrypt.compare(password, masterHash);
     } catch {
-      isOwner = password === masterHash;
-    }
-
-    if (!isOwner && (password === 'cryptoos2026' || password === 'admin')) {
-      isOwner = true;
+      isOwner = false;
     }
 
     let isDemo = false;
-    if (password === 'newuser' || password === 'demo' || password === 'demo123') {
+    if (env.NODE_ENV !== 'production' && (password === 'newuser' || password === 'demo')) {
       isDemo = true;
     }
 
     if (!isOwner && !isDemo) {
-      throw new UnauthorizedError('Invalid password. Access denied.');
+      throw new UnauthorizedError('Invalid master key password. Access denied.');
     }
 
     const payload = isOwner
@@ -83,57 +78,61 @@ export class AuthService {
   }
 
   /**
-   * Authorize user via Google Account (supports Google ID Token, Access Token, or verified email)
-   * Multi-user: Any authenticated Google user gets their own dedicated account & clean isolated workspace!
+   * Authorize user via Google Account with strict cryptographic token verification
+   * Rejects unverified payloads or unverified email spoofing
    */
   public async loginWithGoogle(
-    email?: string,
-    name?: string,
+    _email?: string,
+    _name?: string,
     idToken?: string,
     accessToken?: string
   ): Promise<AuthSession> {
-    let resolvedEmail = email;
-    let resolvedName = name;
+    if (!accessToken && !idToken) {
+      throw new UnauthorizedError('Cryptographic Google credential (access token or ID token) is required.');
+    }
 
-    // If Google accessToken is provided, query Google OAuth2 UserInfo
+    let resolvedEmail: string | undefined;
+    let resolvedName: string | undefined;
+
+    // 1. Verify via Google OAuth2 UserInfo if access token provided
     if (accessToken) {
       try {
         const userinfoRes = await axios.get('https://www.googleapis.com/oauth2/v3/userinfo', {
           headers: { Authorization: `Bearer ${accessToken}` },
-          timeout: 5000,
+          timeout: 6000,
         });
-        if (userinfoRes.data?.email) {
+        if (userinfoRes.data?.email && userinfoRes.data?.email_verified !== false) {
           resolvedEmail = userinfoRes.data.email;
-          resolvedName = userinfoRes.data.name || resolvedName;
+          resolvedName = userinfoRes.data.name;
         }
       } catch (e) {
-        console.warn('[AuthService] Failed to fetch Google userinfo from access token:', (e as Error).message);
+        console.warn('[AuthService] Google access token verification failed:', (e as Error).message);
       }
     }
 
-    // If Google ID Token is provided, verify via Google tokeninfo endpoint or decode
-    if (idToken && !resolvedEmail) {
+    // 2. Verify via Google TokenInfo if ID token provided
+    if (!resolvedEmail && idToken) {
       try {
         const tokenRes = await axios.get(`https://oauth2.googleapis.com/tokeninfo?id_token=${idToken}`, {
-          timeout: 4000,
+          timeout: 6000,
         });
-        if (tokenRes.data?.email) {
-          resolvedEmail = tokenRes.data.email;
-          resolvedName = tokenRes.data.name || resolvedName;
-        }
-      } catch {
-        try {
-          const decoded = jwt.decode(idToken) as any;
-          if (decoded && decoded.email) {
-            resolvedEmail = decoded.email;
-            resolvedName = decoded.name || resolvedName;
+        if (
+          tokenRes.data?.email &&
+          (tokenRes.data.email_verified === 'true' || tokenRes.data.email_verified === true)
+        ) {
+          if (env.GOOGLE_CLIENT_ID && tokenRes.data.aud && tokenRes.data.aud !== env.GOOGLE_CLIENT_ID) {
+            throw new UnauthorizedError('Google ID token audience mismatch');
           }
-        } catch {}
+          resolvedEmail = tokenRes.data.email;
+          resolvedName = tokenRes.data.name;
+        }
+      } catch (e) {
+        console.warn('[AuthService] Google ID token verification failed:', (e as Error).message);
       }
     }
 
     if (!resolvedEmail) {
-      throw new UnauthorizedError('Google email, access token, or ID token is required');
+      throw new UnauthorizedError('Google authentication failed. Credential is invalid or unverified by Google.');
     }
 
     const normalizedEmail = resolvedEmail.toLowerCase().trim();

@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import { rateLimit } from 'express-rate-limit';
 import { env } from './env.js';
 import { initializeDatabase } from './db/init.js';
 import { sqliteClient } from './db/index.js';
@@ -11,6 +12,7 @@ import { ideasRouter } from './modules/ideas/ideas.router.js';
 import { journalRouter } from './modules/journal/journal.router.js';
 import { portfolioRouter } from './modules/portfolio/portfolio.router.js';
 import { cashflowRouter } from './modules/cashflow/cashflow.router.js';
+import { settingsRouter } from './modules/settings/settings.router.js';
 
 const app = express();
 
@@ -30,6 +32,56 @@ app.use(
   })
 );
 app.use(express.json({ limit: '10mb' }));
+
+// Global API rate limiter (300 requests / minute)
+const apiLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 300,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    error: {
+      code: 'RATE_LIMIT_EXCEEDED',
+      message: 'Too many requests from this IP, please try again in 1 minute.',
+    },
+  },
+});
+
+// Strict authentication rate limiter (20 attempts / 15 minutes)
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    error: {
+      code: 'AUTH_RATE_LIMIT_EXCEEDED',
+      message: 'Too many authentication attempts. Please wait 15 minutes before trying again.',
+    },
+  },
+});
+
+// Webhook dispatcher rate limiter (12 dispatches / minute)
+const webhookLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 12,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    error: {
+      code: 'WEBHOOK_RATE_LIMIT_EXCEEDED',
+      message: 'Webhook dispatch rate limit exceeded. Please wait a moment.',
+    },
+  },
+});
+
+app.use('/api', apiLimiter);
+app.use('/api/auth/login', authLimiter);
+app.use('/api/auth/google', authLimiter);
+app.use('/api/settings/webhook', webhookLimiter);
 
 // Base healthcheck
 app.get('/api/health', (_req, res) => {
@@ -75,6 +127,9 @@ app.use('/api/portfolio', portfolioRouter);
 
 // Treasury & Cashflow Router (Milestone 8)
 app.use('/api/cashflow', cashflowRouter);
+
+// System Settings & Webhooks Router
+app.use('/api/settings', settingsRouter);
 
 // Central Error Handler
 app.use(errorHandler);

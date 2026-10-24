@@ -25,10 +25,10 @@ journalRouter.get('/analytics', async (req, res, next) => {
 });
 
 /**
- * GET /api/journal/entries
+ * GET /api/journal/entries or /api/journal
  * List all journal entries with optional ?status=OPEN|CLOSED
  */
-journalRouter.get('/entries', async (req, res, next) => {
+journalRouter.get(['/entries', '/'], async (req, res, next) => {
   try {
     const userId = req.user!.userId;
     const status = req.query.status as string | undefined;
@@ -43,13 +43,13 @@ journalRouter.get('/entries', async (req, res, next) => {
 });
 
 /**
- * GET /api/journal/entries/:id
+ * GET /api/journal/entries/:id or /api/journal/:id
  * Get single journal entry
  */
-journalRouter.get('/entries/:id', async (req, res, next) => {
+journalRouter.get(['/entries/:id', '/:id'], async (req, res, next) => {
   try {
     const userId = req.user!.userId;
-    const entry = await journalService.getEntryById(userId, req.params.id);
+    const entry = await journalService.getEntryById(userId, req.params.id as string);
     res.json({
       success: true,
       data: entry,
@@ -60,10 +60,10 @@ journalRouter.get('/entries/:id', async (req, res, next) => {
 });
 
 /**
- * POST /api/journal/entries
+ * POST /api/journal/entries or /api/journal
  * Manually log a new trade entry
  */
-journalRouter.post('/entries', async (req, res, next) => {
+journalRouter.post(['/entries', '/'], async (req, res, next) => {
   try {
     const userId = req.user!.userId;
     const entry = await journalService.createEntry(userId, req.body);
@@ -77,13 +77,13 @@ journalRouter.post('/entries', async (req, res, next) => {
 });
 
 /**
- * POST /api/journal/entries/:id/close
+ * POST /api/journal/entries/:id/close or /api/journal/:id/close
  * Close trade with exit price and compute final PnL & R-multiple
  */
-journalRouter.post('/entries/:id/close', async (req, res, next) => {
+journalRouter.post(['/entries/:id/close', '/:id/close'], async (req, res, next) => {
   try {
     const userId = req.user!.userId;
-    const closed = await journalService.closeEntry(userId, req.params.id, req.body);
+    const closed = await journalService.closeEntry(userId, req.params.id as string, req.body);
     res.json({
       success: true,
       data: closed,
@@ -94,13 +94,13 @@ journalRouter.post('/entries/:id/close', async (req, res, next) => {
 });
 
 /**
- * PATCH /api/journal/entries/:id
+ * PATCH /api/journal/entries/:id or /api/journal/:id
  * Update notes, psychology, or reflection
  */
-journalRouter.patch('/entries/:id', async (req, res, next) => {
+journalRouter.patch(['/entries/:id', '/:id'], async (req, res, next) => {
   try {
     const userId = req.user!.userId;
-    const updated = await journalService.updateEntry(userId, req.params.id, req.body);
+    const updated = await journalService.updateEntry(userId, req.params.id as string, req.body);
     res.json({
       success: true,
       data: updated,
@@ -111,13 +111,13 @@ journalRouter.patch('/entries/:id', async (req, res, next) => {
 });
 
 /**
- * DELETE /api/journal/entries/:id
+ * DELETE /api/journal/entries/:id or /api/journal/:id
  * Delete journal entry
  */
-journalRouter.delete('/entries/:id', async (req, res, next) => {
+journalRouter.delete(['/entries/:id', '/:id'], async (req, res, next) => {
   try {
     const userId = req.user!.userId;
-    const result = await journalService.deleteEntry(userId, req.params.id);
+    const result = await journalService.deleteEntry(userId, req.params.id as string);
     res.json({
       success: true,
       data: result,

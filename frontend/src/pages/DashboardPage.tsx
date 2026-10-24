@@ -5,16 +5,17 @@ import {
   TrendingUp,
   Target,
   Sparkles,
-  SlidersHorizontal,
   BookOpen,
   ArrowUpRight,
   Check,
   AlertCircle,
+  ArrowRightLeft,
 } from 'lucide-react';
 import { api } from '../services/api';
 import { GlobalIntelligencePanel } from '../components/features/intelligence/GlobalIntelligencePanel';
 import { formatUsd, formatIdr } from '../utils/formatters';
 import { TokenIcon } from '../components/common/TokenIcon';
+import { getCategory } from './RebalancingPage';
 
 export const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
@@ -60,7 +61,39 @@ export const DashboardPage: React.FC = () => {
     return valB - valA;
   });
   const topHoldings = sortedHoldings.slice(0, 5);
-  const remainingHoldingsCount = Math.max(0, sortedHoldings.length - topHoldings.length);
+
+  // Category Targets (from localStorage or default 50/20/30)
+  const categoryTargets = (() => {
+    try {
+      const saved = localStorage.getItem('cryptoos_rebalance_category_targets');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return { btc: 50, cash: 20, altcoins: 30 };
+  })();
+
+  let btcValueUsd = 0;
+  let cashValueUsd = 0;
+  let altcoinsValueUsd = 0;
+
+  for (const h of holdings) {
+    const val = Number(h.currentValueUsd) || 0;
+    const cat = getCategory(h.symbol);
+    if (cat === 'BTC') btcValueUsd += val;
+    else if (cat === 'CASH') cashValueUsd += val;
+    else altcoinsValueUsd += val;
+  }
+
+  const totalPortfolioUsd = portfolioSummary?.totalNetWorthUsd || (btcValueUsd + cashValueUsd + altcoinsValueUsd) || 1;
+  const btcActualPercent = parseFloat(((btcValueUsd / totalPortfolioUsd) * 100).toFixed(1));
+  const cashActualPercent = parseFloat(((cashValueUsd / totalPortfolioUsd) * 100).toFixed(1));
+  const altcoinsActualPercent = parseFloat(((altcoinsValueUsd / totalPortfolioUsd) * 100).toFixed(1));
+
+  const btcDeviation = parseFloat((btcActualPercent - categoryTargets.btc).toFixed(1));
+  const cashDeviation = parseFloat((cashActualPercent - categoryTargets.cash).toFixed(1));
+  const altcoinsDeviation = parseFloat((altcoinsActualPercent - categoryTargets.altcoins).toFixed(1));
+
+  const maxCategoryDrift = Math.max(Math.abs(btcDeviation), Math.abs(cashDeviation), Math.abs(altcoinsDeviation));
+  const isDriftHigh = maxCategoryDrift >= 3.0;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)', paddingBottom: 'var(--space-8)' }}>
@@ -201,9 +234,22 @@ export const DashboardPage: React.FC = () => {
             <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', fontWeight: 700, letterSpacing: '0.04em' }}>
               PORTFOLIO NET WORTH
             </span>
-            <span className="bullish-badge" style={{ fontSize: '9px', padding: '1px 5px' }}>
-              {portfolioSummary?.holdings?.length || 0} ASSETS
-            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <span className="bullish-badge" style={{ fontSize: '9px', padding: '1px 5px' }}>
+                {portfolioSummary?.holdings?.length || 0} ASSETS
+              </span>
+              <span
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate('/rebalancing');
+                }}
+                className={isDriftHigh ? "bearish-badge" : "neutral-badge"}
+                style={{ fontSize: '9px', padding: '1px 5px', cursor: 'pointer' }}
+                title="Buka Rebalancing Matrix"
+              >
+                {isDriftHigh ? `±${maxCategoryDrift}% DRIFT` : 'BALANCED'}
+              </span>
+            </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginTop: '2px' }}>
             <span className="value-number" style={{ fontSize: '24px', fontWeight: 900, color: '#ffffff' }}>
@@ -433,8 +479,8 @@ export const DashboardPage: React.FC = () => {
 
         {/* Right Column: Seamless Asset Allocation & Risk Dock */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
-          {/* Asset Allocation & Deviation (Seamless Dock) */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          {/* Portfolio Macro Allocation & Rebalance Drift (Command Dock) */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <div
               style={{
                 display: 'flex',
@@ -446,13 +492,11 @@ export const DashboardPage: React.FC = () => {
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <span style={{ fontSize: '11px', fontWeight: 800, color: '#ffffff', letterSpacing: '0.04em' }}>
-                  ASSET ALLOCATION & DEVIATION
+                  MACRO ALLOCATION & DRIFT
                 </span>
-                {holdings.length > 5 && (
-                  <span className="badge" style={{ fontSize: '8px', padding: '1px 5px', fontWeight: 800 }}>
-                    TOP 5
-                  </span>
-                )}
+                <span className={isDriftHigh ? 'bearish-badge' : 'bullish-badge'} style={{ fontSize: '8px', padding: '1px 5px', fontWeight: 800 }}>
+                  {isDriftHigh ? `±${maxCategoryDrift}% DRIFT` : 'IN RANGE'}
+                </span>
               </div>
               <button
                 onClick={() => navigate('/rebalancing')}
@@ -462,92 +506,293 @@ export const DashboardPage: React.FC = () => {
               </button>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {topHoldings.length > 0 ? (
-                <>
-                  {topHoldings.map((h: any) => {
-                    const diff = h.allocationPercent - (h.targetPercent || 0);
-                    return (
-                      <div key={h.symbol} style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <TokenIcon symbol={h.symbol} size={15} />
-                            <span style={{ color: '#ffffff', fontWeight: 700 }}>{h.symbol}</span>
-                          </div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <span className="value-number" style={{ color: '#ffffff', fontWeight: 700 }}>
-                              {h.allocationPercent}%
-                            </span>
-                            <span style={{ fontSize: '10px', color: diff > 5 ? 'var(--color-neutral)' : 'var(--color-text-muted)' }}>
-                              (Target {h.targetPercent || 0}%)
-                            </span>
-                          </div>
-                        </div>
-                        <div className="progress-track" style={{ height: '3px', backgroundColor: 'var(--color-border)' }}>
-                          <div
-                            className="progress-fill"
-                            style={{
-                              width: `${Math.min(100, h.allocationPercent)}%`,
-                              backgroundColor: diff > 5 ? '#f59e0b' : 'var(--color-accent-primary)',
-                            }}
-                          />
-                        </div>
-                      </div>
-                    );
-                  })}
-
-                  {remainingHoldingsCount > 0 && (
-                    <button
-                      onClick={() => navigate('/portfolio')}
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        color: 'var(--color-text-muted)',
-                        fontSize: '10.5px',
-                        fontWeight: 700,
-                        cursor: 'pointer',
-                        textAlign: 'left',
-                        padding: '4px 0 0',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '4px',
-                        transition: 'color var(--transition-fast)',
-                      }}
-                      onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--color-accent-primary)')}
-                      onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--color-text-muted)')}
-                      title="View all portfolio assets and allocations in Portfolio Tracker"
-                    >
-                      <span>+{remainingHoldingsCount} more spot assets in Portfolio Tracker &rarr;</span>
-                    </button>
-                  )}
-                </>
-              ) : (
-                <div style={{ padding: '16px 0', textAlign: 'center', color: 'var(--color-text-muted)', fontSize: '11px' }}>
-                  No spot asset allocation data recorded.
-                </div>
-              )}
+            {/* Visual Multi-Segment Barbell Track */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: 'var(--color-text-muted)' }}>
+                <span>ACTUAL DISTRIBUTION</span>
+                <span className="mono">Target: {categoryTargets.btc}% / {categoryTargets.cash}% / {categoryTargets.altcoins}%</span>
+              </div>
+              <div
+                style={{
+                  width: '100%',
+                  height: '10px',
+                  backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                  borderRadius: '6px',
+                  overflow: 'hidden',
+                  display: 'flex',
+                }}
+              >
+                {btcActualPercent > 0 && (
+                  <div
+                    style={{
+                      width: `${btcActualPercent}%`,
+                      height: '100%',
+                      backgroundColor: '#F7931A',
+                      transition: 'width 0.3s ease',
+                    }}
+                    title={`Bitcoin (BTC): ${btcActualPercent}% (Target ${categoryTargets.btc}%)`}
+                  />
+                )}
+                {cashActualPercent > 0 && (
+                  <div
+                    style={{
+                      width: `${cashActualPercent}%`,
+                      height: '100%',
+                      backgroundColor: '#30D158',
+                      transition: 'width 0.3s ease',
+                    }}
+                    title={`Cash & Stables: ${cashActualPercent}% (Target ${categoryTargets.cash}%)`}
+                  />
+                )}
+                {altcoinsActualPercent > 0 && (
+                  <div
+                    style={{
+                      width: `${altcoinsActualPercent}%`,
+                      height: '100%',
+                      backgroundColor: '#AF52DE',
+                      transition: 'width 0.3s ease',
+                    }}
+                    title={`Altcoins: ${altcoinsActualPercent}% (Target ${categoryTargets.altcoins}%)`}
+                  />
+                )}
+              </div>
             </div>
 
+            {/* 3 Categories Comparison Grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' }}>
+              {/* BTC Mini Card */}
+              <div
+                onClick={() => navigate('/rebalancing')}
+                style={{
+                  padding: '8px 10px',
+                  borderRadius: 'var(--radius-sm)',
+                  background: 'rgba(247, 147, 26, 0.04)',
+                  border: '1px solid rgba(247, 147, 26, 0.2)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '2px',
+                  cursor: 'pointer',
+                }}
+                title="View Bitcoin allocation in Rebalance Matrix"
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                  <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#F7931A' }} />
+                  <span style={{ fontSize: '10px', fontWeight: 800, color: '#fff' }}>BTC</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginTop: '2px' }}>
+                  <span className="mono" style={{ fontSize: '14px', fontWeight: 900, color: '#fff' }}>
+                    {btcActualPercent}%
+                  </span>
+                  <span className="mono" style={{ fontSize: '9px', color: 'var(--color-text-muted)' }}>
+                    /{categoryTargets.btc}%
+                  </span>
+                </div>
+                <span
+                  className="mono"
+                  style={{
+                    fontSize: '9.5px',
+                    fontWeight: 800,
+                    color: btcDeviation < -2 ? 'var(--color-amber)' : 'var(--color-bullish)',
+                  }}
+                >
+                  {btcDeviation > 0 ? '+' : ''}{btcDeviation}%
+                </span>
+              </div>
+
+              {/* Cash Mini Card */}
+              <div
+                onClick={() => navigate('/rebalancing')}
+                style={{
+                  padding: '8px 10px',
+                  borderRadius: 'var(--radius-sm)',
+                  background: 'rgba(48, 209, 88, 0.04)',
+                  border: '1px solid rgba(48, 209, 88, 0.2)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '2px',
+                  cursor: 'pointer',
+                }}
+                title="View Cash & Stables allocation in Rebalance Matrix"
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                  <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#30D158' }} />
+                  <span style={{ fontSize: '10px', fontWeight: 800, color: '#fff' }}>CASH</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginTop: '2px' }}>
+                  <span className="mono" style={{ fontSize: '14px', fontWeight: 900, color: '#fff' }}>
+                    {cashActualPercent}%
+                  </span>
+                  <span className="mono" style={{ fontSize: '9px', color: 'var(--color-text-muted)' }}>
+                    /{categoryTargets.cash}%
+                  </span>
+                </div>
+                <span
+                  className="mono"
+                  style={{
+                    fontSize: '9.5px',
+                    fontWeight: 800,
+                    color: cashDeviation < -2 ? 'var(--color-amber)' : 'var(--color-bullish)',
+                  }}
+                >
+                  {cashDeviation > 0 ? '+' : ''}{cashDeviation}%
+                </span>
+              </div>
+
+              {/* Altcoins Mini Card */}
+              <div
+                onClick={() => navigate('/rebalancing')}
+                style={{
+                  padding: '8px 10px',
+                  borderRadius: 'var(--radius-sm)',
+                  background: 'rgba(175, 82, 222, 0.04)',
+                  border: '1px solid rgba(175, 82, 222, 0.2)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '2px',
+                  cursor: 'pointer',
+                }}
+                title="View Altcoins allocation in Rebalance Matrix"
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                  <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#AF52DE' }} />
+                  <span style={{ fontSize: '10px', fontWeight: 800, color: '#fff' }}>ALTS</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginTop: '2px' }}>
+                  <span className="mono" style={{ fontSize: '14px', fontWeight: 900, color: '#fff' }}>
+                    {altcoinsActualPercent}%
+                  </span>
+                  <span className="mono" style={{ fontSize: '9px', color: 'var(--color-text-muted)' }}>
+                    /{categoryTargets.altcoins}%
+                  </span>
+                </div>
+                <span
+                  className="mono"
+                  style={{
+                    fontSize: '9.5px',
+                    fontWeight: 800,
+                    color: altcoinsDeviation > 2 ? 'var(--color-amber)' : 'var(--color-bullish)',
+                  }}
+                >
+                  {altcoinsDeviation > 0 ? '+' : ''}{altcoinsDeviation}%
+                </span>
+              </div>
+            </div>
+
+            {/* Drift Recommendation Directive Banner */}
             <div
               style={{
                 padding: '10px 12px',
-                backgroundColor: 'var(--color-bg-elevated)',
+                backgroundColor: isDriftHigh ? 'rgba(255, 159, 10, 0.06)' : 'rgba(48, 209, 88, 0.06)',
                 borderRadius: 'var(--radius-sm)',
-                border: '1px solid var(--color-border)',
+                border: isDriftHigh ? '1px solid rgba(255, 159, 10, 0.25)' : '1px solid rgba(48, 209, 88, 0.25)',
                 fontSize: '11px',
-                color: 'var(--color-text-secondary)',
                 lineHeight: 1.4,
-                marginTop: '4px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '6px',
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: holdings.length > 0 ? '#f59e0b' : 'var(--color-text-muted)', fontWeight: 700, marginBottom: '2px' }}>
-                <SlidersHorizontal size={12} />
-                <span>Rebalancing Status</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  {isDriftHigh ? (
+                    <AlertCircle size={13} color="var(--color-amber)" />
+                  ) : (
+                    <Check size={13} color="var(--color-bullish)" />
+                  )}
+                  <span style={{ fontWeight: 800, color: isDriftHigh ? 'var(--color-amber)' : 'var(--color-bullish)' }}>
+                    {isDriftHigh ? `Deviasi ±${maxCategoryDrift}% Terdeteksi` : 'Alokasi Portofolio Seimbang'}
+                  </span>
+                </div>
+                <span style={{ fontSize: '9px', color: 'var(--color-text-muted)' }}>
+                  Threshold ±2.5%
+                </span>
               </div>
-              {holdings.length > 0
-                ? 'Portfolio allocations tracked across exchanges. Rebalance when asset deviation exceeds 5%.'
-                : 'No asset deviation recorded. Add holdings in Portfolio Tracker to monitor allocation balance.'}
+
+              <span style={{ color: 'var(--color-text-secondary)', fontSize: '10.5px' }}>
+                {isDriftHigh
+                  ? `Eksposur Altcoin ${altcoinsActualPercent}% (Target ${categoryTargets.altcoins}%). Rotasikan ke BTC & Cash untuk melindungi modal.`
+                  : `Proporsi Bitcoin, Cash, dan Altcoin berada dalam koridor risiko terukur.`}
+              </span>
+
+              {isDriftHigh && (
+                <button
+                  onClick={() => navigate('/rebalancing')}
+                  className="btn btn-secondary"
+                  style={{
+                    height: '26px',
+                    fontSize: '10.5px',
+                    fontWeight: 700,
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '5px',
+                    marginTop: '2px',
+                    border: '1px solid rgba(255, 159, 10, 0.3)',
+                    color: 'var(--color-amber)',
+                  }}
+                >
+                  <ArrowRightLeft size={11} />
+                  <span>Buka Rebalance Matrix & Eksekusi &rarr;</span>
+                </button>
+              )}
             </div>
+
+            {/* Top Individual Spot Assets Compact Preview */}
+            {topHoldings.length > 0 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', paddingTop: '2px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '10px', color: 'var(--color-text-muted)', fontWeight: 700 }}>
+                  <span>KONTRIBUTOR ASET UTAMA:</span>
+                  <button
+                    onClick={() => navigate('/portfolio')}
+                    style={{ background: 'none', border: 'none', color: 'var(--color-text-muted)', fontSize: '10px', cursor: 'pointer' }}
+                  >
+                    Lihat Semua ({sortedHoldings.length}) &rarr;
+                  </button>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                  {topHoldings.slice(0, 3).map((h: any) => {
+                    const cat = getCategory(h.symbol);
+                    const catColor = cat === 'BTC' ? '#F7931A' : cat === 'CASH' ? '#30D158' : '#AF52DE';
+                    return (
+                      <div
+                        key={h.symbol}
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          padding: '5px 8px',
+                          borderRadius: 'var(--radius-xs)',
+                          background: 'rgba(255, 255, 255, 0.02)',
+                          border: '1px solid rgba(255, 255, 255, 0.05)',
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <TokenIcon symbol={h.symbol} size={14} />
+                          <span style={{ fontSize: '11px', fontWeight: 700, color: '#fff' }}>{h.symbol}</span>
+                          <span
+                            style={{
+                              fontSize: '8px',
+                              fontWeight: 800,
+                              padding: '0 4px',
+                              borderRadius: '2px',
+                              color: catColor,
+                              backgroundColor: `${catColor}15`,
+                              border: `1px solid ${catColor}30`,
+                            }}
+                          >
+                            {cat}
+                          </span>
+                        </div>
+                        <span className="mono" style={{ fontSize: '11px', color: '#fff', fontWeight: 700 }}>
+                          ${(Number(h.currentValueUsd) || 0).toLocaleString(undefined, { maximumFractionDigits: 0 })} ({h.allocationPercent}%)
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Risk Engine & Sizing Shortcut (Seamless Dock) */}

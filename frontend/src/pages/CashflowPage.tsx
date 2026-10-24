@@ -13,6 +13,7 @@ import {
 import { api } from '../services/api';
 import { useSettingsStore } from '../store/settings.store';
 import { DualCurrencyValue } from '../components/ui/DualCurrencyValue';
+import { ExchangeIcon } from '../components/common/ExchangeIcon';
 
 interface CashflowTransaction {
   id: string;
@@ -44,6 +45,7 @@ export const CashflowPage: React.FC = () => {
   const [transactions, setTransactions] = useState<CashflowTransaction[]>([]);
   const [summary, setSummary] = useState<CashflowSummary | null>(null);
   const [selectedFilter, setSelectedFilter] = useState<string>('ALL');
+  const [selectedExchange, setSelectedExchange] = useState<string>('ALL');
   const [notification, setNotification] = useState<string | null>(null);
 
   // New Transaction Modal State
@@ -136,22 +138,22 @@ export const CashflowPage: React.FC = () => {
             justifyContent: 'center',
             alignItems: 'center',
             padding: '20px',
-            backdropFilter: 'blur(6px)',
+            backdropFilter: 'blur(8px)',
           }}
         >
           <div
             className="modal-dialog-animate"
             style={{
               width: '100%',
-              maxWidth: '480px',
-              backgroundColor: 'var(--color-bg-surface)',
-              border: '1px solid var(--color-border-accent)',
+              maxWidth: '500px',
+              backgroundColor: '#0a0a0a',
+              border: '1px solid rgba(255, 255, 255, 0.12)',
               borderRadius: 'var(--radius-lg)',
               display: 'flex',
               flexDirection: 'column',
               gap: '14px',
-              padding: '20px',
-              boxShadow: '0 16px 40px rgba(0,0,0,0.8)',
+              padding: '22px',
+              boxShadow: '0 24px 60px rgba(0,0,0,0.95)',
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -215,9 +217,9 @@ export const CashflowPage: React.FC = () => {
                     display: 'flex',
                     alignItems: 'center',
                     padding: '0 10px',
-                    backgroundColor: 'var(--color-bg-subtle)',
+                    backgroundColor: 'rgba(255, 255, 255, 0.03)',
                     borderRadius: 'var(--radius-sm)',
-                    border: '1px solid var(--color-border)',
+                    border: '1px solid rgba(255, 255, 255, 0.08)',
                     fontSize: '11px',
                     color: 'var(--color-accent-primary)',
                     fontWeight: 800,
@@ -228,64 +230,90 @@ export const CashflowPage: React.FC = () => {
               </div>
             </div>
 
+            <div>
+              <label style={{ fontSize: '10px', color: 'var(--color-text-muted)', display: 'block', marginBottom: '4px', fontWeight: 700 }}>
+                SUMBER / TUJUAN
+              </label>
+              <input
+                type="text"
+                value={formSource}
+                onChange={(e) => setFormSource(e.target.value)}
+                className="form-input"
+                style={{ height: '34px', fontSize: '12px' }}
+                placeholder="e.g. BCA, Mandiri, Wire Transfer, Lido Yield"
+              />
+            </div>
+
+            {/* Visual Destination Exchange Selector */}
+            <div>
+              <label style={{ fontSize: '10px', color: 'var(--color-text-muted)', display: 'block', marginBottom: '6px', fontWeight: 700 }}>
+                DESTINASI WALLET / STORAGE VAULT
+              </label>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(90px, 1fr))', gap: '6px' }}>
+                {[
+                  { id: 'BINANCE', label: 'Binance' },
+                  { id: 'BYBIT', label: 'Bybit' },
+                  { id: 'OKX', label: 'OKX' },
+                  { id: 'WALLET', label: 'Cold Storage' },
+                  { id: 'MANUAL', label: 'Manual' },
+                ].map((ex) => {
+                  const isSelected = formExchange === ex.id;
+                  return (
+                    <button
+                      key={ex.id}
+                      type="button"
+                      onClick={() => setFormExchange(ex.id)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px',
+                        padding: '6px 8px',
+                        borderRadius: 'var(--radius-sm)',
+                        border: isSelected ? '1px solid var(--color-accent-primary)' : '1px solid rgba(255, 255, 255, 0.08)',
+                        backgroundColor: isSelected ? 'rgba(212, 175, 55, 0.14)' : '#000000',
+                        color: isSelected ? '#ffffff' : 'var(--color-text-secondary)',
+                        cursor: 'pointer',
+                        fontSize: '11px',
+                        fontWeight: isSelected ? 800 : 500,
+                        transition: 'all 0.15s ease',
+                      }}
+                    >
+                      <ExchangeIcon exchange={ex.id} size={14} />
+                      <span style={{ whiteSpace: 'nowrap' }}>{ex.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
               <div>
                 <label style={{ fontSize: '10px', color: 'var(--color-text-muted)', display: 'block', marginBottom: '4px', fontWeight: 700 }}>
-                  SUMBER / TUJUAN
+                  TRANSACTION DATE
                 </label>
                 <input
-                  type="text"
-                  value={formSource}
-                  onChange={(e) => setFormSource(e.target.value)}
-                  className="form-input"
+                  type="date"
+                  value={formDate}
+                  onChange={(e) => setFormDate(e.target.value)}
+                  className="form-input mono"
                   style={{ height: '34px', fontSize: '12px' }}
-                  placeholder="e.g. BCA, Mandiri, Lido"
                 />
               </div>
 
               <div>
                 <label style={{ fontSize: '10px', color: 'var(--color-text-muted)', display: 'block', marginBottom: '4px', fontWeight: 700 }}>
-                  DESTINASI WALLET / EXCHANGE
+                  MEMO / NOTES
                 </label>
-                <select
-                  value={formExchange}
-                  onChange={(e) => setFormExchange(e.target.value)}
+                <input
+                  type="text"
+                  value={formNotes}
+                  onChange={(e) => setFormNotes(e.target.value)}
+                  placeholder="Optional note"
                   className="form-input"
                   style={{ height: '34px', fontSize: '12px' }}
-                >
-                  <option value="BINANCE">Binance Spot</option>
-                  <option value="BYBIT">Bybit Spot / Unified</option>
-                  <option value="OKX">OKX Trading</option>
-                  <option value="WALLET">Cold Storage (Ledger)</option>
-                </select>
+                />
               </div>
-            </div>
-
-            <div>
-              <label style={{ fontSize: '10px', color: 'var(--color-text-muted)', display: 'block', marginBottom: '4px', fontWeight: 700 }}>
-                TRANSACTION DATE
-              </label>
-              <input
-                type="date"
-                value={formDate}
-                onChange={(e) => setFormDate(e.target.value)}
-                className="form-input mono"
-                style={{ height: '34px', fontSize: '12px' }}
-              />
-            </div>
-
-            <div>
-              <label style={{ fontSize: '10px', color: 'var(--color-text-muted)', display: 'block', marginBottom: '4px', fontWeight: 700 }}>
-                MEMO / NOTES
-              </label>
-              <input
-                type="text"
-                value={formNotes}
-                onChange={(e) => setFormNotes(e.target.value)}
-                placeholder="Optional, e.g. Monthly allocation, ETH profit taking"
-                className="form-input"
-                style={{ height: '34px', fontSize: '12px' }}
-              />
             </div>
 
             <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '6px' }}>
@@ -345,8 +373,8 @@ export const CashflowPage: React.FC = () => {
           gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
           borderRadius: 'var(--radius-lg)',
           overflow: 'hidden',
-          border: '1px solid var(--color-border)',
-          background: 'var(--color-bg-surface)',
+          border: '1px solid rgba(255, 255, 255, 0.08)',
+          background: '#000000',
         }}
       >
         {/* Cell 1: Total Deposit */}
@@ -450,15 +478,15 @@ export const CashflowPage: React.FC = () => {
         style={{
           borderRadius: 'var(--radius-lg)',
           overflow: 'hidden',
-          border: '1px solid var(--color-border)',
-          background: 'var(--color-bg-surface)',
+          border: '1px solid rgba(255, 255, 255, 0.08)',
+          background: '#000000',
         }}
       >
         {/* Sub-Header & Filter Tab Ribbon */}
         <div
           style={{
             padding: '12px 16px',
-            borderBottom: '1px solid var(--color-border)',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
@@ -468,17 +496,18 @@ export const CashflowPage: React.FC = () => {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <h2 style={{ fontSize: '13px', fontWeight: 800, color: '#fff', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+            <h2 style={{ fontSize: '13px', fontWeight: 800, color: '#fff', textTransform: 'uppercase', letterSpacing: '0.04em', margin: 0 }}>
               Capital Transaction Ledger
             </h2>
             <span style={{ fontSize: '11px', color: 'var(--color-text-muted)', fontFamily: 'JetBrains Mono, monospace' }}>
-              [{transactions.length} entries]
+              [{transactions.filter(t => selectedExchange === 'ALL' || (t.exchange || 'MANUAL').toUpperCase().includes(selectedExchange)).length} of {transactions.length} entries]
             </span>
           </div>
 
+          {/* Type Filter Tabs */}
           <div style={{ display: 'flex', gap: '4px', overflowX: 'auto' }}>
             {[
-              { key: 'ALL', label: 'ALL' },
+              { key: 'ALL', label: 'ALL TYPES' },
               { key: 'DEPOSIT', label: 'DEPOSIT' },
               { key: 'WITHDRAWAL', label: 'WITHDRAWAL' },
               { key: 'STAKING_YIELD', label: 'STAKING YIELD' },
@@ -498,11 +527,11 @@ export const CashflowPage: React.FC = () => {
                     letterSpacing: '0.04em',
                     borderRadius: 'var(--radius-sm)',
                     border: '1px solid',
-                    borderColor: active ? 'var(--color-accent-primary)' : 'transparent',
-                    backgroundColor: active ? 'rgba(212, 175, 55, 0.12)' : 'transparent',
+                    borderColor: active ? 'var(--color-accent-primary)' : 'rgba(255, 255, 255, 0.06)',
+                    backgroundColor: active ? 'rgba(212, 175, 55, 0.12)' : 'rgba(255, 255, 255, 0.02)',
                     color: active ? 'var(--color-accent-primary)' : 'var(--color-text-secondary)',
                     cursor: 'pointer',
-                    transition: 'background-color var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast)',
+                    transition: 'all var(--transition-fast)',
                   }}
                 >
                   {tab.label}
@@ -510,6 +539,58 @@ export const CashflowPage: React.FC = () => {
               );
             })}
           </div>
+        </div>
+
+        {/* Secondary Exchange Filter Tabs */}
+        <div
+          style={{
+            padding: '8px 16px',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            background: '#040404',
+            overflowX: 'auto',
+          }}
+        >
+          <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', fontWeight: 700, letterSpacing: '0.04em' }}>
+            VAULT:
+          </span>
+          {[
+            { id: 'ALL', label: 'ALL' },
+            { id: 'BINANCE', label: 'BINANCE' },
+            { id: 'BYBIT', label: 'BYBIT' },
+            { id: 'OKX', label: 'OKX' },
+            { id: 'WALLET', label: 'COLD STORAGE' },
+            { id: 'MANUAL', label: 'MANUAL' },
+          ].map((tab) => {
+            const active = selectedExchange === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setSelectedExchange(tab.id)}
+                style={{
+                  height: '24px',
+                  padding: '0 8px',
+                  fontSize: '10px',
+                  fontWeight: 700,
+                  borderRadius: 'var(--radius-xs)',
+                  border: '1px solid',
+                  borderColor: active ? 'rgba(212, 175, 55, 0.5)' : 'transparent',
+                  backgroundColor: active ? 'rgba(212, 175, 55, 0.12)' : 'transparent',
+                  color: active ? '#ffffff' : 'var(--color-text-secondary)',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  transition: 'all 0.15s ease',
+                }}
+              >
+                {tab.id !== 'ALL' && <ExchangeIcon exchange={tab.id} size={13} showBadgeBackground={false} />}
+                <span>{tab.label}</span>
+              </button>
+            );
+          })}
         </div>
 
         {/* Cardless Ledger Table */}
@@ -520,14 +601,16 @@ export const CashflowPage: React.FC = () => {
                 <th style={{ width: '130px' }}>DATE</th>
                 <th style={{ width: '120px' }}>TYPE</th>
                 <th>SOURCE / DESTINATION</th>
-                <th style={{ width: '140px' }}>DESTINATION EXCHANGE</th>
+                <th style={{ width: '160px' }}>DESTINATION EXCHANGE</th>
                 <th style={{ textAlign: 'right', width: '220px' }}>AMOUNT</th>
                 <th>MEMO / NOTES</th>
                 <th style={{ textAlign: 'center', width: '70px' }}>ACTIONS</th>
               </tr>
             </thead>
             <tbody>
-              {transactions.length === 0 ? (
+              {transactions
+                .filter(t => selectedExchange === 'ALL' || (t.exchange || 'MANUAL').toUpperCase().includes(selectedExchange))
+                .length === 0 ? (
                 <tr>
                   <td colSpan={7} style={{ padding: '48px 16px', textAlign: 'center', color: 'var(--color-text-muted)' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
@@ -538,7 +621,9 @@ export const CashflowPage: React.FC = () => {
                   </td>
                 </tr>
               ) : (
-                transactions.map((t) => (
+                transactions
+                  .filter(t => selectedExchange === 'ALL' || (t.exchange || 'MANUAL').toUpperCase().includes(selectedExchange))
+                  .map((t) => (
                   <tr key={t.id}>
                     {/* Tanggal */}
                     <td style={{ color: 'var(--color-text-muted)', fontSize: '11px' }} className="mono">
@@ -576,21 +661,21 @@ export const CashflowPage: React.FC = () => {
                       </span>
                     </td>
 
-                    {/* Exchange */}
+                    {/* Exchange with Logo */}
                     <td>
-                      <span
-                        className="mono"
-                        style={{
-                          fontSize: '11px',
-                          color: 'var(--color-accent-primary)',
-                          fontWeight: 700,
-                          backgroundColor: 'rgba(212, 175, 55, 0.08)',
-                          padding: '2px 6px',
-                          borderRadius: 'var(--radius-xs)',
-                        }}
-                      >
-                        {t.exchange || 'MANUAL'}
-                      </span>
+                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                        <ExchangeIcon exchange={t.exchange || 'MANUAL'} size={15} />
+                        <span
+                          className="mono"
+                          style={{
+                            fontSize: '11px',
+                            color: '#fff',
+                            fontWeight: 700,
+                          }}
+                        >
+                          {t.exchange || 'MANUAL'}
+                        </span>
+                      </div>
                     </td>
 
                     {/* Nilai USD & IDR */}

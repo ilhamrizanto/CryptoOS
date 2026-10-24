@@ -3,15 +3,15 @@
 # 🌌 CryptoOS
 ### Quantitative Trading Terminal & Market Intelligence Operating System
 
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.5+-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.7+-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19.0-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
 [![Vite](https://img.shields.io/badge/Vite-6.0-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
-[![Node.js](https://img.shields.io/badge/Node.js-20.x-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
-[![SQLite](https://img.shields.io/badge/SQLite-3.0-003B57?style=for-the-badge&logo=sqlite&logoColor=white)](https://www.sqlite.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-26%2B_LTS-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
+[![SQLite](https://img.shields.io/badge/SQLite-LibSQL_Engine-003B57?style=for-the-badge&logo=sqlite&logoColor=white)](https://www.sqlite.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-D4AF37?style=for-the-badge)](LICENSE)
 
 <p align="center">
-  <strong>A private, Bloomberg Terminal-grade crypto intelligence engine, macro cycle workstation, asymmetric risk sizer, and psychological trade journal.</strong>
+  <strong>A private, Bloomberg Terminal-grade crypto intelligence engine, macro cycle workstation, asymmetric risk sizer, behavioral journal, and autonomous disaster recovery vault.</strong>
 </p>
 
 [Key Features](#-key-capabilities) •
@@ -28,9 +28,9 @@
 
 ## 🌟 Executive Overview
 
-**CryptoOS** is an institutional-grade, personal quantitative trading terminal engineered to replace fragmented browser tabs with a unified, high-performance financial command center. 
+**CryptoOS** is an institutional-grade, personal quantitative trading terminal engineered to replace fragmented browser tabs with a unified, high-performance financial command center.
 
-Built with an unapologetic **Cardless Pure Black (`#000000`) OLED** design language, CryptoOS provides real-time macroeconomic synthesis, multi-timeframe trade ideation, mathematical lot sizing via the **Half-Kelly Criterion**, early liquidation defense, and behavioral psychology journaling.
+Built with an unapologetic **Cardless Pure Black (`#000000`) OLED** design language, CryptoOS provides real-time macroeconomic synthesis, multi-timeframe trade ideation, mathematical lot sizing via the **Half-Kelly Criterion**, early liquidation defense, behavioral psychology journaling, and **self-contained disaster recovery snapshots**.
 
 ---
 
@@ -40,7 +40,7 @@ Built with an unapologetic **Cardless Pure Black (`#000000`) OLED** design langu
 * **Federal Reserve Interest Rate Monitor**: Real-time gauge of rate hike/cut probabilities with institutional visual indicators.
 * **Capital Rotation & Dominance Radar**: Live telemetry tracking BTC Dominance (`BTC.D`), Stablecoin Flow (`USDT.D`), and Altcoin Market Cap (`TOTAL3`).
 * **Fear & Greed Sentiment Meter**: Historical and real-time sentiment telemetry to spot asymmetric market tops and bottoms.
-* **Dual Currency Engine**: Seamless real-time conversion between US Dollar (`USD`) and Indonesian Rupiah (`IDR`) across all portfolio metrics.
+* **Dual Currency Engine**: Seamless real-time conversion between US Dollar (`USD`) and Indonesian Rupiah (`IDR`) backed by live ECB forex feeds.
 
 ### 2. 🧪 Pipeline & Quantitative Idea Incubator
 * **Floating Glass Capsule HUD**: Centered, distraction-free floating telemetry pill showing active pipeline statistics, total potential reward, and aggregate risk.
@@ -55,9 +55,25 @@ Built with an unapologetic **Cardless Pure Black (`#000000`) OLED** design langu
 * **Direct Journal Dispatch**: Single-click button that populates the setup directly into the Trade Journal.
 
 ### 4. 📓 Behavioral Trade Journal & Evidence Locker
-* **Execution & Psychology Tracking**: Logs emotional state (`Calm`, `FOMO`, `Anxious`, `Revenge`) alongside trade entries.
+* **Execution & Psychology Tracking**: Logs emotional states (`Calm`, `FOMO`, `Anxious`, `Revenge`) alongside trade entries.
 * **IndexedDB Screenshot Evidence Vault**: Attach chart screenshots directly to trades without third-party image hosting vulnerabilities.
 * **Real-Time PnL Realization**: Interactive trade close modal with automated net PnL calculations and lesson capture.
+* **Psychological Discipline Matrix**: Quantifies emotional capital leaks vs disciplined alpha performance.
+
+### 5. 🔐 Autonomous Disaster Recovery & Data Vault
+* **Per-User Isolated Master Backup**: Generates complete `.json` cryptographic snapshot archives bundling trade entries, cashflow mutations, trade ideas, spot holdings, and local terminal preferences.
+* **Pre-Flight Archive Verification Inspector**: Validates file integrity, checksum, and records before applying changes.
+* **Flexible Restoration Strategy**: Supports both **Merge (Append)** and **Clean Rebuild (Overwrite)** restore modes.
+* **Automated Browser Snapshot Cache**: Client-side backup cache that updates silently when positions are logged.
+
+### 6. 🔔 Realtime Notification Webhook Bridges
+* **Telegram Bot Dispatcher**: Dispatches trade entries, take-profit hits, stop-loss triggers, and drawdown warnings to private Telegram chats.
+* **Discord Webhook Sentinel**: Broadcasts rich embedded trade updates into dedicated Discord channels.
+* **Active Event Triggers Matrix**: Granular toggles for Trade Executions, Circuit Breaker Breaches, Portfolio Allocation Drift, and Whale Cashflow Mutations (> $1,000 USD).
+
+### 7. 📑 Tax-Ready Accounting CSV Exporters
+* **1-Click CSV Ledger Generation**: Dedicated export engines for Trading Journal Ledger, Treasury Cashflow, and Spot Holdings.
+* **Universal Software Compatibility**: Formatted with UTF-8 BOM encoding for seamless opening in Microsoft Excel, Koinly, and CoinTracker.
 
 ---
 
@@ -67,11 +83,12 @@ CryptoOS is structured as a clean, modular TypeScript monorepo orchestrated via 
 
 ```mermaid
 graph TD
-    Client["CryptoOS Frontend (React 19 + Vite)"] -->|"REST / JSON"| Server["CryptoOS API Gateway (Express + TypeScript)"]
-    Server -->|"Queries & Migrations"| DB[("Embedded SQLite Engine")]
-    Server -->|"Live Feeds"| MarketFeeds["External Feeds (Binance, CoinGecko, FearGreed)"]
+    Client["CryptoOS Frontend (React 19 + Vite 6)"] -->|"REST / JSON"| Server["CryptoOS API Gateway (Express + Node.js 26 LTS)"]
+    Server -->|"Drizzle ORM Queries"| DB[("Embedded LibSQL / SQLite Engine")]
+    Server -->|"Live Feeds"| MarketFeeds["External Feeds (ECB Forex, CoinGecko, FearGreed)"]
+    Server -->|"Webhooks"| WebhookDispatchers["Notification Dispatchers (Telegram, Discord)"]
     Client -->|"IndexedDB"| ClientDB[("Client Evidence Vault (Dexie.js)")]
-    Client -->|"Multi-CDN Waterfall"| CDNs["Token Icon CDNs (CoinGecko, SpotHQ, TradingView, CoinCap)"]
+    Client -->|"Multi-CDN Waterfall"| CDNs["Token Icon CDNs (CoinGecko, SpotHQ, TradingView)"]
 ```
 
 ---
@@ -81,11 +98,11 @@ graph TD
 | Layer | Technology | Rationale |
 | :--- | :--- | :--- |
 | **Frontend Framework** | **React 19** + **Vite 6** | Instant HMR, lightweight bundle size, and concurrent rendering features. |
-| **Language** | **TypeScript 5.5+** | End-to-end strict type-safety across shared domain interfaces. |
+| **Language** | **TypeScript 5.7+** | End-to-end strict type-safety across shared domain interfaces. |
 | **Design System** | **Vanilla CSS (Design Tokens)** | Zero bloated utility libraries; bespoke Cardless Pure Black `#000000` OLED aesthetic. |
 | **Icons & Media** | **Lucide React** + **Multi-CDN Waterfall** | Clean terminal iconography and dynamic crypto logo resolution. |
-| **Backend Runtime** | **Node.js 20 LTS** + **Express** | Fast, reliable REST API server with zero runtime overhead. |
-| **Database** | **SQLite** (`better-sqlite3`) | Zero-configuration, file-based embedded SQL database with WAL mode. |
+| **Backend Runtime** | **Node.js 26 LTS** + **Express 4** | Ultra-stable, high-performance runtime with latest security patches. |
+| **Database & ORM** | **Drizzle ORM** + **@libsql/client** | Embedded, zero-ops, file-based SQL database with ACID compliance and WAL mode. |
 | **Client Storage** | **IndexedDB** (`Dexie.js`) | Local storage of heavy trade screenshot files without remote server costs. |
 
 ---
@@ -93,8 +110,8 @@ graph TD
 ## 🚀 Quickstart Guide
 
 ### System Requirements
-* **Node.js**: `v20.x` or higher (LTS recommended)
-* **NPM**: `v10.x` or higher
+* **Node.js**: `v26.0.0` or higher (Active LTS recommended)
+* **NPM**: `v11.0.0` or higher
 * **Git**: `2.30+`
 
 ### 1. Clone the Repository
@@ -148,40 +165,43 @@ CryptoOS/
 │   ├── workflows/ci.yml         # Automated Lint & TypeScript typechecking
 │   ├── ISSUE_TEMPLATE/          # Structured Bug & Feature issue templates
 │   └── pull_request_template.md # Standardized PR review checklist
-├── backend/                     # Express REST API Server
+├── backend/                     # Express REST API Server (Node.js 26 LTS)
 │   ├── src/
-│   │   ├── controllers/         # Request handlers (Market, Ideas, Journal)
-│   │   ├── database/            # SQLite schema migrations and connection pool
-│   │   ├── routes/              # Express API endpoints
-│   │   └── services/            # External market data scrapers & calculation engines
+│   │   ├── modules/             # Modular Domain Services
+│   │   │   ├── auth/            # JWT authentication & session management
+│   │   │   ├── market/          # Macro intel, ECB forex & CoinGecko proxies
+│   │   │   ├── ideas/           # 4-Pillars swing trade incubator
+│   │   │   ├── journal/         # Trade execution & psychology post-mortem
+│   │   │   ├── portfolio/       # Spot portfolio allocations & rebalancing
+│   │   │   ├── cashflow/        # Treasury inflow/outflow ledger
+│   │   │   └── settings/        # Disaster recovery backup engine & webhooks
+│   │   ├── db/                  # Drizzle ORM schema & LibSQL client setup
+│   │   ├── middleware/          # JWT auth, error handling & security middleware
+│   │   └── server.ts            # Application bootstrapper
 │   └── tsconfig.json
-├── data/                        # Local SQLite database files (gitignored)
 ├── docs/                        # Deep-dive architecture & engineering specs
 │   ├── API_SPEC.md              # Complete REST API specification
 │   ├── ARCHITECTURE.md          # System design & component diagrams
+│   ├── DEPLOYMENT_GUIDE.md      # VPS & production deployment handbook
 │   ├── DESIGN.md                # Cardless Pure Black design tokens & guidelines
 │   └── PRD.md                   # Product Requirements Document
-├── frontend/                    # Vite + React 19 Client
+├── frontend/                    # Vite 6 + React 19 Client
 │   ├── src/
 │   │   ├── components/          # Reusable UI widgets & TokenIcon resolver
-│   │   ├── pages/               # Dashboard, Pipeline, Calculator, Journal
-│   │   ├── services/            # API client and Dexie IndexedDB client
-│   │   ├── store/               # Zustand state stores (Settings, Exchange rates)
+│   │   ├── pages/               # Dashboard, Pipeline, Calculator, Journal, Settings
+│   │   ├── services/            # Axios API client & Dexie IndexedDB client
+│   │   ├── store/               # Zustand state stores (Settings, Auth, Rates)
 │   │   ├── types/               # TypeScript domain interfaces
+│   │   ├── utils/               # Math calculations & UTF-8 BOM CSV exporters
 │   │   └── index.css            # OLED design tokens & global typography
 │   └── vite.config.ts
-├── .env.example                 # Example environment template
-├── .gitignore                   # Comprehensive secret & build ignore rules
-├── CONTRIBUTING.md              # Contribution standards & Git guidelines
-├── CODE_OF_CONDUCT.md           # Community pledge & standards
-├── LICENSE                      # MIT Open Source License
-├── package.json                 # Monorepo workspaces manifest
+├── package.json                 # Monorepo workspaces manifest (Node.js 26+ engine)
 └── README.md                    # Institutional Project Documentation
 ```
 
 ---
 
-## 🔌 API Endpoints
+## 🔌 API Endpoints Summary
 
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
@@ -189,23 +209,28 @@ CryptoOS/
 | `GET` | `/api/market/intel` | Aggregated market data: Fed watch, dominance, sentiment. |
 | `GET` | `/api/ideas` | Retrieve active trade pipeline incubator setups. |
 | `POST` | `/api/ideas` | Save a new quantitative trade idea with SL/TP targets. |
-| `DELETE`| `/api/ideas/:id` | Delete an idea from the pipeline incubator. |
-| `GET` | `/api/journal` | Fetch trade log history with realized PnL. |
-| `POST` | `/api/journal` | Create a new trade position entry. |
-| `POST` | `/api/journal/:id/close` | Close trade position, compute realized PnL, and log lessons. |
+| `GET` | `/api/journal/trades` | Fetch complete trading journal execution ledger. |
+| `POST` | `/api/journal/trades` | Log a new trade position entry. |
+| `POST` | `/api/journal/trades/:id/close` | Close trade position, compute realized PnL, and log lessons. |
+| `GET` | `/api/portfolio/summary` | Retrieve spot asset allocations and target drift. |
+| `GET` | `/api/cashflow` | Fetch capital liquidity ledger (deposits, yields, withdrawals). |
+| `GET` | `/api/settings/backup/export` | Export per-user master disaster recovery snapshot archive (.json). |
+| `POST` | `/api/settings/backup/import` | Atomic database restore with Merge or Clean Rebuild modes. |
+| `POST` | `/api/settings/webhook/telegram` | Dispatch test ping to private Telegram bot chat. |
+| `POST` | `/api/settings/webhook/discord` | Dispatch test embed to Discord channel webhook. |
 
 ---
 
 ## 🎨 Design Philosophy: Cardless Pure Black OLED
 
-CryptoOS adheres strictly to **Emil Kowalski's Design Engineering** principles:
-1. **Zero Grey Container Clutter**: We eliminate outer boxed borders (`border-left: none`, `border-right: none`) in favor of seamless horizontal dividing hairlines.
-2. **Pure Black Ground (`#000000`)**: Minimizes eye strain during long-session quantitative monitoring and delivers infinite contrast on OLED panels.
-3. **Restrained Neon Accents**:
+CryptoOS adheres strictly to **Emil Kowalski's Design Engineering** and modern Apple interface principles:
+1. **Zero Grey Container Clutter**: We eliminate unnecessary heavy box outlines in favor of seamless horizontal dividing hairlines and grouped inset surfaces.
+2. **Pure Black Ground (`#000000`)**: Minimizes eye strain during multi-hour trading sessions and provides infinite contrast on OLED displays.
+3. **Restrained Color Hierarchy**:
    * **Terminal Gold (`#D4AF37`)**: Primary brand identity and key focus metrics.
    * **Bullish Emerald (`#10B981`)**: Long positions, positive return, and safety buffers.
    * **Bearish Rose (`#F43F5E`)**: Short positions, stop losses, and danger thresholds.
-   * **Monospace Data Numbers**: Financial numerals rendered in `JetBrains Mono` for rapid column scanning.
+   * **Tabular JetBrains Mono**: Financial numerals rendered in fixed-width tabular numbers for instantaneous column scanning.
 
 ---
 

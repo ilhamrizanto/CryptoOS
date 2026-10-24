@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { marketService } from './market.service.js';
 import { ValidationError } from '../../utils/errors.js';
+import { requireAuth } from '../../middleware/auth.middleware.js';
 
 export const marketRouter = Router();
 
@@ -44,7 +45,7 @@ const fedwatchSchema = z.object({
 });
 
 // PATCH /api/market/fedwatch - Update FedWatch probability manually
-marketRouter.patch('/fedwatch', async (req, res, next) => {
+marketRouter.patch('/fedwatch', requireAuth, async (req, res, next) => {
   try {
     const parsed = fedwatchSchema.safeParse(req.body);
     if (!parsed.success) {

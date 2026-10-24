@@ -14,11 +14,16 @@ import {
   BookOpen,
   ArrowUpRight,
   Activity,
+  Zap,
+  ArrowRightLeft,
+  X,
+  Dice5,
 } from 'lucide-react';
 import { api } from '../services/api';
 import { DualCurrencyValue } from '../components/ui/DualCurrencyValue';
 import { TradeIdea } from '../types/trade.types';
 import { TokenIcon } from '../components/common/TokenIcon';
+import { MonteCarloEngine } from '../components/montecarlo/MonteCarloEngine';
 
 export const CalculatorPage: React.FC = () => {
   const location = useLocation();
@@ -33,9 +38,23 @@ export const CalculatorPage: React.FC = () => {
   const [takeProfitPrice, setTakeProfitPrice] = useState<number>(210.0);
   const [direction, setDirection] = useState<'LONG' | 'SHORT'>('LONG');
   const [selectedLeverage, setSelectedLeverage] = useState<number>(5);
+  // Rebalance Context (when redirected from Rebalancing Matrix)
+  interface RebalanceContext {
+    action: 'BUY' | 'SELL';
+    targetDiffUsd: number;
+    targetDiffCoins: number;
+    currentWeight: number;
+    targetWeight: number;
+    category?: string;
+    reason?: string;
+    exchange?: string;
+  }
+  const [rebalanceData, setRebalanceData] = useState<RebalanceContext | null>(null);
+  const [rebalanceTranche, setRebalanceTranche] = useState<number>(100);
 
   // Kelly Criterion Settings
   const [historicalWinRate, setHistoricalWinRate] = useState<number>(55); // 55%
+  const [showMonteCarloModal, setShowMonteCarloModal] = useState(false);
 
   // Pipeline Ideas for Quick Import
   const [ideas, setIdeas] = useState<TradeIdea[]>([]);
@@ -57,18 +76,58 @@ export const CalculatorPage: React.FC = () => {
       .catch((err) => console.error('Failed to load ideas in calculator:', err));
   }, []);
 
-  // Handle passed location state from Pipeline or elsewhere
+  // Handle passed location state from Pipeline or Rebalancing Matrix
   useEffect(() => {
     if (location.state) {
       const state = location.state as any;
-      if (state.ticker) setTicker(state.ticker);
-      if (state.direction) setDirection(state.direction);
-      if (state.entryPrice) setEntryPrice(Number(state.entryPrice));
-      if (state.stopLossPrice) setStopLossPrice(Number(state.stopLossPrice));
-      if (state.takeProfitPrice) setTakeProfitPrice(Number(state.takeProfitPrice));
-      if (state.riskPercent) setRiskPercent(Number(state.riskPercent));
+      if (state.source === 'rebalance') {
+        if (state.ticker) setTicker(state.ticker);
+        const dir = state.rebalanceAction === 'SELL' ? 'SHORT' : 'LONG';
+        setDirection(state.direction || dir);
+        const ep = Number(state.entryPrice) || 1;
+        setEntryPrice(ep);
+        if (state.portfolioNetWorth) setAccountSize(Number(state.portfolioNetWorth));
+        setSelectedLeverage(1); // Default to 1x Spot for rebalancing
 
-      showToast(`Setup ${state.ticker || ''} (${state.direction || 'LONG'}) imported from Pipeline!`);
+        const diffUsd = Number(state.targetDiffUsd) || 0;
+        const diffCoins = Number(state.targetDiffCoins) || (ep > 0 ? diffUsd / ep : 0);
+
+        // Pre-configure realistic 5% SL and 10% TP buffers
+        if (dir === 'LONG') {
+          setStopLossPrice(Number((ep * 0.95).toFixed(4)));
+          setTakeProfitPrice(Number((ep * 1.10).toFixed(4)));
+        } else {
+          setStopLossPrice(Number((ep * 1.05).toFixed(4)));
+          setTakeProfitPrice(Number((ep * 0.90).toFixed(4)));
+        }
+
+        const netWorth = Number(state.portfolioNetWorth) || 25000;
+        const autoRiskPct = Math.min(25, Math.max(1, Number(((diffUsd * 0.05 / netWorth) * 100).toFixed(1))));
+        setRiskPercent(autoRiskPct);
+
+        setRebalanceData({
+          action: state.rebalanceAction || (state.direction === 'SHORT' ? 'SELL' : 'BUY'),
+          targetDiffUsd: diffUsd,
+          targetDiffCoins: diffCoins,
+          currentWeight: Number(state.currentWeight) || 0,
+          targetWeight: Number(state.targetWeight) || 0,
+          category: state.category,
+          reason: state.reason,
+          exchange: state.exchange,
+        });
+        setRebalanceTranche(100);
+
+        showToast(`Mode Rebalance Aktif: ${state.rebalanceAction || 'ORDER'} ${state.ticker} ($${diffUsd.toLocaleString(undefined, { maximumFractionDigits: 0 })})`);
+      } else {
+        if (state.ticker) setTicker(state.ticker);
+        if (state.direction) setDirection(state.direction);
+        if (state.entryPrice) setEntryPrice(Number(state.entryPrice));
+        if (state.stopLossPrice) setStopLossPrice(Number(state.stopLossPrice));
+        if (state.takeProfitPrice) setTakeProfitPrice(Number(state.takeProfitPrice));
+        if (state.riskPercent) setRiskPercent(Number(state.riskPercent));
+
+        showToast(`Setup ${state.ticker || ''} (${state.direction || 'LONG'}) imported from Pipeline!`);
+      }
     }
   }, [location.state]);
 
@@ -183,18 +242,48 @@ Half-Kelly Optimal Risk: ${halfKellyPercent.toFixed(1)}%`;
     setTimeout(() => setCopied(false), 2000);
   };
 
+  // Copy Spot Rebalance Order Syntax
+  const handleCopyRebalanceOrder = () => {
+    if (!rebalanceData) return;
+    const activeUsd = rebalanceData.targetDiffUsd * (rebalanceTranche / 100);
+    const activeCoins = entryPrice > 0 ? activeUsd / entryPrice : 0;
+    const text = `═══ CRYPTOOS SPOT REBALANCE ORDER ═══
+Exchange: ${rebalanceData.exchange || 'Binance / Bybit'}
+Pair: ${ticker}
+Action: ${rebalanceData.action} (SPOT 1x)
+Order Type: LIMIT / MARKET
+Amount: ${activeCoins.toFixed(4)} ${cleanSymbol}
+Target Value: $${activeUsd.toFixed(2)} USD
+Target Price: $${entryPrice.toLocaleString()}
+Tranche: ${rebalanceTranche}% of $${rebalanceData.targetDiffUsd.toFixed(2)} USD
+Expected Fee (0.075%): ~$${(activeUsd * 0.00075).toFixed(2)} USD
+Portfolio Allocation Shift: ${rebalanceData.currentWeight}% ➔ ${rebalanceData.targetWeight}%`;
+
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    showToast('Order eksekusi rebalancing disalin ke clipboard!');
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   // Dispatch trade to Trade Journal
   const handleDispatchToJournal = () => {
+    const isRebalance = !!rebalanceData;
+    const activeUsd = isRebalance ? rebalanceData.targetDiffUsd * (rebalanceTranche / 100) : totalPositionValueUsd;
+    const activeCoins = isRebalance && entryPrice > 0 ? activeUsd / entryPrice : positionSizeCoins;
+
     navigate('/journal', {
       state: {
         openNewModal: true,
         symbol: ticker,
         direction: direction,
         entryPrice: entryPrice,
-        positionSize: Number(positionSizeCoins.toFixed(3)),
+        positionSize: Number(activeCoins.toFixed(4)),
         stopLossPrice: stopLossPrice,
         takeProfitPrice: takeProfitPrice,
-        notes: `Sized via Position Sizer. Risk: ${riskPercent}% ($${riskAmountUsd.toFixed(2)}), Lev: ${selectedLeverage}x, R:R: 1:${riskRewardRatio.toFixed(2)}.`,
+        notes: isRebalance
+          ? `[REBALANCE ROTATION] ${rebalanceData.action} ${ticker} ($${activeUsd.toFixed(2)} USD • ${rebalanceTranche}% Tranche). Alokasi portofolio: ${rebalanceData.currentWeight}% -> ${rebalanceData.targetWeight}%. ${rebalanceData.reason || 'Eksekusi rotasi balancing portofolio'}.`
+          : `Sized via Position Sizer. Risk: ${riskPercent}% ($${riskAmountUsd.toFixed(2)}), Lev: ${selectedLeverage}x, R:R: 1:${riskRewardRatio.toFixed(2)}.`,
+        psychology: 'CALM',
       },
     });
   };
@@ -215,6 +304,49 @@ Half-Kelly Optimal Risk: ${halfKellyPercent.toFixed(1)}%`;
         <div className="terminal-toast toast-enter">
           <Sparkles size={15} color="var(--color-accent-primary)" />
           <span>{notification}</span>
+        </div>
+      )}
+
+      {/* Monte Carlo Ruin Simulation Modal */}
+      {showMonteCarloModal && (
+        <div
+          className="modal-backdrop-animate"
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.92)',
+            backdropFilter: 'blur(8px)',
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px',
+          }}
+          onClick={() => setShowMonteCarloModal(false)}
+        >
+          <div
+            className="modal-dialog-animate"
+            style={{
+              width: '100%',
+              maxWidth: '960px',
+              maxHeight: '90vh',
+              overflowY: 'auto',
+              backgroundColor: '#0a0a0c',
+              borderRadius: 'var(--radius-lg)',
+              border: '1px solid rgba(212, 175, 55, 0.4)',
+              boxShadow: '0 25px 80px rgba(0, 0, 0, 0.95)',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <MonteCarloEngine
+              initialWinRate={historicalWinRate || 55}
+              initialPayoff={riskRewardRatio > 0 ? parseFloat(riskRewardRatio.toFixed(2)) : 2.0}
+              initialAccountSize={accountSize || 25000}
+              initialRiskPercent={riskPercent || 2.0}
+              sourceLabel={`Sizer: ${ticker}`}
+              onClose={() => setShowMonteCarloModal(false)}
+            />
+          </div>
         </div>
       )}
 
@@ -261,6 +393,23 @@ Half-Kelly Optimal Risk: ${halfKellyPercent.toFixed(1)}%`;
           >
             {copied ? <Check size={14} color="var(--color-bullish)" /> : <Copy size={14} />}
             <span>{copied ? 'Copied Blueprint' : 'Copy Parameters'}</span>
+          </button>
+
+          <button
+            id="btn-open-montecarlo"
+            className="btn btn-secondary"
+            onClick={() => setShowMonteCarloModal(true)}
+            style={{
+              height: '34px',
+              fontSize: '12px',
+              padding: '0 12px',
+              backgroundColor: 'rgba(212, 175, 55, 0.08)',
+              borderColor: 'rgba(212, 175, 55, 0.3)',
+              color: 'var(--color-accent-primary)',
+            }}
+          >
+            <Dice5 size={14} color="var(--color-accent-primary)" />
+            <span>Monte Carlo Ruin Engine</span>
           </button>
 
           <button
@@ -354,6 +503,197 @@ Half-Kelly Optimal Risk: ${halfKellyPercent.toFixed(1)}%`;
                 </button>
               );
             })}
+          </div>
+        </div>
+      )}
+
+      {/* 1-Click Rebalance Execution Command Dock */}
+      {rebalanceData && (
+        <div
+          style={{
+            padding: '16px 20px',
+            backgroundColor: '#050505',
+            border: '1px solid rgba(212, 175, 55, 0.35)',
+            borderRadius: 'var(--radius-lg)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '12px',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.7), 0 0 24px rgba(212, 175, 55, 0.08)',
+          }}
+        >
+          {/* Header Row */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '4px 10px',
+                  borderRadius: '4px',
+                  backgroundColor: 'rgba(212, 175, 55, 0.15)',
+                  border: '1px solid rgba(212, 175, 55, 0.35)',
+                  color: 'var(--color-accent-primary)',
+                  fontSize: '11px',
+                  fontWeight: 800,
+                  letterSpacing: '0.04em',
+                }}
+              >
+                <Zap size={13} />
+                <span>1-CLICK REBALANCE EXECUTION ENGINE</span>
+              </div>
+              <span
+                style={{
+                  fontSize: '10px',
+                  padding: '2px 8px',
+                  borderRadius: '4px',
+                  fontWeight: 800,
+                  backgroundColor: rebalanceData.action === 'BUY' ? 'rgba(48, 209, 88, 0.15)' : 'rgba(244, 63, 94, 0.15)',
+                  color: rebalanceData.action === 'BUY' ? 'var(--color-bullish)' : 'var(--color-bearish)',
+                  border: rebalanceData.action === 'BUY' ? '1px solid rgba(48, 209, 88, 0.35)' : '1px solid rgba(244, 63, 94, 0.35)',
+                }}
+              >
+                {rebalanceData.action === 'BUY' ? 'ACCUMULATE (BUY)' : 'TRIM (SELL)'}
+              </span>
+              <span style={{ fontSize: '13px', fontWeight: 800, color: '#ffffff' }}>
+                {ticker}
+              </span>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <button
+                onClick={handleCopyRebalanceOrder}
+                className="btn btn-secondary"
+                style={{ height: '30px', fontSize: '11px', padding: '0 10px', display: 'flex', alignItems: 'center', gap: '5px' }}
+              >
+                <Copy size={12} />
+                <span>Copy Spot Order</span>
+              </button>
+              <button
+                onClick={handleDispatchToJournal}
+                className="btn btn-primary"
+                style={{ height: '30px', fontSize: '11px', padding: '0 12px', display: 'flex', alignItems: 'center', gap: '5px', fontWeight: 800 }}
+              >
+                <BookOpen size={12} />
+                <span>Log to Trade Journal</span>
+              </button>
+              <button
+                onClick={() => setRebalanceData(null)}
+                style={{ background: 'none', border: 'none', color: 'var(--color-text-muted)', cursor: 'pointer', padding: '4px' }}
+                title="Dismiss Rebalance Mode"
+              >
+                <X size={16} />
+              </button>
+            </div>
+          </div>
+
+          {/* Sizing & Tranche Controls Bar */}
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+              gap: '12px',
+              padding: '12px 14px',
+              backgroundColor: 'rgba(255, 255, 255, 0.02)',
+              borderRadius: 'var(--radius-md)',
+              border: '1px solid rgba(255, 255, 255, 0.05)',
+            }}
+          >
+            {/* Metric 1: Target Dollar Volume */}
+            <div>
+              <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', fontWeight: 700, display: 'block' }}>
+                TARGET ROTATION VOLUME ({rebalanceTranche}% TRANCHE)
+              </span>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginTop: '2px' }}>
+                <span className="mono" style={{ fontSize: '18px', fontWeight: 900, color: '#ffffff' }}>
+                  ${(rebalanceData.targetDiffUsd * (rebalanceTranche / 100)).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                </span>
+                <span className="mono" style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>
+                  USD
+                </span>
+              </div>
+            </div>
+
+            {/* Metric 2: Spot Coin Units */}
+            <div>
+              <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', fontWeight: 700, display: 'block' }}>
+                EXACT SPOT ORDER QUANTITY
+              </span>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginTop: '2px' }}>
+                <span className="mono" style={{ fontSize: '18px', fontWeight: 900, color: rebalanceData.action === 'BUY' ? 'var(--color-bullish)' : 'var(--color-amber)' }}>
+                  {entryPrice > 0 ? ((rebalanceData.targetDiffUsd * (rebalanceTranche / 100)) / entryPrice).toFixed(4) : '0.0000'}
+                </span>
+                <span className="mono" style={{ fontSize: '11px', color: '#ffffff', fontWeight: 700 }}>
+                  {cleanSymbol}
+                </span>
+              </div>
+            </div>
+
+            {/* Metric 3: Portfolio Weight Impact */}
+            <div>
+              <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', fontWeight: 700, display: 'block' }}>
+                ALOKASI PORTOFOLIO SEBELUM &rarr; SESUDAH
+              </span>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginTop: '2px' }}>
+                <span className="mono" style={{ fontSize: '15px', fontWeight: 800, color: 'var(--color-text-secondary)' }}>
+                  {rebalanceData.currentWeight}%
+                </span>
+                <ArrowRightLeft size={12} color="var(--color-accent-primary)" />
+                <span className="mono" style={{ fontSize: '15px', fontWeight: 900, color: 'var(--color-bullish)' }}>
+                  {rebalanceData.targetWeight}%
+                </span>
+                <span style={{ fontSize: '10px', color: 'var(--color-text-muted)' }}>
+                  ({rebalanceData.targetWeight - rebalanceData.currentWeight > 0 ? '+' : ''}{(rebalanceData.targetWeight - rebalanceData.currentWeight).toFixed(1)}% rotasi)
+                </span>
+              </div>
+            </div>
+
+            {/* Metric 4: Tranche Stepper */}
+            <div>
+              <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', fontWeight: 700, display: 'block', marginBottom: '4px' }}>
+                SPLIT DCA TRANCHE:
+              </span>
+              <div style={{ display: 'flex', gap: '4px' }}>
+                {[100, 50, 33, 25].map((pct) => (
+                  <button
+                    key={pct}
+                    type="button"
+                    onClick={() => {
+                      setRebalanceTranche(pct);
+                      const activeUsd = rebalanceData.targetDiffUsd * (pct / 100);
+                      const autoRiskPct = Math.min(25, Math.max(1, Number(((activeUsd * 0.05 / accountSize) * 100).toFixed(1))));
+                      setRiskPercent(autoRiskPct);
+                    }}
+                    style={{
+                      flex: 1,
+                      padding: '4px 0',
+                      borderRadius: 'var(--radius-xs)',
+                      border: rebalanceTranche === pct ? '1px solid var(--color-accent-primary)' : '1px solid rgba(255, 255, 255, 0.08)',
+                      backgroundColor: rebalanceTranche === pct ? 'rgba(212, 175, 55, 0.2)' : 'rgba(255, 255, 255, 0.03)',
+                      color: rebalanceTranche === pct ? 'var(--color-accent-primary)' : 'var(--color-text-secondary)',
+                      fontSize: '10px',
+                      fontWeight: 800,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {pct}%
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Subtext info */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '10.5px', color: 'var(--color-text-secondary)' }}>
+            <span>
+              ℹ️ Parameter Sizer di bawah telah disinkronkan secara otomatis untuk Spot 1x execution. Est. Fee Taker (0.075%): ~${((rebalanceData.targetDiffUsd * (rebalanceTranche / 100)) * 0.00075).toFixed(2)} USD.
+            </span>
+            <button
+              onClick={() => navigate('/rebalancing')}
+              style={{ background: 'none', border: 'none', color: 'var(--color-accent-primary)', fontSize: '10.5px', cursor: 'pointer', fontWeight: 700 }}
+            >
+              &larr; Kembali ke Rebalancing Matrix
+            </button>
           </div>
         </div>
       )}
