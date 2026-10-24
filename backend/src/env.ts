@@ -24,7 +24,7 @@ const envSchema = z.object({
   GOOGLE_PROJECT_ID: z.string().optional().default('idyllic-lattice-434108-s8'),
   GOOGLE_APPLICATION_CREDENTIALS: z.string().optional().default('./CryptoOS-GAService.json'),
 
-  // Exchange API credentials (optional)
+  // Exchange API credentials (optional - Global & Indonesian Local)
   BINANCE_API_KEY: z.string().optional().default(''),
   BINANCE_API_SECRET: z.string().optional().default(''),
   BYBIT_API_KEY: z.string().optional().default(''),
@@ -32,6 +32,22 @@ const envSchema = z.object({
   OKX_API_KEY: z.string().optional().default(''),
   OKX_API_SECRET: z.string().optional().default(''),
   OKX_PASSPHRASE: z.string().optional().default(''),
+  MEXC_API_KEY: z.string().optional().default(''),
+  MEXC_API_SECRET: z.string().optional().default(''),
+  INDODAX_API_KEY: z.string().optional().default(''),
+  INDODAX_API_SECRET: z.string().optional().default(''),
+  TOKOCRYPTO_API_KEY: z.string().optional().default(''),
+  TOKOCRYPTO_API_SECRET: z.string().optional().default(''),
+  TRIV_API_KEY: z.string().optional().default(''),
+  TRIV_API_SECRET: z.string().optional().default(''),
+  KUCOIN_API_KEY: z.string().optional().default(''),
+  KUCOIN_API_SECRET: z.string().optional().default(''),
+  KUCOIN_PASSPHRASE: z.string().optional().default(''),
+  GATEIO_API_KEY: z.string().optional().default(''),
+  GATEIO_API_SECRET: z.string().optional().default(''),
+  BITGET_API_KEY: z.string().optional().default(''),
+  BITGET_API_SECRET: z.string().optional().default(''),
+  BITGET_PASSPHRASE: z.string().optional().default(''),
   
   // Market APIs (optional)
   FRED_API_KEY: z.string().optional().default(''),

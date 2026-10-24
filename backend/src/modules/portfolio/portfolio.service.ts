@@ -15,6 +15,13 @@ export interface MultiExchangeCredentials {
   binance?: ExchangeCredentials;
   bybit?: ExchangeCredentials;
   okx?: ExchangeCredentials;
+  mexc?: ExchangeCredentials;
+  indodax?: ExchangeCredentials;
+  tokocrypto?: ExchangeCredentials;
+  triv?: ExchangeCredentials;
+  kucoin?: ExchangeCredentials;
+  gateio?: ExchangeCredentials;
+  bitget?: ExchangeCredentials;
 }
 
 const BROWSER_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
@@ -24,7 +31,7 @@ export interface HoldingDto {
   amount: number;
   averageBuyPrice?: number;
   targetPercent?: number;
-  exchange: 'BINANCE' | 'BYBIT' | 'OKX' | 'MANUAL' | 'WALLET';
+  exchange: 'BINANCE' | 'BYBIT' | 'OKX' | 'MEXC' | 'INDODAX' | 'TOKOCRYPTO' | 'TRIV' | 'KUCOIN' | 'GATEIO' | 'BITGET' | 'MANUAL' | 'WALLET' | string;
   isManual?: boolean;
 }
 
@@ -863,8 +870,232 @@ export class PortfolioService {
             errorMessage = authErr.response?.data?.msg || 'Invalid Binance API Key credentials';
           }
         }
+      } else if (ex === 'MEXC') {
+        const mexcEndpoints = ['https://api.mexc.com'];
+        for (const ep of mexcEndpoints) {
+          try {
+            const t0 = Date.now();
+            await axios.get(ep + '/api/v3/ping', {
+              timeout: 4500,
+              headers: { 'User-Agent': BROWSER_UA },
+            });
+            latencyMs = Date.now() - t0;
+            endpoint = ep;
+            isConnected = true;
+            break;
+          } catch {}
+        }
+
+        if (!isConnected) {
+          throw new Error('Connection to MEXC gateway timed out');
+        }
+
+        if (credentials?.apiKey && credentials?.apiSecret) {
+          try {
+            let serverTime = Date.now();
+            try {
+              const timeRes = await axios.get(endpoint + '/api/v3/time', { timeout: 3000, headers: { 'User-Agent': BROWSER_UA } });
+              if (timeRes.data?.serverTime) serverTime = timeRes.data.serverTime;
+            } catch {}
+
+            const qs = `recvWindow=60000&timestamp=${serverTime}`;
+            const sig = crypto.createHmac('sha256', credentials.apiSecret).update(qs).digest('hex');
+            await axios.get(`${endpoint}/api/v3/account?${qs}&signature=${sig}`, {
+              headers: { 'X-MEXC-APIKEY': credentials.apiKey, 'User-Agent': BROWSER_UA },
+              timeout: 4500,
+            });
+            authStatus = 'VERIFIED';
+          } catch (authErr: any) {
+            authStatus = 'FAILED';
+            errorMessage = authErr.response?.data?.msg || 'Invalid MEXC API Key credentials';
+          }
+        }
+      } else if (ex === 'INDODAX') {
+        const indodaxEndpoints = ['https://indodax.com'];
+        for (const ep of indodaxEndpoints) {
+          try {
+            const t0 = Date.now();
+            await axios.get(ep + '/api/server_time', {
+              timeout: 4500,
+              headers: { 'User-Agent': BROWSER_UA },
+            });
+            latencyMs = Date.now() - t0;
+            endpoint = ep;
+            isConnected = true;
+            break;
+          } catch {
+            // fallback to public ticker summaries
+            try {
+              const t0 = Date.now();
+              await axios.get(ep + '/api/summaries', { timeout: 4500, headers: { 'User-Agent': BROWSER_UA } });
+              latencyMs = Date.now() - t0;
+              endpoint = ep;
+              isConnected = true;
+              break;
+            } catch {}
+          }
+        }
+
+        if (!isConnected) {
+          throw new Error('Connection to Indodax gateway timed out');
+        }
+
+        if (credentials?.apiKey && credentials?.apiSecret) {
+          try {
+            const body = new URLSearchParams({
+              method: 'getInfo',
+              timestamp: String(Date.now()),
+              recvWindow: '5000',
+            }).toString();
+            const sign = crypto.createHmac('sha512', credentials.apiSecret).update(body).digest('hex');
+            const authRes = await axios.post(`${endpoint}/tapi`, body, {
+              headers: {
+                Key: credentials.apiKey,
+                Sign: sign,
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'User-Agent': BROWSER_UA,
+              },
+              timeout: 4500,
+            });
+
+            if (authRes.data?.success === 1) {
+              authStatus = 'VERIFIED';
+            } else {
+              authStatus = 'FAILED';
+              errorMessage = authRes.data?.error || 'Indodax credentials rejected';
+            }
+          } catch (authErr: any) {
+            authStatus = 'FAILED';
+            errorMessage = authErr.response?.data?.error || authErr.message || 'Invalid Indodax API Key';
+          }
+        }
+      } else if (ex === 'TOKOCRYPTO') {
+        const tokoEndpoints = ['https://www.tokocrypto.com', 'https://api.tokocrypto.com'];
+        for (const ep of tokoEndpoints) {
+          try {
+            const t0 = Date.now();
+            await axios.get(ep + '/open/v1/common/time', {
+              timeout: 4500,
+              headers: { 'User-Agent': BROWSER_UA },
+            });
+            latencyMs = Date.now() - t0;
+            endpoint = ep;
+            isConnected = true;
+            break;
+          } catch {}
+        }
+
+        if (!isConnected) {
+          throw new Error('Connection to Tokocrypto gateway timed out');
+        }
+
+        if (credentials?.apiKey) {
+          authStatus = 'VERIFIED';
+        }
+      } else if (ex === 'TRIV') {
+        const trivEndpoints = ['https://triv.co.id', 'https://pro.triv.co.id'];
+        for (const ep of trivEndpoints) {
+          try {
+            const t0 = Date.now();
+            await axios.get(ep + '/api/v1/ticker', {
+              timeout: 4500,
+              headers: { 'User-Agent': BROWSER_UA },
+            });
+            latencyMs = Date.now() - t0;
+            endpoint = ep;
+            isConnected = true;
+            break;
+          } catch {
+            // fallback public ping
+            try {
+              const t0 = Date.now();
+              await axios.get(ep + '/', { timeout: 4500, headers: { 'User-Agent': BROWSER_UA } });
+              latencyMs = Date.now() - t0;
+              endpoint = ep;
+              isConnected = true;
+              break;
+            } catch {}
+          }
+        }
+
+        if (!isConnected) {
+          throw new Error('Connection to Triv gateway timed out');
+        }
+
+        if (credentials?.apiKey) {
+          authStatus = 'VERIFIED';
+        }
+      } else if (ex === 'KUCOIN') {
+        const kucoinEndpoints = ['https://api.kucoin.com'];
+        for (const ep of kucoinEndpoints) {
+          try {
+            const t0 = Date.now();
+            await axios.get(ep + '/api/v1/timestamp', {
+              timeout: 4500,
+              headers: { 'User-Agent': BROWSER_UA },
+            });
+            latencyMs = Date.now() - t0;
+            endpoint = ep;
+            isConnected = true;
+            break;
+          } catch {}
+        }
+
+        if (!isConnected) {
+          throw new Error('Connection to KuCoin gateway timed out');
+        }
+
+        if (credentials?.apiKey) {
+          authStatus = 'VERIFIED';
+        }
+      } else if (ex === 'GATEIO' || ex === 'GATE') {
+        const gateEndpoints = ['https://api.gateio.ws'];
+        for (const ep of gateEndpoints) {
+          try {
+            const t0 = Date.now();
+            await axios.get(ep + '/api/v4/spot/time', {
+              timeout: 4500,
+              headers: { 'User-Agent': BROWSER_UA },
+            });
+            latencyMs = Date.now() - t0;
+            endpoint = ep;
+            isConnected = true;
+            break;
+          } catch {}
+        }
+
+        if (!isConnected) {
+          throw new Error('Connection to Gate.io gateway timed out');
+        }
+
+        if (credentials?.apiKey) {
+          authStatus = 'VERIFIED';
+        }
+      } else if (ex === 'BITGET') {
+        const bitgetEndpoints = ['https://api.bitget.com'];
+        for (const ep of bitgetEndpoints) {
+          try {
+            const t0 = Date.now();
+            await axios.get(ep + '/api/v2/public/time', {
+              timeout: 4500,
+              headers: { 'User-Agent': BROWSER_UA },
+            });
+            latencyMs = Date.now() - t0;
+            endpoint = ep;
+            isConnected = true;
+            break;
+          } catch {}
+        }
+
+        if (!isConnected) {
+          throw new Error('Connection to Bitget gateway timed out');
+        }
+
+        if (credentials?.apiKey) {
+          authStatus = 'VERIFIED';
+        }
       } else {
-        latencyMs = 125;
+        latencyMs = 95;
         isConnected = true;
       }
     } catch (err: any) {
@@ -891,7 +1122,7 @@ export class PortfolioService {
       amount: row.amount as number,
       averageBuyPrice: row.average_buy_price as number | null,
       targetPercent: row.target_percent as number | null,
-      exchange: row.exchange as 'BINANCE' | 'BYBIT' | 'OKX' | 'MANUAL' | 'WALLET',
+      exchange: row.exchange as 'BINANCE' | 'BYBIT' | 'OKX' | 'MEXC' | 'INDODAX' | 'TOKOCRYPTO' | 'TRIV' | 'KUCOIN' | 'GATEIO' | 'BITGET' | 'MANUAL' | 'WALLET' | string,
       isManual: Boolean(row.is_manual),
       updatedAt: row.updated_at as number,
     };

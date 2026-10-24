@@ -185,6 +185,22 @@ export const SettingsPage: React.FC = () => {
   const [okxKey, setOkxKey] = useState(() => localStorage.getItem('cryptoos_okx_key') || '');
   const [okxSecret, setOkxSecret] = useState(() => localStorage.getItem('cryptoos_okx_secret') || '');
   const [okxPassphrase, setOkxPassphrase] = useState(() => localStorage.getItem('cryptoos_okx_pass') || '');
+  const [mexcKey, setMexcKey] = useState(() => localStorage.getItem('cryptoos_mexc_key') || '');
+  const [mexcSecret, setMexcSecret] = useState(() => localStorage.getItem('cryptoos_mexc_secret') || '');
+  const [indodaxKey, setIndodaxKey] = useState(() => localStorage.getItem('cryptoos_indodax_key') || '');
+  const [indodaxSecret, setIndodaxSecret] = useState(() => localStorage.getItem('cryptoos_indodax_secret') || '');
+  const [tokocryptoKey, setTokocryptoKey] = useState(() => localStorage.getItem('cryptoos_tokocrypto_key') || '');
+  const [tokocryptoSecret, setTokocryptoSecret] = useState(() => localStorage.getItem('cryptoos_tokocrypto_secret') || '');
+  const [trivKey, setTrivKey] = useState(() => localStorage.getItem('cryptoos_triv_key') || '');
+  const [trivSecret, setTrivSecret] = useState(() => localStorage.getItem('cryptoos_triv_secret') || '');
+  const [kucoinKey, setKucoinKey] = useState(() => localStorage.getItem('cryptoos_kucoin_key') || '');
+  const [kucoinSecret, setKucoinSecret] = useState(() => localStorage.getItem('cryptoos_kucoin_secret') || '');
+  const [kucoinPassphrase, setKucoinPassphrase] = useState(() => localStorage.getItem('cryptoos_kucoin_pass') || '');
+  const [gateioKey, setGateioKey] = useState(() => localStorage.getItem('cryptoos_gateio_key') || '');
+  const [gateioSecret, setGateioSecret] = useState(() => localStorage.getItem('cryptoos_gateio_secret') || '');
+  const [bitgetKey, setBitgetKey] = useState(() => localStorage.getItem('cryptoos_bitget_key') || '');
+  const [bitgetSecret, setBitgetSecret] = useState(() => localStorage.getItem('cryptoos_bitget_secret') || '');
+  const [bitgetPassphrase, setBitgetPassphrase] = useState(() => localStorage.getItem('cryptoos_bitget_pass') || '');
 
   // Risk Parameters
   const [maxRiskPercent, setMaxRiskPercent] = useState(() => Number(localStorage.getItem('cryptoos_max_risk') || '1.0'));
@@ -209,9 +225,18 @@ export const SettingsPage: React.FC = () => {
   const [alertLargeCashflow, setAlertLargeCashflow] = useState(() => localStorage.getItem('cryptoos_alert_cashflow') === 'true');
 
   // Key Visibility Toggles
-  const [showBinance, setShowBinance] = useState(false);
-  const [showBybit, setShowBybit] = useState(false);
-  const [showOkx, setShowOkx] = useState(false);
+  const [showExchangeKeys, setShowExchangeKeys] = useState<Record<string, boolean>>({});
+  const toggleExchangeVisibility = (id: string) => {
+    setShowExchangeKeys((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  // Exchange Category Filter in UI
+  const [exchangeCategoryFilter, setExchangeCategoryFilter] = useState<'ALL' | 'GLOBAL' | 'LOCAL'>('ALL');
+
+  // Real-time Latency Ping Telemetry Results
+  const [pingResults, setPingResults] = useState<
+    Record<string, { latencyMs: number; isConnected: boolean; authStatus: string; error?: string }>
+  >({});
 
   // Operations Loading States
   const [isTestingExchange, setIsTestingExchange] = useState<string | null>(null);
@@ -304,6 +329,22 @@ export const SettingsPage: React.FC = () => {
     localStorage.setItem('cryptoos_okx_key', okxKey);
     localStorage.setItem('cryptoos_okx_secret', okxSecret);
     localStorage.setItem('cryptoos_okx_pass', okxPassphrase);
+    localStorage.setItem('cryptoos_mexc_key', mexcKey);
+    localStorage.setItem('cryptoos_mexc_secret', mexcSecret);
+    localStorage.setItem('cryptoos_indodax_key', indodaxKey);
+    localStorage.setItem('cryptoos_indodax_secret', indodaxSecret);
+    localStorage.setItem('cryptoos_tokocrypto_key', tokocryptoKey);
+    localStorage.setItem('cryptoos_tokocrypto_secret', tokocryptoSecret);
+    localStorage.setItem('cryptoos_triv_key', trivKey);
+    localStorage.setItem('cryptoos_triv_secret', trivSecret);
+    localStorage.setItem('cryptoos_kucoin_key', kucoinKey);
+    localStorage.setItem('cryptoos_kucoin_secret', kucoinSecret);
+    localStorage.setItem('cryptoos_kucoin_pass', kucoinPassphrase);
+    localStorage.setItem('cryptoos_gateio_key', gateioKey);
+    localStorage.setItem('cryptoos_gateio_secret', gateioSecret);
+    localStorage.setItem('cryptoos_bitget_key', bitgetKey);
+    localStorage.setItem('cryptoos_bitget_secret', bitgetSecret);
+    localStorage.setItem('cryptoos_bitget_pass', bitgetPassphrase);
 
     localStorage.setItem('cryptoos_max_risk', String(maxRiskPercent));
     localStorage.setItem('cryptoos_circuit_dd', String(circuitBreakerDd));
@@ -337,6 +378,22 @@ export const SettingsPage: React.FC = () => {
     localStorage.removeItem('cryptoos_okx_key');
     localStorage.removeItem('cryptoos_okx_secret');
     localStorage.removeItem('cryptoos_okx_pass');
+    localStorage.removeItem('cryptoos_mexc_key');
+    localStorage.removeItem('cryptoos_mexc_secret');
+    localStorage.removeItem('cryptoos_indodax_key');
+    localStorage.removeItem('cryptoos_indodax_secret');
+    localStorage.removeItem('cryptoos_tokocrypto_key');
+    localStorage.removeItem('cryptoos_tokocrypto_secret');
+    localStorage.removeItem('cryptoos_triv_key');
+    localStorage.removeItem('cryptoos_triv_secret');
+    localStorage.removeItem('cryptoos_kucoin_key');
+    localStorage.removeItem('cryptoos_kucoin_secret');
+    localStorage.removeItem('cryptoos_kucoin_pass');
+    localStorage.removeItem('cryptoos_gateio_key');
+    localStorage.removeItem('cryptoos_gateio_secret');
+    localStorage.removeItem('cryptoos_bitget_key');
+    localStorage.removeItem('cryptoos_bitget_secret');
+    localStorage.removeItem('cryptoos_bitget_pass');
 
     localStorage.removeItem('cryptoos_telegram_enabled');
     localStorage.removeItem('cryptoos_telegram_bot_token');
@@ -357,6 +414,23 @@ export const SettingsPage: React.FC = () => {
     setOkxKey('');
     setOkxSecret('');
     setOkxPassphrase('');
+    setMexcKey('');
+    setMexcSecret('');
+    setIndodaxKey('');
+    setIndodaxSecret('');
+    setTokocryptoKey('');
+    setTokocryptoSecret('');
+    setTrivKey('');
+    setTrivSecret('');
+    setKucoinKey('');
+    setKucoinSecret('');
+    setKucoinPassphrase('');
+    setGateioKey('');
+    setGateioSecret('');
+    setBitgetKey('');
+    setBitgetSecret('');
+    setBitgetPassphrase('');
+
     setIsTelegramEnabled(false);
     setTelegramBotToken('');
     setTelegramChatId('');
@@ -372,14 +446,78 @@ export const SettingsPage: React.FC = () => {
     showToast('Terminal workstation reset to factory defaults.');
   };
 
-  // Ping Exchange API
+  // Ping Exchange API via Real Gateway Telemetry
   const handleTestConnection = async (exchangeName: string) => {
     setIsTestingExchange(exchangeName);
     try {
-      await new Promise((r) => setTimeout(r, 700));
-      showToast(`${exchangeName} read-only connection verified successfully.`);
-    } catch {
-      showToast(`Connection to ${exchangeName} failed. Verify your API credentials.`, 'error');
+      const ex = exchangeName.toUpperCase();
+      let creds: { apiKey?: string; apiSecret?: string; passphrase?: string } = {};
+
+      if (ex === 'BINANCE') creds = { apiKey: binanceKey, apiSecret: binanceSecret };
+      else if (ex === 'BYBIT') creds = { apiKey: bybitKey, apiSecret: bybitSecret };
+      else if (ex === 'OKX') creds = { apiKey: okxKey, apiSecret: okxSecret, passphrase: okxPassphrase };
+      else if (ex === 'MEXC') creds = { apiKey: mexcKey, apiSecret: mexcSecret };
+      else if (ex === 'INDODAX') creds = { apiKey: indodaxKey, apiSecret: indodaxSecret };
+      else if (ex === 'TOKOCRYPTO') creds = { apiKey: tokocryptoKey, apiSecret: tokocryptoSecret };
+      else if (ex === 'TRIV') creds = { apiKey: trivKey, apiSecret: trivSecret };
+      else if (ex === 'KUCOIN') creds = { apiKey: kucoinKey, apiSecret: kucoinSecret, passphrase: kucoinPassphrase };
+      else if (ex === 'GATEIO') creds = { apiKey: gateioKey, apiSecret: gateioSecret };
+      else if (ex === 'BITGET') creds = { apiKey: bitgetKey, apiSecret: bitgetSecret, passphrase: bitgetPassphrase };
+
+      const res = await api.post<{
+        success: boolean;
+        data: {
+          exchange: string;
+          endpoint?: string;
+          isConnected: boolean;
+          latencyMs: number;
+          authStatus: 'VERIFIED' | 'FAILED' | 'SKIPPED';
+          errorMessage: string | null;
+        };
+      }>('/portfolio/exchange/test', {
+        exchange: ex,
+        apiKey: creds.apiKey || undefined,
+        apiSecret: creds.apiSecret || undefined,
+        passphrase: creds.passphrase || undefined,
+      });
+
+      if (res.data?.isConnected) {
+        setPingResults((prev) => ({
+          ...prev,
+          [ex]: {
+            latencyMs: res.data.latencyMs,
+            isConnected: true,
+            authStatus: res.data.authStatus,
+            error: res.data.errorMessage || undefined,
+          },
+        }));
+
+        const authSuffix = res.data.authStatus === 'VERIFIED' ? ' • Auth HMAC Signed' : '';
+        showToast(`${exchangeName} latency ${res.data.latencyMs}ms${authSuffix}`);
+      } else {
+        const errorDesc = res.data?.errorMessage || 'Gateway timed out or unreachable';
+        setPingResults((prev) => ({
+          ...prev,
+          [ex]: {
+            latencyMs: res.data?.latencyMs || 0,
+            isConnected: false,
+            authStatus: 'FAILED',
+            error: errorDesc,
+          },
+        }));
+        showToast(`Connection to ${exchangeName} failed: ${errorDesc}`, 'error');
+      }
+    } catch (err: any) {
+      setPingResults((prev) => ({
+        ...prev,
+        [exchangeName.toUpperCase()]: {
+          latencyMs: 0,
+          isConnected: false,
+          authStatus: 'FAILED',
+          error: err.message || 'Network error',
+        },
+      }));
+      showToast(`Connection test failed for ${exchangeName}: ${err.message}`, 'error');
     } finally {
       setIsTestingExchange(null);
     }
@@ -471,6 +609,13 @@ export const SettingsPage: React.FC = () => {
           binanceKey: binanceKey || undefined,
           bybitKey: bybitKey || undefined,
           okxKey: okxKey || undefined,
+          mexcKey: mexcKey || undefined,
+          indodaxKey: indodaxKey || undefined,
+          tokocryptoKey: tokocryptoKey || undefined,
+          trivKey: trivKey || undefined,
+          kucoinKey: kucoinKey || undefined,
+          gateioKey: gateioKey || undefined,
+          bitgetKey: bitgetKey || undefined,
         },
       };
 
@@ -644,7 +789,18 @@ export const SettingsPage: React.FC = () => {
     }
   };
 
-  const configuredExchangesCount = [binanceKey, bybitKey, okxKey].filter(Boolean).length;
+  const configuredExchangesCount = [
+    binanceKey,
+    bybitKey,
+    okxKey,
+    mexcKey,
+    indodaxKey,
+    tokocryptoKey,
+    trivKey,
+    kucoinKey,
+    gateioKey,
+    bitgetKey,
+  ].filter(Boolean).length;
   const isVaultProtected = Boolean(lastBackupTime && Date.now() - lastBackupTime < 86400000 * 7);
 
   return (
@@ -2133,194 +2289,401 @@ export const SettingsPage: React.FC = () => {
       )}
 
       {/* TAB 4: EXCHANGE API CREDENTIALS */}
-      {activeTab === 'exchange' && (
-        <div
-          style={{
-            backgroundColor: '#0c0c0e',
-            border: '1px solid rgba(255, 255, 255, 0.08)',
-            borderRadius: 'var(--radius-lg)',
-            overflow: 'hidden',
-            display: 'flex',
-            flexDirection: 'column',
-            margin: '0 4px',
-          }}
-        >
+      {activeTab === 'exchange' && (() => {
+        const exchangeList = [
+          {
+            id: 'BINANCE',
+            name: 'BINANCE SPOT & EARN',
+            category: 'GLOBAL' as const,
+            badge: 'GLOBAL TIER-1',
+            badgeClass: 'bullish-badge',
+            keyVal: binanceKey,
+            setKey: setBinanceKey,
+            secretVal: binanceSecret,
+            setSecret: setBinanceSecret,
+            hasPassphrase: false,
+          },
+          {
+            id: 'BYBIT',
+            name: 'BYBIT UNIFIED TRADING ACCOUNT (UTA)',
+            category: 'GLOBAL' as const,
+            badge: 'GLOBAL TIER-1',
+            badgeClass: 'bullish-badge',
+            keyVal: bybitKey,
+            setKey: setBybitKey,
+            secretVal: bybitSecret,
+            setSecret: setBybitSecret,
+            hasPassphrase: false,
+          },
+          {
+            id: 'OKX',
+            name: 'OKX TRADING ACCOUNT',
+            category: 'GLOBAL' as const,
+            badge: 'GLOBAL TIER-1',
+            badgeClass: 'bullish-badge',
+            keyVal: okxKey,
+            setKey: setOkxKey,
+            secretVal: okxSecret,
+            setSecret: setOkxSecret,
+            hasPassphrase: true,
+            passVal: okxPassphrase,
+            setPass: setOkxPassphrase,
+          },
+          {
+            id: 'MEXC',
+            name: 'MEXC GLOBAL SPOT',
+            category: 'GLOBAL' as const,
+            badge: 'HIGH LIQUIDITY',
+            badgeClass: 'cyan-badge',
+            keyVal: mexcKey,
+            setKey: setMexcKey,
+            secretVal: mexcSecret,
+            setSecret: setMexcSecret,
+            hasPassphrase: false,
+          },
+          {
+            id: 'KUCOIN',
+            name: 'KUCOIN SPOT & MARGIN',
+            category: 'GLOBAL' as const,
+            badge: 'GLOBAL EXCHANGE',
+            badgeClass: 'cyan-badge',
+            keyVal: kucoinKey,
+            setKey: setKucoinKey,
+            secretVal: kucoinSecret,
+            setSecret: setKucoinSecret,
+            hasPassphrase: true,
+            passVal: kucoinPassphrase,
+            setPass: setKucoinPassphrase,
+          },
+          {
+            id: 'GATEIO',
+            name: 'GATE.IO SPOT TRADING',
+            category: 'GLOBAL' as const,
+            badge: 'GLOBAL EXCHANGE',
+            badgeClass: 'cyan-badge',
+            keyVal: gateioKey,
+            setKey: setGateioKey,
+            secretVal: gateioSecret,
+            setSecret: setGateioSecret,
+            hasPassphrase: false,
+          },
+          {
+            id: 'BITGET',
+            name: 'BITGET SPOT & FUTURES V2',
+            category: 'GLOBAL' as const,
+            badge: 'GLOBAL TIER-1',
+            badgeClass: 'cyan-badge',
+            keyVal: bitgetKey,
+            setKey: setBitgetKey,
+            secretVal: bitgetSecret,
+            setSecret: setBitgetSecret,
+            hasPassphrase: true,
+            passVal: bitgetPassphrase,
+            setPass: setBitgetPassphrase,
+          },
+          {
+            id: 'INDODAX',
+            name: 'INDODAX IDR SPOT MARKET',
+            category: 'LOCAL' as const,
+            badge: 'BAPPEBTI REGULATED • INDONESIA',
+            badgeClass: 'amber-badge',
+            keyVal: indodaxKey,
+            setKey: setIndodaxKey,
+            secretVal: indodaxSecret,
+            setSecret: setIndodaxSecret,
+            hasPassphrase: false,
+          },
+          {
+            id: 'TOKOCRYPTO',
+            name: 'TOKOCRYPTO (BINANCE CLOUD)',
+            category: 'LOCAL' as const,
+            badge: 'BAPPEBTI REGULATED • INDONESIA',
+            badgeClass: 'amber-badge',
+            keyVal: tokocryptoKey,
+            setKey: setTokocryptoKey,
+            secretVal: tokocryptoSecret,
+            setSecret: setTokocryptoSecret,
+            hasPassphrase: false,
+          },
+          {
+            id: 'TRIV',
+            name: 'TRIV PRO & INSTANT',
+            category: 'LOCAL' as const,
+            badge: 'BAPPEBTI REGULATED • INDONESIA',
+            badgeClass: 'amber-badge',
+            keyVal: trivKey,
+            setKey: setTrivKey,
+            secretVal: trivSecret,
+            setSecret: setTrivSecret,
+            hasPassphrase: false,
+          },
+        ];
+
+        const filteredExchanges = exchangeList.filter((ex) => {
+          if (exchangeCategoryFilter === 'GLOBAL') return ex.category === 'GLOBAL';
+          if (exchangeCategoryFilter === 'LOCAL') return ex.category === 'LOCAL';
+          return true;
+        });
+
+        return (
           <div
             style={{
-              padding: '14px 20px',
-              borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+              backgroundColor: '#0c0c0e',
+              border: '1px solid rgba(255, 255, 255, 0.08)',
+              borderRadius: 'var(--radius-lg)',
+              overflow: 'hidden',
               display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              backgroundColor: 'rgba(255, 255, 255, 0.02)',
+              flexDirection: 'column',
+              margin: '0 4px',
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Key size={15} color="var(--color-accent-primary)" />
-              <h3 style={{ fontSize: '12px', fontWeight: 800, color: '#fff', textTransform: 'uppercase', letterSpacing: '0.04em', margin: 0 }}>
-                Exchange Read-Only API Credentials
-              </h3>
+            {/* Header with Title and Mode */}
+            <div
+              style={{
+                padding: '14px 20px',
+                borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                backgroundColor: 'rgba(255, 255, 255, 0.02)',
+                flexWrap: 'wrap',
+                gap: '8px',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Key size={15} color="var(--color-accent-primary)" />
+                <h3 style={{ fontSize: '12px', fontWeight: 800, color: '#fff', textTransform: 'uppercase', letterSpacing: '0.04em', margin: 0 }}>
+                  Exchange Read-Only API Credentials
+                </h3>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span className="bullish-badge" style={{ fontSize: '9px', padding: '1px 6px' }}>
+                  10 EXCHANGES SUPPORTED
+                </span>
+                <span className="cyan-badge" style={{ fontSize: '9px', padding: '1px 6px' }}>
+                  ZERO-WITHDRAWAL ENFORCED
+                </span>
+              </div>
             </div>
-            <span className="bullish-badge" style={{ fontSize: '9px', padding: '1px 6px' }}>
-              STRICT READ-ONLY ENFORCEMENT
-            </span>
+
+            <div style={{ padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
+                <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', margin: 0, lineHeight: 1.5, maxWidth: '680px' }}>
+                  API credentials are completely optional and used strictly for automated spot balance verification and latency telemetry. CryptoOS operates under a zero-withdrawal policy and never requires trade execution permissions.
+                </p>
+
+                {/* Segment Filter for Exchange Regions */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', backgroundColor: 'rgba(255, 255, 255, 0.04)', padding: '3px', borderRadius: '6px', border: '1px solid rgba(255, 255, 255, 0.06)' }}>
+                  <button
+                    type="button"
+                    onClick={() => setExchangeCategoryFilter('ALL')}
+                    style={{
+                      padding: '4px 10px',
+                      borderRadius: '4px',
+                      fontSize: '10px',
+                      fontWeight: 800,
+                      cursor: 'pointer',
+                      border: 'none',
+                      backgroundColor: exchangeCategoryFilter === 'ALL' ? 'var(--color-accent-primary)' : 'transparent',
+                      color: exchangeCategoryFilter === 'ALL' ? '#000000' : 'var(--color-text-secondary)',
+                      transition: 'all 0.15s ease',
+                    }}
+                  >
+                    ALL (10)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setExchangeCategoryFilter('GLOBAL')}
+                    style={{
+                      padding: '4px 10px',
+                      borderRadius: '4px',
+                      fontSize: '10px',
+                      fontWeight: 800,
+                      cursor: 'pointer',
+                      border: 'none',
+                      backgroundColor: exchangeCategoryFilter === 'GLOBAL' ? 'var(--color-accent-primary)' : 'transparent',
+                      color: exchangeCategoryFilter === 'GLOBAL' ? '#000000' : 'var(--color-text-secondary)',
+                      transition: 'all 0.15s ease',
+                    }}
+                  >
+                    GLOBAL (7)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setExchangeCategoryFilter('LOCAL')}
+                    style={{
+                      padding: '4px 10px',
+                      borderRadius: '4px',
+                      fontSize: '10px',
+                      fontWeight: 800,
+                      cursor: 'pointer',
+                      border: 'none',
+                      backgroundColor: exchangeCategoryFilter === 'LOCAL' ? 'var(--color-accent-primary)' : 'transparent',
+                      color: exchangeCategoryFilter === 'LOCAL' ? '#000000' : 'var(--color-text-secondary)',
+                      transition: 'all 0.15s ease',
+                    }}
+                  >
+                    INDONESIAN (3)
+                  </button>
+                </div>
+              </div>
+
+              {/* Exchange Cards Grid */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {filteredExchanges.map((ex) => {
+                  const isVisible = Boolean(showExchangeKeys[ex.id]);
+                  const pingInfo = pingResults[ex.id];
+                  const isTesting = isTestingExchange === ex.id;
+
+                  return (
+                    <div
+                      key={ex.id}
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '8px',
+                        padding: '12px 14px',
+                        backgroundColor: 'rgba(255, 255, 255, 0.02)',
+                        border: '1px solid rgba(255, 255, 255, 0.06)',
+                        borderRadius: 'var(--radius-sm)',
+                        transition: 'border-color 0.15s ease',
+                      }}
+                    >
+                      {/* Top Row: Brand & Status Telemetry */}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '9px' }}>
+                          <ExchangeIcon exchange={ex.id} size={16} />
+                          <span style={{ fontSize: '12px', fontWeight: 800, color: '#fff', letterSpacing: '0.02em' }}>
+                            {ex.name}
+                          </span>
+                          <span className={ex.badgeClass} style={{ fontSize: '8.5px', padding: '1px 6px' }}>
+                            {ex.badge}
+                          </span>
+
+                          {/* Ping Result Badge */}
+                          {pingInfo && (
+                            <span
+                              style={{
+                                fontSize: '10px',
+                                fontWeight: 800,
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                color: pingInfo.isConnected ? 'var(--color-bullish)' : 'var(--color-bearish)',
+                                marginLeft: '4px',
+                              }}
+                            >
+                              <span
+                                style={{
+                                  width: '5px',
+                                  height: '5px',
+                                  borderRadius: '50%',
+                                  backgroundColor: pingInfo.isConnected ? 'var(--color-bullish)' : 'var(--color-bearish)',
+                                }}
+                              />
+                              {pingInfo.isConnected ? `${pingInfo.latencyMs}ms • ${pingInfo.authStatus === 'VERIFIED' ? 'Verified' : 'Gateway OK'}` : 'Offline'}
+                            </span>
+                          )}
+                        </div>
+
+                        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                          <button
+                            type="button"
+                            onClick={() => handleTestConnection(ex.id)}
+                            disabled={isTesting}
+                            style={{
+                              background: 'none',
+                              border: 'none',
+                              fontSize: '11px',
+                              color: 'var(--color-accent-primary)',
+                              cursor: 'pointer',
+                              fontWeight: 800,
+                              padding: '2px 6px',
+                              borderRadius: '4px',
+                            }}
+                          >
+                            {isTesting ? 'Pinging Gateway...' : 'Test Ping'}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => toggleExchangeVisibility(ex.id)}
+                            style={{
+                              background: 'none',
+                              border: 'none',
+                              color: 'var(--color-text-muted)',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                            }}
+                            title={isVisible ? 'Hide credentials' : 'Show credentials'}
+                          >
+                            {isVisible ? <EyeOff size={13} /> : <Eye size={13} />}
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Inputs Row */}
+                      <div
+                        style={{
+                          display: 'grid',
+                          gridTemplateColumns: ex.hasPassphrase ? '1fr 1fr 1fr' : '1fr 1fr',
+                          gap: '8px',
+                        }}
+                      >
+                        <input
+                          type={isVisible ? 'text' : 'password'}
+                          value={ex.keyVal}
+                          onChange={(e) => ex.setKey(e.target.value)}
+                          placeholder={`${ex.name.split(' ')[0]} API Key`}
+                          className="form-input mono"
+                          style={{ height: '34px', fontSize: '11px', backgroundColor: '#000000' }}
+                        />
+                        <input
+                          type={isVisible ? 'text' : 'password'}
+                          value={ex.secretVal}
+                          onChange={(e) => ex.setSecret(e.target.value)}
+                          placeholder={`${ex.name.split(' ')[0]} API Secret`}
+                          className="form-input mono"
+                          style={{ height: '34px', fontSize: '11px', backgroundColor: '#000000' }}
+                        />
+                        {ex.hasPassphrase && (
+                          <input
+                            type={isVisible ? 'text' : 'password'}
+                            value={ex.passVal || ''}
+                            onChange={(e) => ex.setPass && ex.setPass(e.target.value)}
+                            placeholder="Passphrase"
+                            className="form-input mono"
+                            style={{ height: '34px', fontSize: '11px', backgroundColor: '#000000' }}
+                          />
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Cryptographic Zero-Knowledge Security Notice */}
+              <div
+                style={{
+                  marginTop: '8px',
+                  padding: '12px 14px',
+                  background: 'rgba(255, 255, 255, 0.02)',
+                  borderRadius: 'var(--radius-sm)',
+                  border: '1px solid rgba(255, 255, 255, 0.06)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                }}
+              >
+                <Info size={16} color="var(--color-accent-primary)" style={{ flexShrink: 0 }} />
+                <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: 1.5 }}>
+                  API keys are stored exclusively in your local browser sandbox. They are never transmitted to unauthorized external servers, never shared with third parties, and withdrawal endpoints are strictly unsupported by the platform architecture.
+                </span>
+              </div>
+            </div>
           </div>
-
-          <div style={{ padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', margin: 0, lineHeight: 1.5 }}>
-              API credentials are completely optional and used strictly for automated spot balance verification. CryptoOS operates under a zero-withdrawal policy and never requires trade execution permissions.
-            </p>
-
-            {/* Binance Spot */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', paddingBottom: '14px', borderBottom: '1px solid rgba(255, 255, 255, 0.06)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <ExchangeIcon exchange="BINANCE" size={16} />
-                  <span style={{ fontSize: '12px', fontWeight: 800, color: '#fff' }}>BINANCE SPOT ACCOUNT</span>
-                </div>
-                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                  <button
-                    onClick={() => handleTestConnection('Binance')}
-                    disabled={isTestingExchange === 'Binance'}
-                    style={{ background: 'none', border: 'none', fontSize: '11px', color: 'var(--color-accent-primary)', cursor: 'pointer', fontWeight: 800 }}
-                  >
-                    {isTestingExchange === 'Binance' ? 'Pinging...' : 'Test Ping'}
-                  </button>
-                  <button
-                    onClick={() => setShowBinance(!showBinance)}
-                    style={{ background: 'none', border: 'none', color: 'var(--color-text-muted)', cursor: 'pointer' }}
-                  >
-                    {showBinance ? <EyeOff size={13} /> : <Eye size={13} />}
-                  </button>
-                </div>
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                <input
-                  type={showBinance ? 'text' : 'password'}
-                  value={binanceKey}
-                  onChange={(e) => setBinanceKey(e.target.value)}
-                  placeholder="Binance API Key"
-                  className="form-input mono"
-                  style={{ height: '34px', fontSize: '11px' }}
-                />
-                <input
-                  type={showBinance ? 'text' : 'password'}
-                  value={binanceSecret}
-                  onChange={(e) => setBinanceSecret(e.target.value)}
-                  placeholder="Binance API Secret"
-                  className="form-input mono"
-                  style={{ height: '34px', fontSize: '11px' }}
-                />
-              </div>
-            </div>
-
-            {/* Bybit Unified */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', paddingBottom: '14px', borderBottom: '1px solid rgba(255, 255, 255, 0.06)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <ExchangeIcon exchange="BYBIT" size={16} />
-                  <span style={{ fontSize: '12px', fontWeight: 800, color: '#fff' }}>BYBIT UNIFIED ACCOUNT</span>
-                </div>
-                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                  <button
-                    onClick={() => handleTestConnection('Bybit')}
-                    disabled={isTestingExchange === 'Bybit'}
-                    style={{ background: 'none', border: 'none', fontSize: '11px', color: 'var(--color-accent-primary)', cursor: 'pointer', fontWeight: 800 }}
-                  >
-                    {isTestingExchange === 'Bybit' ? 'Pinging...' : 'Test Ping'}
-                  </button>
-                  <button
-                    onClick={() => setShowBybit(!showBybit)}
-                    style={{ background: 'none', border: 'none', color: 'var(--color-text-muted)', cursor: 'pointer' }}
-                  >
-                    {showBybit ? <EyeOff size={13} /> : <Eye size={13} />}
-                  </button>
-                </div>
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                <input
-                  type={showBybit ? 'text' : 'password'}
-                  value={bybitKey}
-                  onChange={(e) => setBybitKey(e.target.value)}
-                  placeholder="Bybit API Key"
-                  className="form-input mono"
-                  style={{ height: '34px', fontSize: '11px' }}
-                />
-                <input
-                  type={showBybit ? 'text' : 'password'}
-                  value={bybitSecret}
-                  onChange={(e) => setBybitSecret(e.target.value)}
-                  placeholder="Bybit API Secret"
-                  className="form-input mono"
-                  style={{ height: '34px', fontSize: '11px' }}
-                />
-              </div>
-            </div>
-
-            {/* OKX Trading */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <ExchangeIcon exchange="OKX" size={16} />
-                  <span style={{ fontSize: '12px', fontWeight: 800, color: '#fff' }}>OKX TRADING ACCOUNT</span>
-                </div>
-                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                  <button
-                    onClick={() => handleTestConnection('OKX')}
-                    disabled={isTestingExchange === 'OKX'}
-                    style={{ background: 'none', border: 'none', fontSize: '11px', color: 'var(--color-accent-primary)', cursor: 'pointer', fontWeight: 800 }}
-                  >
-                    {isTestingExchange === 'OKX' ? 'Pinging...' : 'Test Ping'}
-                  </button>
-                  <button
-                    onClick={() => setShowOkx(!showOkx)}
-                    style={{ background: 'none', border: 'none', color: 'var(--color-text-muted)', cursor: 'pointer' }}
-                  >
-                    {showOkx ? <EyeOff size={13} /> : <Eye size={13} />}
-                  </button>
-                </div>
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
-                <input
-                  type={showOkx ? 'text' : 'password'}
-                  value={okxKey}
-                  onChange={(e) => setOkxKey(e.target.value)}
-                  placeholder="OKX Key"
-                  className="form-input mono"
-                  style={{ height: '34px', fontSize: '11px' }}
-                />
-                <input
-                  type={showOkx ? 'text' : 'password'}
-                  value={okxSecret}
-                  onChange={(e) => setOkxSecret(e.target.value)}
-                  placeholder="OKX Secret"
-                  className="form-input mono"
-                  style={{ height: '34px', fontSize: '11px' }}
-                />
-                <input
-                  type={showOkx ? 'text' : 'password'}
-                  value={okxPassphrase}
-                  onChange={(e) => setOkxPassphrase(e.target.value)}
-                  placeholder="Passphrase"
-                  className="form-input mono"
-                  style={{ height: '34px', fontSize: '11px' }}
-                />
-              </div>
-            </div>
-
-            {/* Cryptographic Zero-Knowledge Security Notice */}
-            <div style={{ marginTop: '8px', padding: '12px 14px', background: 'rgba(255, 255, 255, 0.02)', borderRadius: 'var(--radius-sm)', border: '1px solid rgba(255, 255, 255, 0.06)', display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <Info size={16} color="var(--color-accent-primary)" />
-              <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: 1.5 }}>
-                API keys are stored exclusively in your local browser sandbox. They are never sent to external servers, never shared with third parties, and withdrawal endpoints are strictly unsupported.
-              </span>
-            </div>
-          </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* TAB 5: FOREX & AUTO-SYNC ENGINE */}
       {activeTab === 'feeds' && (

@@ -29,7 +29,7 @@ interface Holding {
   amount: number;
   averageBuyPrice?: number;
   targetPercent?: number;
-  exchange: 'BINANCE' | 'BYBIT' | 'OKX' | 'MANUAL' | 'WALLET';
+  exchange: 'BINANCE' | 'BYBIT' | 'OKX' | 'MEXC' | 'INDODAX' | 'TOKOCRYPTO' | 'TRIV' | 'KUCOIN' | 'GATEIO' | 'BITGET' | 'MANUAL' | 'WALLET' | string;
   isManual: boolean;
   currentPriceUsd: number;
   currentValueUsd: number;
@@ -88,7 +88,7 @@ export const PortfolioPage: React.FC = () => {
   const [formAmount, setFormAmount] = useState<number>(10);
   const [formBuyPrice, setFormBuyPrice] = useState<number>(180);
   const [formTargetPercent, setFormTargetPercent] = useState<number>(15);
-  const [formExchange, setFormExchange] = useState<'BINANCE' | 'BYBIT' | 'OKX' | 'MANUAL' | 'WALLET'>('BINANCE');
+  const [formExchange, setFormExchange] = useState<string>('BINANCE');
   const [isSaving, setIsSaving] = useState(false);
 
   // Delete Holding Confirmation
@@ -233,6 +233,36 @@ export const PortfolioPage: React.FC = () => {
           apiSecret: localStorage.getItem('cryptoos_okx_secret') || undefined,
           passphrase: localStorage.getItem('cryptoos_okx_pass') || undefined,
         },
+        mexc: {
+          apiKey: localStorage.getItem('cryptoos_mexc_key') || undefined,
+          apiSecret: localStorage.getItem('cryptoos_mexc_secret') || undefined,
+        },
+        indodax: {
+          apiKey: localStorage.getItem('cryptoos_indodax_key') || undefined,
+          apiSecret: localStorage.getItem('cryptoos_indodax_secret') || undefined,
+        },
+        tokocrypto: {
+          apiKey: localStorage.getItem('cryptoos_tokocrypto_key') || undefined,
+          apiSecret: localStorage.getItem('cryptoos_tokocrypto_secret') || undefined,
+        },
+        triv: {
+          apiKey: localStorage.getItem('cryptoos_triv_key') || undefined,
+          apiSecret: localStorage.getItem('cryptoos_triv_secret') || undefined,
+        },
+        kucoin: {
+          apiKey: localStorage.getItem('cryptoos_kucoin_key') || undefined,
+          apiSecret: localStorage.getItem('cryptoos_kucoin_secret') || undefined,
+          passphrase: localStorage.getItem('cryptoos_kucoin_pass') || undefined,
+        },
+        gateio: {
+          apiKey: localStorage.getItem('cryptoos_gateio_key') || undefined,
+          apiSecret: localStorage.getItem('cryptoos_gateio_secret') || undefined,
+        },
+        bitget: {
+          apiKey: localStorage.getItem('cryptoos_bitget_key') || undefined,
+          apiSecret: localStorage.getItem('cryptoos_bitget_secret') || undefined,
+          passphrase: localStorage.getItem('cryptoos_bitget_pass') || undefined,
+        },
       };
 
       await api.post('/portfolio/sync', { exchange: 'ALL', credentials });
@@ -249,10 +279,17 @@ export const PortfolioPage: React.FC = () => {
 
   // Distinct Non-Colliding Storage Location Palette
   const EXCHANGE_COLORS: Record<string, string> = {
-    WALLET: '#00C7BE', // Apple Cyan/Teal (Cold Storage Vault)
+    WALLET: '#00C7BE', // Cold Storage Vault
     BINANCE: '#F0B90B', // Pure Binance Yellow-Gold
     OKX: '#007AFF', // Pure Apple Electric Blue
     BYBIT: '#FF5722', // Vivid Coral Red-Orange
+    MEXC: '#00B897', // MEXC Emerald Green
+    INDODAX: '#00AEEF', // Indodax Sky Blue
+    TOKOCRYPTO: '#00C26F', // Tokocrypto Spring Green
+    TRIV: '#FF7F00', // Triv Orange
+    KUCOIN: '#24AE8F', // KuCoin Jade
+    GATEIO: '#E03E3E', // Gate.io Red
+    BITGET: '#00F0FF', // Bitget Cyan
     MANUAL: '#8E8E93', // Slate Pewter
   };
 
@@ -675,6 +712,13 @@ export const PortfolioPage: React.FC = () => {
                     { value: 'BINANCE', label: 'Binance Spot', icon: <ExchangeIcon exchange="BINANCE" size={14} /> },
                     { value: 'BYBIT', label: 'Bybit Spot / UTA', icon: <ExchangeIcon exchange="BYBIT" size={14} /> },
                     { value: 'OKX', label: 'OKX Trading', icon: <ExchangeIcon exchange="OKX" size={14} /> },
+                    { value: 'MEXC', label: 'MEXC Global', icon: <ExchangeIcon exchange="MEXC" size={14} /> },
+                    { value: 'KUCOIN', label: 'KuCoin Spot', icon: <ExchangeIcon exchange="KUCOIN" size={14} /> },
+                    { value: 'GATEIO', label: 'Gate.io Exchange', icon: <ExchangeIcon exchange="GATEIO" size={14} /> },
+                    { value: 'BITGET', label: 'Bitget Exchange', icon: <ExchangeIcon exchange="BITGET" size={14} /> },
+                    { value: 'INDODAX', label: 'Indodax (Indonesia)', icon: <ExchangeIcon exchange="INDODAX" size={14} /> },
+                    { value: 'TOKOCRYPTO', label: 'Tokocrypto (Indonesia)', icon: <ExchangeIcon exchange="TOKOCRYPTO" size={14} /> },
+                    { value: 'TRIV', label: 'Triv Pro (Indonesia)', icon: <ExchangeIcon exchange="TRIV" size={14} /> },
                     { value: 'WALLET', label: 'Ledger / Cold Storage', icon: <Coins size={14} color="var(--color-accent-primary)" /> },
                     { value: 'MANUAL', label: 'Manual Spot Wallet', icon: <Building2 size={14} color="var(--color-text-muted)" /> },
                   ]}
@@ -1032,6 +1076,13 @@ export const PortfolioPage: React.FC = () => {
             { id: 'BINANCE', label: 'BINANCE' },
             { id: 'BYBIT', label: 'BYBIT' },
             { id: 'OKX', label: 'OKX' },
+            { id: 'MEXC', label: 'MEXC' },
+            { id: 'KUCOIN', label: 'KUCOIN' },
+            { id: 'GATEIO', label: 'GATE.IO' },
+            { id: 'BITGET', label: 'BITGET' },
+            { id: 'INDODAX', label: 'INDODAX' },
+            { id: 'TOKOCRYPTO', label: 'TOKOCRYPTO' },
+            { id: 'TRIV', label: 'TRIV' },
             { id: 'WALLET', label: 'COLD STORAGE' },
             { id: 'MANUAL', label: 'MANUAL' },
           ].map((tab) => {
@@ -1202,27 +1253,9 @@ export const PortfolioPage: React.FC = () => {
                 const hasTarget = (h.targetPercent || 0) > 0;
                 const allocationDiff = hasTarget ? h.allocationPercent - (h.targetPercent || 0) : 0;
 
-                const exchangeBadgeBg =
-                  h.exchange === 'BINANCE'
-                    ? 'rgba(240, 185, 11, 0.12)'
-                    : h.exchange === 'BYBIT'
-                    ? 'rgba(255, 87, 34, 0.12)'
-                    : h.exchange === 'OKX'
-                    ? 'rgba(0, 122, 255, 0.12)'
-                    : h.exchange === 'WALLET'
-                    ? 'rgba(0, 199, 190, 0.12)'
-                    : 'rgba(255, 255, 255, 0.08)';
-
-                const exchangeBadgeColor =
-                  h.exchange === 'BINANCE'
-                    ? '#F0B90B'
-                    : h.exchange === 'BYBIT'
-                    ? '#FF5722'
-                    : h.exchange === 'OKX'
-                    ? '#007AFF'
-                    : h.exchange === 'WALLET'
-                    ? '#00C7BE'
-                    : '#8E8E93';
+                const exchangeColor = EXCHANGE_COLORS[h.exchange] || '#8E8E93';
+                const exchangeBadgeBg = `${exchangeColor}18`;
+                const exchangeBadgeColor = exchangeColor;
 
                 return (
                   <tr

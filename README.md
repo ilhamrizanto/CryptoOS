@@ -18,9 +18,9 @@
 <p align="center">
   <a href="mailto:ilhamgb11@gmail.com?subject=[CryptoOS]%20Live%20Demo%20%26%20Walkthrough%20Request"><strong>[ 🔴 Request Live Demo & Access ]</strong></a>
   &nbsp;&bull;&nbsp;
-  <a href="#-layanan--kustomisasi-hire-the-author"><strong>[ 💼 Sewa Jasa (Hire the Author) ]</strong></a>
+  <a href="#-custom-development--consulting-hire-the-author"><strong>[ 💼 Hire the Author (Custom Development) ]</strong></a>
   &nbsp;&bull;&nbsp;
-  <a href="#-lisensi-komersial--pembelian-source-code"><strong>[ 🛒 Beli Lisensi Komersial ]</strong></a>
+  <a href="#-commercial-licensing--code-buyout"><strong>[ 🛒 Commercial Licensing & Buyout ]</strong></a>
 </p>
 
 [Key Features](#-key-capabilities) •
@@ -28,9 +28,9 @@
 [Quickstart](#-quickstart-guide) •
 [Modules](#-core-terminal-modules) •
 [API Specification](#-api-endpoints) •
-[Commercial License](#-lisensi-komersial--pembelian-source-code) •
-[Hire the Author](#-layanan--kustomisasi-hire-the-author) •
-[License](#-lisensi--hak-cipta)
+[Commercial Licensing](#-commercial-licensing--code-buyout) •
+[Hire the Author](#-custom-development--consulting-hire-the-author) •
+[License & Copyright](#-license--copyright-notice)
 
 </div>
 
@@ -76,12 +76,18 @@ Built with an unapologetic **Cardless Pure Black (`#000000`) OLED** design langu
 * **Flexible Restoration Strategy**: Supports both **Merge (Append)** and **Clean Rebuild (Overwrite)** restore modes.
 * **Automated Browser Snapshot Cache**: Client-side backup cache that updates silently when positions are logged.
 
-### 6. 🔔 Realtime Notification Webhook Bridges
+### 6. 💼 Multi-Exchange Spot Portfolio & Treasury Gateway
+* **10 Supported Exchanges with Live Ping Telemetry**: Consolidate holdings and cashflow across Tier-1 Global platforms (**Binance**, **Bybit**, **OKX**, **MEXC**, **KuCoin**, **Gate.io**, **Bitget**) and Bappebti-Regulated Indonesian fiat gateways (**Indodax**, **Tokocrypto**, **Triv**), alongside Cold Storage (Ledger/Trezor).
+* **Strict Zero-Knowledge & Zero-Withdrawal Security**: Read-only API credentials remain strictly inside your browser sandbox (`localStorage`). Withdrawal permissions are strictly unsupported.
+* **Real-time Latency & HMAC Telemetry**: Test gateway connectivity and round-trip ping with HMAC signature authentication verification.
+* **Multi-Vault Cashflow Mutations**: Track capital injections and treasury transfers indexed by specific destination exchange vaults.
+
+### 7. 🔔 Realtime Notification Webhook Bridges
 * **Telegram Bot Dispatcher**: Dispatches trade entries, take-profit hits, stop-loss triggers, and drawdown warnings to private Telegram chats.
 * **Discord Webhook Sentinel**: Broadcasts rich embedded trade updates into dedicated Discord channels.
 * **Active Event Triggers Matrix**: Granular toggles for Trade Executions, Circuit Breaker Breaches, Portfolio Allocation Drift, and Whale Cashflow Mutations (> $1,000 USD).
 
-### 7. 📑 Tax-Ready Accounting CSV Exporters
+### 8. 📑 Tax-Ready Accounting CSV Exporters
 * **1-Click CSV Ledger Generation**: Dedicated export engines for Trading Journal Ledger, Treasury Cashflow, and Spot Holdings.
 * **Universal Software Compatibility**: Formatted with UTF-8 BOM encoding for seamless opening in Microsoft Excel, Koinly, and CoinTracker.
 
@@ -121,8 +127,8 @@ graph TD
 
 > [!IMPORTANT]
 > **Evaluation & Demo Notice (`LICENSE.md`)**  
-> Menjalankan repositori ini di lingkungan lokal diberikan secara eksklusif untuk kebutuhan **evaluasi teknis, pengujian fitur, pembelajaran, dan peninjauan arsitektur sistem**.  
-> Seluruh kode sumber tunduk pada ketentuan [LICENSE.md](LICENSE.md) dan **dilarang keras** digunakan untuk operasional produksi (*production deployment*), tujuan komersial, di-*white-label*, atau didistribusikan ulang tanpa izin resmi atau [Lisensi Komersial](#-lisensi-komersial--pembelian-source-code) dari pemilik hak cipta.
+> Running this repository locally is permitted strictly for **technical evaluation, feature testing, educational review, and architectural assessment**.  
+> The entire codebase is governed by [LICENSE.md](LICENSE.md) and is **strictly prohibited** from production deployment, commercial operation, white-labeling, or unauthorized redistribution without obtaining a written commercial agreement or an official [Commercial License](#-commercial-licensing--code-buyout) from the copyright holder ([Ilham Rizanto](mailto:ilhamgb11@gmail.com)).
 
 ### System Requirements
 * **Node.js**: `v26.0.0` or higher (Active LTS recommended)
@@ -259,63 +265,65 @@ We welcome contributions from quantitative analysts, traders, and software engin
 
 ---
 
-## 💼 Layanan & Kustomisasi (Hire the Author)
+---
 
-Apakah Anda, *trading firm*, atau institusi Anda membutuhkan platform analitik quantitative kustom, terminal eksekusi trading proprietary, atau integrasi data pasar real-time berkinerja tinggi?
+## 💼 Custom Development & Consulting (Hire the Author)
 
-Sebagai Lead Architect dan pengembang dari **CryptoOS**, saya (**Ilham Rizanto**) menyediakan jasa rekayasa perangkat lunak finansial profesional (*bespoke development & consulting*):
+Does your trading firm, crypto fund, prop desk, or fintech startup require a custom quantitative analytics dashboard, an institutional execution terminal, or high-performance real-time market data pipelines?
 
-### Portfolio Keahlian & Penawaran Jasa:
-* **Custom Quantitative Terminal Development**: Membangun antarmuka dashboard analitik dengan standar institusional (Pure Black `#000000` OLED, Zero-Clutter Architecture, dual-currency real-time rates).
-* **Exchange Connectivity & Algorithmic Bridges**: Integrasi koneksi read-only atau automated trade execution via REST & WebSocket (Binance, Bybit, OKX, Hyperliquid, DEX protocols) dengan standar *zero-withdrawal security*.
-* **Risk Engine & Mathematical Sizing**: Implementasi kalkulator Kelly Criterion, Dynamic Stop-Loss trailing, Liquidation buffer alerts, dan Portfolio Drift Balancer.
-* **Macro Telemetry & Data Aggregation**: Pipeline otomatis penarik data Federal Reserve (FRED), sentimen Fear & Greed, likuiditas stablecoin, dan rasio dominasi.
-* **Notification Bridges**: Bot Telegram institusional dan Discord Webhook Dispatcher dengan format rich-embed & latency rendah.
-* **Architecture Consultation & Code Review**: Audit keamanan stack React 19 / Node.js 26 LTS / SQLite LibSQL, optimasi query, dan perencanaan *zero-ops disaster recovery vault*.
+As the Lead Architect and author of **CryptoOS**, I (**Ilham Rizanto**) provide bespoke software engineering, consulting, and end-to-end implementation services:
 
-> 📬 **Mulai Diskusi Proyek:**  
-> Untuk konsultasi kebutuhan teknis, proposal proyek, atau kustomisasi fitur, hubungi langsung melalui email:  
+### Core Expertise & Engineering Services:
+* **Custom Quantitative Terminal Architecture**: Engineering bespoke financial intelligence workstations featuring the signature Pure Black (`#000000`) OLED aesthetic, zero-clutter layout, and real-time dual-currency rates.
+* **Exchange Connectivity & Algorithmic Execution**: Read-only or automated trade execution connectivity via REST & WebSocket (Binance, Bybit, OKX, Hyperliquid, DEX protocols) adhering to strict *zero-withdrawal security* standards.
+* **Risk Engine & Mathematical Sizing**: Tailored implementations of Kelly Criterion sizing, Dynamic Stop-Loss trailing logic, liquidation margin buffers, and automated portfolio rebalancing.
+* **Macro Intelligence & Telemetry Pipelines**: Autonomous data aggregation engines for Federal Reserve (FRED) metrics, European Central Bank forex feeds, Fear & Greed indices, and stablecoin liquidity rotation.
+* **Realtime Notification Bridges**: Institutional Telegram bots and Discord Webhook dispatchers with low latency and structured embed payloads.
+* **Architecture Hardening & Code Reviews**: Comprehensive performance, concurrency, and security audits across modern full-stack architectures (React 19, TypeScript, Node.js 26 LTS, LibSQL/SQLite, and zero-ops disaster recovery vaults).
+
+> 📬 **Start a Project Discussion:**  
+> To discuss your technical scope, project timeline, or custom feature requirements, reach out directly via email:  
 > **👉 [ilhamgb11@gmail.com](mailto:ilhamgb11@gmail.com?subject=[CryptoOS]%20Consulting%20%26%20Custom%20Development%20Inquiry)**
 
 ---
 
-## 🛒 Lisensi Komersial & Pembelian Source Code
+## 🛒 Commercial Licensing & Code Buyout
 
-Repositori publik ini dirilis di bawah skema lisensi **Source-Available Evaluation & Demo License** (khusus pengujian lokal dan evaluasi arsitektur). Apabila Anda ingin mengadopsi atau meluncurkan CryptoOS untuk tujuan bisnis, tersedia dua pilihan skema lisensi komersial resmi:
+This public repository is distributed under a **Source-Available Evaluation & Demo License** (strictly for local testing and architectural review). Organizations, prop firms, or investment funds wishing to commercially deploy, white-label, or build upon the CryptoOS platform can acquire an official commercial license under two flexible models:
 
 ### 1. Commercial Standard License (Non-Exclusive)
-*Pilihan ideal bagi Startup Fintech, Prop Firm, Crypto Hedge Fund, atau Komunitas Trading yang membutuhkan sistem siap pakai untuk operasional internal atau produk klien.*
-* **Hak Penggunaan**: Izin legal non-eksklusif untuk mengompilasi, men-deploy, dan mengoperasikan CryptoOS pada 1 (satu) entitas bisnis atau proyek komersial.
-* **White-Labeling & Rebranding**: Bebas menghapus atau mengganti nama, logo, skema warna, dan branding sistem sesuai merek Anda.
-* **Akses Source Code Penuh**: Menyerahkan repositori lengkap (Backend Node.js 26 + Frontend React 19 Vite) tanpa proteksi DRM atau obfuscation.
-* **Dukungan Awal**: 14 hari bantuan teknis instalasi dan konfigurasi deployment server (Docker/VPS/Nginx).
+*Ideal for: Fintech startups, prop firms, hedge funds, or private trading communities seeking a production-ready institutional operating system for internal operations or client-facing value.*
+* **Commercial Rights**: Non-exclusive legal license to build, deploy, and operate CryptoOS for 1 (one) business entity or commercial project.
+* **White-Labeling & Custom Branding**: Full authorization to rebrand, customize typography/logos, adapt visual color schemes, and host on your private corporate domains.
+* **Full Production Source Code**: Complete unminified source code (Express Node.js 26 backend + React 19 Vite frontend) with zero DRM, licensing dongles, or obfuscation.
+* **Deployment Support**: 14 days of dedicated technical onboarding and server configuration guidance (Docker, VPS, Nginx, SSL).
 
 ### 2. Full IP & Code Buyout (Exclusive Ownership)
-*Pilihan tepat bagi Korporasi, Venture Capital, atau Investor yang ingin mengakuisisi kepemilikan aset intelektual penuh untuk dijadikan produk SaaS berbayar atau dipatenkan.*
-* **Pengalihan Hak Cipta Mutlak (*IP Assignment*)**: Pengalihan penuh hak kekayaan intelektual atas nama pembeli secara legal.
-* **Hak Komersialisasi Tanpa Batas**: Hak untuk menjual ulang (*resell*), melisensikan kembali (*sublicense*), merilis varian SaaS berbayar, atau memodifikasi tanpa batasan apa pun.
-* **Penyerahan Total**: Seluruh riwayat komit git, master branch, desain token arsitektur, dan dokumentasi internal diserahkan secara privat dan eksklusif.
-* **Sesi Handover & Mentoring**: Workshop transfer arsitektur 1-on-1 bersama Lead Architect untuk onboarding tim engineering internal Anda.
+*Ideal for: Financial corporations, venture capital funds, or acquisitions seeking complete and exclusive ownership of the intellectual property to launch proprietary global SaaS products or file patent claims.*
+* **Absolute IP Assignment**: Complete, legally binding assignment of all copyrights, trademarks, and intellectual property directly to the acquiring organization.
+* **Unrestricted Commercialization**: Full legal rights to resell, sublicense, distribute as proprietary closed-source SaaS, or modify the technology without any restrictions.
+* **Complete Asset Transfer**: Full git commit history, private repository transfers, architecture design tokens, and comprehensive internal engineering documentation.
+* **Architectural Mentoring**: In-depth 1-on-1 handover workshop and engineering mentorship directly with the Lead Architect for your engineering team.
 
 ---
 
-### 📩 Prosedur Pembelian Lisensi:
-Kirimkan surat permohonan lisensi resmi ke:
-* **Kontak**: **[ilhamgb11@gmail.com](mailto:ilhamgb11@gmail.com?subject=[CryptoOS]%20Commercial%20License%20Inquiry)**
-* **Subjek**: `[CryptoOS] Commercial License Inquiry - [Nama Perusahaan / Inisial Anda]`
-* **Format Pesan**: Cantumkan skema lisensi yang diinginkan (*Standard* atau *Full IP Buyout*) beserta gambaran singkat skala penerapan sistem Anda.
+### 📩 Commercial Inquiries & Procurement:
+Submit your formal license acquisition request to:
+* **Contact**: **[ilhamgb11@gmail.com](mailto:ilhamgb11@gmail.com?subject=[CryptoOS]%20Commercial%20License%20Inquiry)**
+* **Subject**: `[CryptoOS] Commercial License Inquiry - [Your Organization / Name]`
+* **Message Details**: Specify your preferred license model (*Standard* or *Full IP Buyout*) and a brief outline of your target implementation scale.
 
 ---
 
-## 📄 Lisensi & Hak Cipta
+## 📄 License & Copyright Notice
 
 **Copyright (c) 2026 Ilham Rizanto. All rights reserved.**
 
-Seluruh hak cipta dan kepemilikan intelektual atas kode sumber, arsitektur sistem, dan materi desain **CryptoOS** adalah sah milik **Ilham Rizanto**.
+All intellectual property, proprietary software architecture, design systems, and source code of **CryptoOS** are the exclusive property of **Ilham Rizanto**.
 
-Repositori ini berstatus *source-available* secara ketat untuk kebutuhan evaluasi, review kode, demonstrasi arsitektur, dan pengujian personal. Dilarang keras menggunakan sebagian atau seluruh isi repositori ini dalam lingkungan produksi, memperjualbelikan, melisensikan kembali, atau mengklaim kepemilikan tanpa perjanjian lisensi tertulis dari pemilik hak cipta.
+This software is distributed under a *source-available* model strictly for evaluation, testing, educational review, and demonstration purposes as outlined in [LICENSE.md](LICENSE.md). Any unauthorized commercial exploitation, production deployment, sublicensing, white-labeling, or copyright removal is strictly prohibited by law.
 
-Untuk ketentuan hukum selengkapnya, silakan merujuk pada berkas [LICENSE.md](LICENSE.md).
+For complete legal terms and conditions, please consult [LICENSE.md](LICENSE.md).
 
 <div align="center">
   <sub>Architected with institutional rigor, quantitative discipline, and uncompromised financial sovereignty.</sub>
