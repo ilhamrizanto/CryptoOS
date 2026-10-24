@@ -89,3 +89,14 @@ export const systemSettings = sqliteTable('system_settings', {
   value: text('value').notNull(),
   updatedAt: integer('updated_at').notNull(),
 });
+
+// 7. User Whitelist (Multi-User Access Control)
+export const userWhitelist = sqliteTable('user_whitelist', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  email: text('email').notNull().unique(),
+  role: text('role').default('USER'), // 'OWNER' | 'ADMIN' | 'USER'
+  notes: text('notes'),
+  status: text('status').default('ACTIVE'), // 'ACTIVE' | 'REVOKED'
+  createdAt: integer('created_at').notNull(),
+  updatedAt: integer('updated_at').notNull(),
+});

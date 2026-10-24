@@ -85,6 +85,16 @@ export async function initializeDatabase(): Promise<void> {
       value TEXT NOT NULL,
       updated_at INTEGER NOT NULL
     );
+
+    CREATE TABLE IF NOT EXISTS user_whitelist (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      email TEXT NOT NULL UNIQUE,
+      role TEXT DEFAULT 'USER',
+      notes TEXT,
+      status TEXT DEFAULT 'ACTIVE',
+      created_at INTEGER NOT NULL,
+      updated_at INTEGER NOT NULL
+    );
   `;
 
   // Execute schema creation in multiple statements
@@ -96,4 +106,12 @@ export async function initializeDatabase(): Promise<void> {
   for (const statement of statements) {
     await sqliteClient.execute(statement);
   }
+
+  // Ensure primary Owner is seeded in whitelist
+  const now = Date.now();
+  await sqliteClient.execute({
+    sql: `INSERT OR IGNORE INTO user_whitelist (email, role, notes, status, created_at, updated_at)
+          VALUES (?, ?, ?, ?, ?, ?)`,
+    args: ['ilhamgb11@gmail.com', 'OWNER', 'Primary System Owner', 'ACTIVE', now, now],
+  }).catch(() => {});
 }

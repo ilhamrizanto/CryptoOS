@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   Shield,
+  Users,
   ShieldCheck,
   Download,
   Upload,
@@ -29,6 +30,7 @@ import { useSettingsStore } from '../store/settings.store';
 import { useAuthStore } from '../store/auth.store';
 import { api } from '../services/api';
 import { ExchangeIcon } from '../components/common/ExchangeIcon';
+import { UserWhitelistManager } from '../components/features/UserWhitelistManager';
 import {
   downloadJson,
   exportJournalTradesToCsv,
@@ -87,7 +89,7 @@ export const SettingsPage: React.FC = () => {
   const [rateInput, setRateInput] = useState<number>(usdToIdrRate);
 
   // Active Tab Navigation
-  const [activeTab, setActiveTab] = useState<'vault' | 'risk' | 'alerts' | 'exchange' | 'feeds' | 'tax'>('vault');
+  const [activeTab, setActiveTab] = useState<'vault' | 'risk' | 'alerts' | 'exchange' | 'feeds' | 'tax' | 'whitelist'>('vault');
 
   // Exchange Keys State
   const [binanceKey, setBinanceKey] = useState(() => localStorage.getItem('cryptoos_binance_key') || '');
@@ -956,6 +958,17 @@ export const SettingsPage: React.FC = () => {
               label: 'Tax-Ready CSV Exports',
               icon: FileSpreadsheet,
             },
+            ...(user?.role === 'OWNER' || user?.role === 'ADMIN'
+              ? [
+                  {
+                    id: 'whitelist' as const,
+                    label: 'User Whitelist (Admin)',
+                    icon: Users,
+                    badge: user?.role === 'OWNER' ? 'OWNER' : 'ADMIN',
+                    badgeClass: 'amber-badge',
+                  },
+                ]
+              : []),
           ].map((tab) => {
             const active = activeTab === tab.id;
             const Icon = tab.icon;
@@ -2415,6 +2428,11 @@ export const SettingsPage: React.FC = () => {
           </div>
         </div>
       )}
+
+        {/* TAB 7: USER ACCESS & WHITELIST MANAGER (ADMIN/OWNER ONLY) */}
+        {activeTab === 'whitelist' && (
+          <UserWhitelistManager />
+        )}
     </div>
   );
 };
