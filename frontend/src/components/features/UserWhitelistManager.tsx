@@ -14,6 +14,7 @@ import {
   Crown,
 } from 'lucide-react';
 import { api } from '../../services/api';
+import { CustomSelect } from '../common/CustomSelect';
 
 export interface WhitelistEntry {
   id: number;
@@ -101,7 +102,7 @@ export const UserWhitelistManager: React.FC = () => {
       const data = await api.get<WhitelistEntry[]>('/auth/admin/whitelist');
       setUsers(data || []);
     } catch (err: any) {
-      showFeedback(err?.message || 'Gagal memuat daftar whitelist user.', 'error');
+      showFeedback(err?.message || 'Failed to load user whitelist directory.', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -114,7 +115,7 @@ export const UserWhitelistManager: React.FC = () => {
   const handleAddUser = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newEmail || !newEmail.includes('@')) {
-      showFeedback('Masukkan alamat email yang valid.', 'error');
+      showFeedback('Please enter a valid email address.', 'error');
       return;
     }
 
@@ -125,13 +126,13 @@ export const UserWhitelistManager: React.FC = () => {
         role: newRole,
         notes: newNotes.trim(),
       });
-      showFeedback(`User ${res.email} berhasil ditambahkan ke whitelist!`, 'success');
+      showFeedback(`User ${res.email} successfully registered to whitelist!`, 'success');
       setNewEmail('');
       setNewNotes('');
       setNewRole('USER');
       await loadWhitelist();
     } catch (err: any) {
-      showFeedback(err?.message || 'Gagal menambahkan user ke whitelist.', 'error');
+      showFeedback(err?.message || 'Failed to add user to whitelist.', 'error');
     } finally {
       setIsSubmitting(false);
     }
@@ -139,7 +140,7 @@ export const UserWhitelistManager: React.FC = () => {
 
   const handleToggleStatus = async (user: WhitelistEntry) => {
     if (user.role === 'OWNER' || user.email.toLowerCase() === 'ilhamgb11@gmail.com') {
-      showFeedback('Akun Owner utama tidak dapat dinonaktifkan.', 'error');
+      showFeedback('Primary Owner account cannot be deactivated.', 'error');
       return;
     }
 
@@ -153,12 +154,12 @@ export const UserWhitelistManager: React.FC = () => {
       );
       showFeedback(
         nextStatus === 'ACTIVE'
-          ? `Akses ${user.email} diaktifkan.`
-          : `Akses ${user.email} dinonaktifkan (dilarang login).`,
+          ? `Access for ${user.email} activated.`
+          : `Access for ${user.email} revoked (login denied).`,
         'success'
       );
     } catch (err: any) {
-      showFeedback(err?.message || 'Gagal memperbarui status user.', 'error');
+      showFeedback(err?.message || 'Failed to update user status.', 'error');
     }
   };
 
@@ -166,11 +167,11 @@ export const UserWhitelistManager: React.FC = () => {
     if (!deleteTarget) return;
     try {
       await api.delete(`/auth/admin/whitelist/${deleteTarget.id}`);
-      showFeedback(`User ${deleteTarget.email} dihapus dari whitelist.`, 'success');
+      showFeedback(`User ${deleteTarget.email} removed from whitelist.`, 'success');
       setUsers(prev => prev.filter(u => u.id !== deleteTarget.id));
       setDeleteTarget(null);
     } catch (err: any) {
-      showFeedback(err?.message || 'Gagal menghapus user.', 'error');
+      showFeedback(err?.message || 'Failed to remove user.', 'error');
     }
   };
 
@@ -254,12 +255,12 @@ export const UserWhitelistManager: React.FC = () => {
                 <Trash2 size={16} color="var(--color-bearish, #f43f5e)" />
               </div>
               <h3 style={{ fontSize: '15px', fontWeight: 800, color: '#fff', margin: 0 }}>
-                Hapus Akses Whitelist?
+                Remove Whitelist Access?
               </h3>
             </div>
             <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', margin: 0, lineHeight: 1.6 }}>
-              Apakah Anda yakin ingin menghapus <strong style={{ color: '#fff' }}>{deleteTarget.email}</strong> dari
-              whitelist CryptoOS? User ini tidak akan dapat login lagi ke terminal.
+              Are you sure you want to remove <strong style={{ color: '#fff' }}>{deleteTarget.email}</strong> from
+              the CryptoOS whitelist? This user will no longer be able to log in to the terminal.
             </p>
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '4px' }}>
               <button
@@ -267,7 +268,7 @@ export const UserWhitelistManager: React.FC = () => {
                 onClick={() => setDeleteTarget(null)}
                 style={{ height: '32px', fontSize: '12px' }}
               >
-                Batal
+                Cancel
               </button>
               <button
                 onClick={handleConfirmDelete}
@@ -283,7 +284,7 @@ export const UserWhitelistManager: React.FC = () => {
                   cursor: 'pointer',
                 }}
               >
-                Hapus Akses
+                Remove Access
               </button>
             </div>
           </div>
@@ -316,10 +317,10 @@ export const UserWhitelistManager: React.FC = () => {
             <Users size={14} color="var(--color-accent-primary)" />
           </div>
           <div className="mono" style={{ fontSize: '22px', fontWeight: 900, color: '#fff' }}>
-            {users.length} <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-text-muted)' }}>Akun</span>
+            {users.length} <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-text-muted)' }}>Accounts</span>
           </div>
           <span style={{ fontSize: '10px', color: 'var(--color-text-muted)' }}>
-            Total alamat email yang terotorisasi di server
+            Total authorized email addresses on server
           </span>
         </div>
 
@@ -341,10 +342,10 @@ export const UserWhitelistManager: React.FC = () => {
             <ShieldCheck size={14} color="var(--color-bullish, #10b981)" />
           </div>
           <div className="mono" style={{ fontSize: '22px', fontWeight: 900, color: 'var(--color-bullish, #10b981)' }}>
-            {totalActive} <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-text-muted)' }}>Aktif</span>
+            {totalActive} <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-text-muted)' }}>Active</span>
           </div>
           <span style={{ fontSize: '10px', color: 'var(--color-text-muted)' }}>
-            {totalRevoked > 0 ? `${totalRevoked} akun dinonaktifkan sementara` : 'Seluruh whitelist berstatus aktif'}
+            {totalRevoked > 0 ? `${totalRevoked} account(s) revoked` : 'All whitelist accounts active'}
           </span>
         </div>
 
@@ -371,7 +372,7 @@ export const UserWhitelistManager: React.FC = () => {
             </span>
           </div>
           <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', marginTop: '2px' }}>
-            Akun Google yang belum terdaftar otomatis ditolak sistem
+            Unregistered Google accounts are automatically rejected
           </span>
         </div>
       </div>
@@ -391,12 +392,12 @@ export const UserWhitelistManager: React.FC = () => {
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <UserPlus size={16} color="var(--color-accent-primary)" />
           <h3 style={{ fontSize: '14px', fontWeight: 800, color: '#fff', margin: 0 }}>
-            Tambah User Baru ke Whitelist
+            Add New Whitelisted User
           </h3>
         </div>
         <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', margin: 0, lineHeight: 1.5 }}>
-          Daftarkan alamat email Google rekan / analis trader Anda. Setelah didaftarkan, user dapat langsung login
-          menggunakan tombol Google OAuth di halaman login CryptoOS dengan data terisolasi secara mandiri.
+          Authorize your trading partner or analyst Google accounts. Once registered, users can log in directly
+          using Google OAuth on the CryptoOS login page with completely isolated private workspaces.
         </p>
 
         <form onSubmit={handleAddUser} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -410,7 +411,7 @@ export const UserWhitelistManager: React.FC = () => {
             {/* Input Email */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
               <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-text-secondary)' }}>
-                Alamat Email Google:
+                Google Email Address:
               </label>
               <div
                 style={{
@@ -426,7 +427,7 @@ export const UserWhitelistManager: React.FC = () => {
                 <input
                   type="email"
                   required
-                  placeholder="contoh: trader.partner@gmail.com"
+                  placeholder="e.g. trader.partner@gmail.com"
                   value={newEmail}
                   onChange={e => setNewEmail(e.target.value)}
                   style={{
@@ -445,47 +446,32 @@ export const UserWhitelistManager: React.FC = () => {
             {/* Select Role */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
               <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-text-secondary)' }}>
-                Peran / Hak Akses:
+                Role / Access Privileges:
               </label>
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  background: 'rgba(255, 255, 255, 0.04)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  borderRadius: 'var(--radius-sm, 6px)',
-                  padding: '0 10px',
-                }}
-              >
-                <Shield size={13} color="var(--color-text-muted)" style={{ marginRight: '8px', flexShrink: 0 }} />
-                <select
-                  value={newRole}
-                  onChange={e => setNewRole(e.target.value as 'USER' | 'ADMIN')}
-                  style={{
-                    width: '100%',
-                    height: '36px',
-                    backgroundColor: 'transparent',
-                    border: 'none',
-                    color: '#fff',
-                    fontSize: '12px',
-                    outline: 'none',
-                    cursor: 'pointer',
-                  }}
-                >
-                  <option value="USER" style={{ background: '#121214', color: '#fff' }}>
-                    USER (Standard Trader - Portofolio Mandiri)
-                  </option>
-                  <option value="ADMIN" style={{ background: '#121214', color: '#fff' }}>
-                    ADMIN (Co-Admin - Hak Akses Kelola Whitelist)
-                  </option>
-                </select>
-              </div>
+              <CustomSelect<'USER' | 'ADMIN'>
+                value={newRole}
+                onChange={(val) => setNewRole(val)}
+                options={[
+                  {
+                    value: 'USER',
+                    label: 'USER',
+                    subLabel: 'Standard Trader - Independent Portfolio',
+                    icon: <Shield size={13} color="var(--color-text-muted)" />,
+                  },
+                  {
+                    value: 'ADMIN',
+                    label: 'ADMIN',
+                    subLabel: 'Co-Admin - Manage Whitelist Privileges',
+                    icon: <Crown size={13} color="var(--color-accent-primary)" />,
+                  },
+                ]}
+              />
             </div>
 
             {/* Notes / Description */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
               <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-text-secondary)' }}>
-                Catatan / Keterangan (Opsional):
+                Notes / Label (Optional):
               </label>
               <div
                 style={{
@@ -500,7 +486,7 @@ export const UserWhitelistManager: React.FC = () => {
                 <Tag size={13} color="var(--color-text-muted)" style={{ marginRight: '8px', flexShrink: 0 }} />
                 <input
                   type="text"
-                  placeholder="misal: Trader Partner / Analis Quant"
+                  placeholder="e.g. Trading Partner / Quant Analyst"
                   value={newNotes}
                   onChange={e => setNewNotes(e.target.value)}
                   style={{
@@ -531,7 +517,7 @@ export const UserWhitelistManager: React.FC = () => {
               }}
             >
               <UserPlus size={13} />
-              <span>{isSubmitting ? 'Mendaftarkan...' : 'Daftarkan ke Whitelist'}</span>
+              <span>{isSubmitting ? 'Registering...' : 'Add to Whitelist'}</span>
             </button>
           </div>
         </form>
@@ -563,7 +549,7 @@ export const UserWhitelistManager: React.FC = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <ShieldCheck size={16} color="var(--color-accent-primary)" />
             <span style={{ fontSize: '13px', fontWeight: 800, color: '#fff' }}>
-              Daftar Email Terotorisasi ({filteredUsers.length})
+              Authorized Whitelist Directory ({filteredUsers.length})
             </span>
           </div>
 
@@ -581,7 +567,7 @@ export const UserWhitelistManager: React.FC = () => {
             <Search size={12} color="var(--color-text-muted)" style={{ marginRight: '6px' }} />
             <input
               type="text"
-              placeholder="Cari email atau catatan..."
+              placeholder="Search email or notes..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               style={{
@@ -603,22 +589,22 @@ export const UserWhitelistManager: React.FC = () => {
             <thead>
               <tr style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.08)', backgroundColor: 'rgba(255, 255, 255, 0.02)' }}>
                 <th style={{ padding: '12px 18px', color: 'var(--color-text-muted)', fontWeight: 800, fontSize: '10px' }}>
-                  USER & EMAIL GOOGLE
+                  USER & GOOGLE EMAIL
                 </th>
                 <th style={{ padding: '12px 14px', color: 'var(--color-text-muted)', fontWeight: 800, fontSize: '10px' }}>
                   ROLE
                 </th>
                 <th style={{ padding: '12px 14px', color: 'var(--color-text-muted)', fontWeight: 800, fontSize: '10px' }}>
-                  CATATAN / LABEL
+                  NOTES / LABEL
                 </th>
                 <th style={{ padding: '12px 14px', color: 'var(--color-text-muted)', fontWeight: 800, fontSize: '10px' }}>
-                  STATUS AKSES
+                  ACCESS STATUS
                 </th>
                 <th style={{ padding: '12px 14px', color: 'var(--color-text-muted)', fontWeight: 800, fontSize: '10px' }}>
-                  TERAKHIR MASUK
+                  LAST LOGIN
                 </th>
                 <th style={{ padding: '12px 18px', color: 'var(--color-text-muted)', fontWeight: 800, fontSize: '10px', textAlign: 'right' }}>
-                  AKSI
+                  ACTIONS
                 </th>
               </tr>
             </thead>
@@ -626,13 +612,13 @@ export const UserWhitelistManager: React.FC = () => {
               {isLoading ? (
                 <tr>
                   <td colSpan={6} style={{ padding: '36px', textAlign: 'center', color: 'var(--color-text-muted)' }}>
-                    Memuat daftar otorisasi whitelist...
+                    Loading whitelist authorization directory...
                   </td>
                 </tr>
               ) : filteredUsers.length === 0 ? (
                 <tr>
                   <td colSpan={6} style={{ padding: '36px', textAlign: 'center', color: 'var(--color-text-muted)' }}>
-                    Tidak ada user yang cocok dengan pencarian.
+                    No users match the search criteria.
                   </td>
                 </tr>
               ) : (
@@ -674,7 +660,7 @@ export const UserWhitelistManager: React.FC = () => {
                               {u.email}
                             </span>
                             <span style={{ fontSize: '10px', color: 'var(--color-text-muted)' }}>
-                              Terdaftar: {new Date(u.createdAt).toLocaleDateString()}
+                              Registered: {new Date(u.createdAt).toLocaleDateString()}
                             </span>
                           </div>
                         </div>
@@ -724,7 +710,7 @@ export const UserWhitelistManager: React.FC = () => {
                       {/* Last Login */}
                       <td style={{ padding: '14px 14px' }}>
                         <span className="mono" style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>
-                          {u.lastLogin ? new Date(u.lastLogin).toLocaleDateString() : 'Belum pernah'}
+                          {u.lastLogin ? new Date(u.lastLogin).toLocaleDateString() : 'Never'}
                         </span>
                       </td>
 
@@ -747,7 +733,7 @@ export const UserWhitelistManager: React.FC = () => {
                               borderColor: 'rgba(244, 63, 94, 0.25)',
                               cursor: 'pointer',
                             }}
-                            title="Hapus user dari whitelist"
+                            title="Remove user from whitelist"
                           >
                             <Trash2 size={13} />
                           </button>

@@ -9,7 +9,7 @@ export const ideasRouter = Router();
 ideasRouter.use(requireAuth);
 
 const createIdeaSchema = z.object({
-  symbol: z.string().min(1, 'Symbol harus diisi'),
+  symbol: z.string().min(1, 'Symbol is required'),
   direction: z.enum(['LONG', 'SHORT']),
   timeframe: z.string().default('4H'),
   status: z.enum(['WATCHLIST', 'READY', 'ACTIVE', 'CLOSED', 'INVALIDATED']).default('WATCHLIST'),

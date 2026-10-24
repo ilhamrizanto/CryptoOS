@@ -1,32 +1,34 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChevronDown, Check } from 'lucide-react';
 
-export interface SelectOption {
-  value: string | number;
+export interface SelectOption<T = string | number> {
+  value: T;
   label: string;
   subLabel?: string;
   icon?: React.ReactNode;
 }
 
-interface CustomSelectProps {
-  options: SelectOption[];
-  value: string | number;
-  onChange: (value: any) => void;
+export interface CustomSelectProps<T = string | number> {
+  options: SelectOption<T>[];
+  value: T;
+  onChange: (value: T) => void;
   placeholder?: string;
   disabled?: boolean;
+  size?: 'sm' | 'md';
   className?: string;
   style?: React.CSSProperties;
 }
 
-export const CustomSelect: React.FC<CustomSelectProps> = ({
+export function CustomSelect<T extends string | number = string>({
   options,
   value,
   onChange,
   placeholder = 'Select an option...',
   disabled = false,
+  size = 'md',
   className = '',
   style,
-}) => {
+}: CustomSelectProps<T>) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -61,6 +63,8 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
     };
   }, [isOpen]);
 
+  const isSmall = size === 'sm';
+
   return (
     <div
       ref={containerRef}
@@ -81,41 +85,58 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '9px 14px',
-          backgroundColor: isOpen ? '#141418' : '#0c0d10',
+          padding: isSmall ? '5px 10px' : '8px 12px',
+          backgroundColor: isOpen ? '#0e0f14' : '#08080a',
           border: isOpen
             ? '1px solid var(--color-accent-primary, #6366f1)'
-            : '1px solid var(--color-border, #1f1f24)',
-          borderRadius: 'var(--radius-md, 8px)',
+            : '1px solid rgba(255, 255, 255, 0.12)',
+          borderRadius: 'var(--radius-sm, 6px)',
           color: selectedOption ? '#ffffff' : 'var(--color-text-muted, #71717a)',
-          fontSize: '13px',
+          fontSize: isSmall ? '11px' : '12px',
           fontFamily: 'inherit',
           cursor: disabled ? 'not-allowed' : 'pointer',
           outline: 'none',
-          boxShadow: isOpen ? '0 0 0 2px rgba(99, 102, 241, 0.15)' : 'none',
-          transition: 'border-color var(--transition-fast), background-color var(--transition-fast), box-shadow var(--transition-fast)',
-          opacity: disabled ? 0.6 : 1,
+          boxShadow: isOpen ? '0 0 0 2px rgba(99, 102, 241, 0.18)' : 'none',
+          transition: 'border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease',
+          opacity: disabled ? 0.5 : 1,
+          textAlign: 'left',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflow: 'hidden' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflow: 'hidden', minWidth: 0 }}>
           {selectedOption?.icon && (
-            <span style={{ display: 'flex', alignItems: 'center' }}>{selectedOption.icon}</span>
+            <span style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>{selectedOption.icon}</span>
           )}
-          <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontWeight: 500 }}>
+          <span
+            style={{
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              fontWeight: 600,
+              color: selectedOption ? '#ffffff' : 'var(--color-text-muted, #71717a)',
+            }}
+          >
             {selectedOption ? selectedOption.label : placeholder}
           </span>
           {selectedOption?.subLabel && (
-            <span style={{ fontSize: '11px', color: 'var(--color-text-muted, #71717a)' }}>
+            <span
+              style={{
+                fontSize: isSmall ? '10px' : '11px',
+                color: 'var(--color-text-muted, #71717a)',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              }}
+            >
               ({selectedOption.subLabel})
             </span>
           )}
         </div>
 
         <ChevronDown
-          size={14}
+          size={isSmall ? 13 : 14}
           style={{
             color: 'var(--color-text-secondary, #a1a1aa)',
-            transition: 'transform 180ms var(--ease-out)',
+            transition: 'transform 180ms ease',
             transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
             flexShrink: 0,
             marginLeft: '8px',
@@ -131,11 +152,11 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
             top: 'calc(100% + 4px)',
             left: 0,
             right: 0,
-            zIndex: 100,
-            backgroundColor: '#0c0d10',
-            border: '1px solid #22252a',
-            borderRadius: 'var(--radius-md, 8px)',
-            boxShadow: '0 12px 32px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.04)',
+            zIndex: 1050,
+            backgroundColor: '#0a0b0e',
+            border: '1px solid rgba(255, 255, 255, 0.14)',
+            borderRadius: 'var(--radius-sm, 6px)',
+            boxShadow: '0 16px 36px rgba(0, 0, 0, 0.95), 0 0 0 1px rgba(255, 255, 255, 0.05)',
             maxHeight: '260px',
             overflowY: 'auto',
             padding: '4px',
@@ -155,17 +176,17 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  padding: '8px 10px',
-                  borderRadius: '6px',
-                  fontSize: '13px',
+                  padding: isSmall ? '6px 8px' : '8px 10px',
+                  borderRadius: '4px',
+                  fontSize: isSmall ? '11px' : '12px',
                   color: isSelected ? '#ffffff' : '#a1a1aa',
-                  backgroundColor: isSelected ? 'rgba(255, 255, 255, 0.06)' : 'transparent',
+                  backgroundColor: isSelected ? 'rgba(255, 255, 255, 0.08)' : 'transparent',
                   cursor: 'pointer',
                   transition: 'background-color 100ms ease, color 100ms ease',
                 }}
                 onMouseEnter={(e) => {
                   if (!isSelected) {
-                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.04)';
+                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.05)';
                     e.currentTarget.style.color = '#ffffff';
                   }
                 }}
@@ -176,18 +197,22 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
                   }
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
                   {option.icon && (
-                    <span style={{ display: 'flex', alignItems: 'center' }}>{option.icon}</span>
+                    <span style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>{option.icon}</span>
                   )}
-                  <span style={{ fontWeight: isSelected ? 600 : 400 }}>{option.label}</span>
+                  <span style={{ fontWeight: isSelected ? 700 : 500, whiteSpace: 'nowrap' }}>
+                    {option.label}
+                  </span>
                   {option.subLabel && (
-                    <span style={{ fontSize: '11px', color: '#71717a' }}>{option.subLabel}</span>
+                    <span style={{ fontSize: isSmall ? '10px' : '11px', color: '#71717a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {option.subLabel}
+                    </span>
                   )}
                 </div>
 
                 {isSelected && (
-                  <Check size={14} color="var(--color-accent-primary, #6366f1)" />
+                  <Check size={13} color="var(--color-accent-primary, #6366f1)" style={{ flexShrink: 0, marginLeft: '8px' }} />
                 )}
               </div>
             );
@@ -196,4 +221,4 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
       )}
     </div>
   );
-};
+}

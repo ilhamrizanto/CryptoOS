@@ -762,11 +762,11 @@ export class PortfolioService {
               authStatus = 'VERIFIED';
             } else {
               authStatus = 'FAILED';
-              errorMessage = authRes.data?.msg || 'Kredensial API Key OKX ditolak server';
+              errorMessage = authRes.data?.msg || 'OKX API credentials rejected by server';
             }
           } catch (authErr: any) {
             authStatus = 'FAILED';
-            errorMessage = authErr.response?.data?.msg || authErr.message || 'Kredensial OKX tidak valid';
+            errorMessage = authErr.response?.data?.msg || authErr.message || 'Invalid OKX credentials';
           }
         }
       } else if (ex === 'BYBIT') {
@@ -789,7 +789,7 @@ export class PortfolioService {
         }
 
         if (!isConnected) {
-          throw new Error('Koneksi ke gateway Bybit timeout');
+          throw new Error('Connection to Bybit gateway timed out');
         }
 
         if (credentials?.apiKey && credentials?.apiSecret) {
@@ -814,11 +814,11 @@ export class PortfolioService {
               authStatus = 'VERIFIED';
             } else {
               authStatus = 'FAILED';
-              errorMessage = authRes.data?.retMsg || 'Kredensial Bybit ditolak server';
+              errorMessage = authRes.data?.retMsg || 'Bybit credentials rejected by server';
             }
           } catch (authErr: any) {
             authStatus = 'FAILED';
-            errorMessage = authErr.response?.data?.retMsg || authErr.message || 'Kredensial API Key Bybit tidak valid';
+            errorMessage = authErr.response?.data?.retMsg || authErr.message || 'Invalid Bybit API Key credentials';
           }
         }
       } else if (ex === 'BINANCE') {
@@ -840,7 +840,7 @@ export class PortfolioService {
         }
 
         if (!isConnected) {
-          throw new Error('Koneksi ke gateway Binance timeout');
+          throw new Error('Connection to Binance gateway timed out');
         }
 
         if (credentials?.apiKey && credentials?.apiSecret) {
@@ -860,7 +860,7 @@ export class PortfolioService {
             authStatus = 'VERIFIED';
           } catch (authErr: any) {
             authStatus = 'FAILED';
-            errorMessage = authErr.response?.data?.msg || 'Kredensial API Key Binance tidak valid';
+            errorMessage = authErr.response?.data?.msg || 'Invalid Binance API Key credentials';
           }
         }
       } else {
@@ -870,7 +870,7 @@ export class PortfolioService {
     } catch (err: any) {
       latencyMs = Date.now() - startTime;
       isConnected = false;
-      errorMessage = err.message || 'Koneksi timeout';
+      errorMessage = err.message || 'Connection timed out';
     }
 
     return {

@@ -21,6 +21,7 @@ import { DualCurrencyValue } from '../components/ui/DualCurrencyValue';
 import { InteractiveDonutChart, DonutSegment } from '../components/portfolio/InteractiveDonutChart';
 import { TokenIcon } from '../components/common/TokenIcon';
 import { ExchangeIcon } from '../components/common/ExchangeIcon';
+import { CustomSelect } from '../components/common/CustomSelect';
 
 interface Holding {
   id: string;
@@ -667,19 +668,17 @@ export const PortfolioPage: React.FC = () => {
                 <label style={{ fontSize: '10px', color: 'var(--color-text-muted)', display: 'block', marginBottom: '4px', fontWeight: 700 }}>
                   STORAGE / WALLET LOCATION
                 </label>
-                <select
-                  id="select-asset-exchange"
+                <CustomSelect
                   value={formExchange}
-                  onChange={(e) => setFormExchange(e.target.value as any)}
-                  className="form-input"
-                  style={{ height: '36px', fontSize: '12px', backgroundColor: '#111' }}
-                >
-                  <option value="BINANCE">Binance Spot</option>
-                  <option value="BYBIT">Bybit Spot / UTA</option>
-                  <option value="OKX">OKX Trading</option>
-                  <option value="WALLET">Ledger / Cold Storage</option>
-                  <option value="MANUAL">Manual Spot Wallet</option>
-                </select>
+                  onChange={(val) => setFormExchange(val as any)}
+                  options={[
+                    { value: 'BINANCE', label: 'Binance Spot', icon: <ExchangeIcon exchange="BINANCE" size={14} /> },
+                    { value: 'BYBIT', label: 'Bybit Spot / UTA', icon: <ExchangeIcon exchange="BYBIT" size={14} /> },
+                    { value: 'OKX', label: 'OKX Trading', icon: <ExchangeIcon exchange="OKX" size={14} /> },
+                    { value: 'WALLET', label: 'Ledger / Cold Storage', icon: <Coins size={14} color="var(--color-accent-primary)" /> },
+                    { value: 'MANUAL', label: 'Manual Spot Wallet', icon: <Building2 size={14} color="var(--color-text-muted)" /> },
+                  ]}
+                />
               </div>
             </div>
 

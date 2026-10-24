@@ -14,6 +14,7 @@ import { api } from '../services/api';
 import { useSettingsStore } from '../store/settings.store';
 import { DualCurrencyValue } from '../components/ui/DualCurrencyValue';
 import { ExchangeIcon } from '../components/common/ExchangeIcon';
+import { CustomSelect } from '../components/common/CustomSelect';
 
 interface CashflowTransaction {
   id: string;
@@ -177,18 +178,42 @@ export const CashflowPage: React.FC = () => {
               <label style={{ fontSize: '10px', color: 'var(--color-text-muted)', display: 'block', marginBottom: '4px', fontWeight: 700 }}>
                 TRANSACTION TYPE
               </label>
-              <select
+              <CustomSelect
                 value={formType}
-                onChange={(e) => setFormType(e.target.value as any)}
-                className="form-input"
-                style={{ height: '34px', fontSize: '12px' }}
-              >
-                <option value="DEPOSIT">DEPOSIT (Setoran Modal Baru)</option>
-                <option value="WITHDRAWAL">WITHDRAWAL (Penarikan Modal / Profit)</option>
-                <option value="STAKING_YIELD">STAKING YIELD (Hasil Bunga Pasif)</option>
-                <option value="AIRDROP">AIRDROP / REWARD</option>
-                <option value="FEE">BIAYA GAS / ADMIN</option>
-              </select>
+                onChange={(val) => setFormType(val as any)}
+                options={[
+                  {
+                    value: 'DEPOSIT',
+                    label: 'DEPOSIT',
+                    subLabel: 'Capital Inflow / New Funds',
+                    icon: <ArrowDownLeft size={14} color="var(--color-bullish)" />,
+                  },
+                  {
+                    value: 'WITHDRAWAL',
+                    label: 'WITHDRAWAL',
+                    subLabel: 'Capital Outflow / Realized Take-Out',
+                    icon: <ArrowUpRight size={14} color="var(--color-bearish)" />,
+                  },
+                  {
+                    value: 'STAKING_YIELD',
+                    label: 'STAKING YIELD',
+                    subLabel: 'Passive Yield & Rewards',
+                    icon: <Coins size={14} color="var(--color-accent-primary)" />,
+                  },
+                  {
+                    value: 'AIRDROP',
+                    label: 'AIRDROP',
+                    subLabel: 'Protocol Incentive Distribution',
+                    icon: <Sparkles size={14} color="#38bdf8" />,
+                  },
+                  {
+                    value: 'FEE',
+                    label: 'FEE / EXPENSE',
+                    subLabel: 'Gas / Operational Overhead',
+                    icon: <CreditCard size={14} color="#a1a1aa" />,
+                  },
+                ]}
+              />
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
@@ -232,7 +257,7 @@ export const CashflowPage: React.FC = () => {
 
             <div>
               <label style={{ fontSize: '10px', color: 'var(--color-text-muted)', display: 'block', marginBottom: '4px', fontWeight: 700 }}>
-                SUMBER / TUJUAN
+                SOURCE / DESTINATION
               </label>
               <input
                 type="text"
@@ -247,7 +272,7 @@ export const CashflowPage: React.FC = () => {
             {/* Visual Destination Exchange Selector */}
             <div>
               <label style={{ fontSize: '10px', color: 'var(--color-text-muted)', display: 'block', marginBottom: '6px', fontWeight: 700 }}>
-                DESTINASI WALLET / STORAGE VAULT
+                DESTINATION WALLET / STORAGE VAULT
               </label>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(90px, 1fr))', gap: '6px' }}>
                 {[

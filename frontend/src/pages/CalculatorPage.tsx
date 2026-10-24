@@ -281,7 +281,7 @@ Portfolio Allocation Shift: ${rebalanceData.currentWeight}% ➔ ${rebalanceData.
         stopLossPrice: stopLossPrice,
         takeProfitPrice: takeProfitPrice,
         notes: isRebalance
-          ? `[REBALANCE ROTATION] ${rebalanceData.action} ${ticker} ($${activeUsd.toFixed(2)} USD • ${rebalanceTranche}% Tranche). Alokasi portofolio: ${rebalanceData.currentWeight}% -> ${rebalanceData.targetWeight}%. ${rebalanceData.reason || 'Eksekusi rotasi balancing portofolio'}.`
+          ? `[REBALANCE ROTATION] ${rebalanceData.action} ${ticker} ($${activeUsd.toFixed(2)} USD • ${rebalanceTranche}% Tranche). Portfolio allocation: ${rebalanceData.currentWeight}% -> ${rebalanceData.targetWeight}%. ${rebalanceData.reason || 'Execute portfolio rebalance rotation'}.`
           : `Sized via Position Sizer. Risk: ${riskPercent}% ($${riskAmountUsd.toFixed(2)}), Lev: ${selectedLeverage}x, R:R: 1:${riskRewardRatio.toFixed(2)}.`,
         psychology: 'CALM',
       },
@@ -632,7 +632,7 @@ Portfolio Allocation Shift: ${rebalanceData.currentWeight}% ➔ ${rebalanceData.
             {/* Metric 3: Portfolio Weight Impact */}
             <div>
               <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', fontWeight: 700, display: 'block' }}>
-                ALOKASI PORTOFOLIO SEBELUM &rarr; SESUDAH
+                PORTFOLIO ALLOCATION BEFORE &rarr; AFTER
               </span>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginTop: '2px' }}>
                 <span className="mono" style={{ fontSize: '15px', fontWeight: 800, color: 'var(--color-text-secondary)' }}>
@@ -643,7 +643,7 @@ Portfolio Allocation Shift: ${rebalanceData.currentWeight}% ➔ ${rebalanceData.
                   {rebalanceData.targetWeight}%
                 </span>
                 <span style={{ fontSize: '10px', color: 'var(--color-text-muted)' }}>
-                  ({rebalanceData.targetWeight - rebalanceData.currentWeight > 0 ? '+' : ''}{(rebalanceData.targetWeight - rebalanceData.currentWeight).toFixed(1)}% rotasi)
+                  ({rebalanceData.targetWeight - rebalanceData.currentWeight > 0 ? '+' : ''}{(rebalanceData.targetWeight - rebalanceData.currentWeight).toFixed(1)}% rotation)
                 </span>
               </div>
             </div>
@@ -686,13 +686,13 @@ Portfolio Allocation Shift: ${rebalanceData.currentWeight}% ➔ ${rebalanceData.
           {/* Subtext info */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '10.5px', color: 'var(--color-text-secondary)' }}>
             <span>
-              ℹ️ Parameter Sizer di bawah telah disinkronkan secara otomatis untuk Spot 1x execution. Est. Fee Taker (0.075%): ~${((rebalanceData.targetDiffUsd * (rebalanceTranche / 100)) * 0.00075).toFixed(2)} USD.
+              ℹ️ Position Sizer parameters below have been synchronized automatically for Spot 1x execution. Est. Taker Fee (0.075%): ~${((rebalanceData.targetDiffUsd * (rebalanceTranche / 100)) * 0.00075).toFixed(2)} USD.
             </span>
             <button
               onClick={() => navigate('/rebalancing')}
               style={{ background: 'none', border: 'none', color: 'var(--color-accent-primary)', fontSize: '10.5px', cursor: 'pointer', fontWeight: 700 }}
             >
-              &larr; Kembali ke Rebalancing Matrix
+              &larr; Back to Rebalancing Matrix
             </button>
           </div>
         </div>

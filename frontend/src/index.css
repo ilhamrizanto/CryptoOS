@@ -739,3 +739,19 @@ textarea:focus-visible {
     font-size: var(--text-xs) !important;
   }
 }
+
+/* Settings Workstation Sidebar-Style Navigation Layout */
+.settings-layout-container {
+  display: grid;
+  grid-template-columns: 270px 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+@media (max-width: 960px) {
+  .settings-layout-container {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+}
+

@@ -144,7 +144,7 @@ portfolioRouter.post('/sync', async (req, res, next) => {
     res.json({
       success: true,
       data: result,
-      message: 'Sinkronisasi exchange berhasil. Data saldo telah diperbarui dan ditimpa tanpa duplikasi.',
+      message: 'Exchange synchronization successful. Balance data updated and overwritten without duplication.',
     });
   } catch (err) {
     next(err);

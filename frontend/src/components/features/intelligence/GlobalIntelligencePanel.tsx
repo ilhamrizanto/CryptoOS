@@ -899,7 +899,7 @@ export const GlobalIntelligencePanel: React.FC<GlobalIntelligencePanelProps> = (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <Layers size={13} color="var(--color-violet)" />
                     <span style={{ fontSize: '10.5px', color: 'var(--color-text-muted)', fontWeight: 800, letterSpacing: '0.04em' }}>
-                      MARKET DOMINANCE & ROTASI ALTS
+                      MARKET DOMINANCE & ALTS ROTATION
                     </span>
                   </div>
                   <span className="violet-badge" style={{ fontSize: '8.5px', padding: '1.5px 6px', fontWeight: 800 }}>
@@ -1120,7 +1120,7 @@ export const GlobalIntelligencePanel: React.FC<GlobalIntelligencePanelProps> = (
                         cursor: 'pointer',
                         lineHeight: 1.2,
                       }}
-                      title="Lihat Metodologi & Sumber Data Resmi (BLS, BEA, CME)"
+                      title="View Methodology & Official Data Sources (BLS, BEA, CME)"
                     >
                       <Info size={9} />
                       <span>AUDIT DATA</span>

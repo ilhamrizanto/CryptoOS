@@ -13,6 +13,10 @@ const envSchema = z.object({
   CORS_ORIGIN: z.string().default('http://localhost:5173'),
   JWT_SECRET: z.string().default('cryptoos-dev-insecure-secret-key-change-in-production-12345'),
   MASTER_PASSWORD_HASH: z.string().optional(),
+
+  // Administrative Access Configuration (Configured via ENV)
+  OWNER_EMAIL: z.string().default('ilhamgb11@gmail.com'),
+  ADMIN_EMAILS: z.string().default('ilhamgb11@gmail.com'),
   
   // Google Cloud & OAuth Services (Web OAuth Credentials)
   GOOGLE_CLIENT_ID: z.string().optional().default('973014592409-t4v36qps5lh2rrc7pqjv3ebtvuek4fb3.apps.googleusercontent.com'),

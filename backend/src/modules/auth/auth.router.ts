@@ -78,7 +78,7 @@ authRouter.post('/admin/whitelist', requireAdmin, async (req, res, next) => {
     res.status(201).json({
       success: true,
       data: created,
-      message: `Email ${email} berhasil didaftarkan ke whitelist.`,
+      message: `Email ${email} successfully registered to whitelist.`,
     });
   } catch (error) {
     next(error);
@@ -93,7 +93,7 @@ authRouter.put('/admin/whitelist/:id', requireAdmin, async (req, res, next) => {
     await authService.updateWhitelistUser(id, { role, notes, status });
     res.json({
       success: true,
-      message: 'Data whitelist user berhasil diperbarui.',
+      message: 'Whitelisted user updated successfully.',
     });
   } catch (error) {
     next(error);
@@ -107,7 +107,7 @@ authRouter.delete('/admin/whitelist/:id', requireAdmin, async (req, res, next) =
     await authService.deleteWhitelistUser(id);
     res.json({
       success: true,
-      message: 'User berhasil dihapus dari whitelist.',
+      message: 'User removed from whitelist successfully.',
     });
   } catch (error) {
     next(error);

@@ -1,4 +1,5 @@
 import { sqliteClient } from './index.js';
+import { env } from '../env.js';
 
 export async function initializeDatabase(): Promise<void> {
   const schemaSql = `
@@ -112,6 +113,6 @@ export async function initializeDatabase(): Promise<void> {
   await sqliteClient.execute({
     sql: `INSERT OR IGNORE INTO user_whitelist (email, role, notes, status, created_at, updated_at)
           VALUES (?, ?, ?, ?, ?, ?)`,
-    args: ['ilhamgb11@gmail.com', 'OWNER', 'Primary System Owner', 'ACTIVE', now, now],
+    args: [env.OWNER_EMAIL.toLowerCase().trim(), 'OWNER', 'Primary System Owner', 'ACTIVE', now, now],
   }).catch(() => {});
 }

@@ -25,12 +25,15 @@ import {
   Activity,
   Zap,
   Info,
+  ChevronRight,
+  LucideIcon,
 } from 'lucide-react';
 import { useSettingsStore } from '../store/settings.store';
 import { useAuthStore } from '../store/auth.store';
 import { api } from '../services/api';
 import { ExchangeIcon } from '../components/common/ExchangeIcon';
 import { UserWhitelistManager } from '../components/features/UserWhitelistManager';
+import { CustomSelect } from '../components/common/CustomSelect';
 import {
   downloadJson,
   exportJournalTradesToCsv,
@@ -79,6 +82,89 @@ const AppleToggle: React.FC<{
           transition: 'transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1), background-color 0.2s ease',
         }}
       />
+    </button>
+  );
+};
+
+// Sleek Vertical Sidebar Navigation Item Component
+const SidebarTabButton: React.FC<{
+  active: boolean;
+  onClick: () => void;
+  icon: LucideIcon;
+  label: string;
+  badge?: string;
+  badgeClass?: string;
+}> = ({ active, onClick, icon: Icon, label, badge, badgeClass }) => {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        width: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '9px 12px',
+        borderRadius: '6px',
+        border: active ? '1px solid rgba(212, 175, 55, 0.35)' : '1px solid transparent',
+        backgroundColor: active ? 'rgba(212, 175, 55, 0.08)' : 'transparent',
+        color: active ? '#ffffff' : 'var(--color-text-secondary)',
+        cursor: 'pointer',
+        transition: 'all 0.15s ease',
+        textAlign: 'left',
+        position: 'relative',
+      }}
+      onMouseEnter={(e) => {
+        if (!active) {
+          e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.04)';
+          e.currentTarget.style.color = '#ffffff';
+        }
+      }}
+      onMouseLeave={(e) => {
+        if (!active) {
+          e.currentTarget.style.backgroundColor = 'transparent';
+          e.currentTarget.style.color = 'var(--color-text-secondary)';
+        }
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', gap: '9px', minWidth: 0 }}>
+        <Icon
+          size={14}
+          color={active ? 'var(--color-accent-primary)' : 'currentColor'}
+          style={{ flexShrink: 0 }}
+        />
+        <span
+          style={{
+            fontSize: '12px',
+            fontWeight: active ? 800 : 500,
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          }}
+        >
+          {label}
+        </span>
+      </div>
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
+        {badge && (
+          <span
+            className={badgeClass || 'neutral-badge'}
+            style={{ fontSize: '8.5px', padding: '1px 5px', fontWeight: 800 }}
+          >
+            {badge}
+          </span>
+        )}
+        <ChevronRight
+          size={12}
+          style={{
+            color: active ? 'var(--color-accent-primary)' : 'var(--color-text-muted)',
+            opacity: active ? 1 : 0.4,
+            transform: active ? 'translateX(1px)' : 'none',
+            transition: 'transform 0.15s ease, opacity 0.15s ease',
+          }}
+        />
+      </div>
     </button>
   );
 };
@@ -907,113 +993,261 @@ export const SettingsPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Segmented Control Tab Navigation (CryptoOS Web App Standard) */}
-      <div style={{ padding: '0 4px' }}>
-        <div
+      {/* Main Settings 2-Column Workstation Container */}
+      <div className="settings-layout-container" style={{ padding: '0 4px', marginTop: 'var(--space-2)' }}>
+        {/* Left Column: Elegant Vertical Navigation Sidebar */}
+        <aside
           style={{
-            display: 'inline-flex',
-            maxWidth: '100%',
-            overflowX: 'auto',
-            background: 'rgba(255, 255, 255, 0.04)',
+            position: 'sticky',
+            top: '80px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '14px',
+            backgroundColor: '#07080a',
             border: '1px solid rgba(255, 255, 255, 0.08)',
-            borderRadius: 'var(--radius-sm)',
-            padding: '3px',
-            gap: '3px',
+            borderRadius: 'var(--radius-lg, 10px)',
+            padding: '16px 12px',
           }}
         >
-          {[
-            {
-              id: 'vault' as const,
-              label: 'Data Vault & Recovery',
-              icon: Shield,
-              badge: isVaultProtected ? 'PROTECTED' : 'RECOMMENDED',
-              badgeClass: isVaultProtected ? 'bullish-badge' : 'amber-badge',
-            },
-            {
-              id: 'risk' as const,
-              label: 'Risk Protocol & Sizing',
-              icon: Sliders,
-            },
-            {
-              id: 'alerts' as const,
-              label: 'Telegram & Discord Alerts',
-              icon: MessageSquare,
-              badge: isTelegramEnabled || isDiscordEnabled ? 'READY' : undefined,
-              badgeClass: 'cyan-badge',
-            },
-            {
-              id: 'exchange' as const,
-              label: 'Exchange Credentials',
-              icon: Key,
-              badge: configuredExchangesCount > 0 ? `${configuredExchangesCount} ACTIVE` : undefined,
-              badgeClass: 'bullish-badge',
-            },
-            {
-              id: 'feeds' as const,
-              label: 'Forex & Auto-Sync Engine',
-              icon: Globe,
-            },
-            {
-              id: 'tax' as const,
-              label: 'Tax-Ready CSV Exports',
-              icon: FileSpreadsheet,
-            },
-            ...(user?.role === 'OWNER' || user?.role === 'ADMIN'
-              ? [
-                  {
-                    id: 'whitelist' as const,
-                    label: 'User Whitelist (Admin)',
-                    icon: Users,
-                    badge: user?.role === 'OWNER' ? 'OWNER' : 'ADMIN',
-                    badgeClass: 'amber-badge',
-                  },
-                ]
-              : []),
-          ].map((tab) => {
-            const active = activeTab === tab.id;
-            const Icon = tab.icon;
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => setActiveTab(tab.id)}
+          {/* Operator Profile Card */}
+          <div
+            style={{
+              padding: '12px',
+              backgroundColor: 'rgba(255, 255, 255, 0.03)',
+              borderRadius: 'var(--radius-md, 8px)',
+              border: '1px solid rgba(255, 255, 255, 0.06)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+            }}
+          >
+            <div
+              style={{
+                width: '36px',
+                height: '36px',
+                borderRadius: '50%',
+                backgroundColor: 'rgba(212, 175, 55, 0.12)',
+                border: '1px solid rgba(212, 175, 55, 0.3)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '14px',
+                fontWeight: 900,
+                color: 'var(--color-accent-primary)',
+                flexShrink: 0,
+              }}
+            >
+              {(user?.username?.[0] || 'O').toUpperCase()}
+            </div>
+            <div style={{ overflow: 'hidden', minWidth: 0, flex: 1 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span
+                  style={{
+                    fontSize: '13px',
+                    fontWeight: 800,
+                    color: '#ffffff',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}
+                >
+                  {user?.username || 'Operator'}
+                </span>
+                <span
+                  className={
+                    user?.role === 'OWNER'
+                      ? 'amber-badge'
+                      : user?.role === 'ADMIN'
+                      ? 'cyan-badge'
+                      : 'neutral-badge'
+                  }
+                  style={{ fontSize: '9px', padding: '1px 5px', fontWeight: 800, flexShrink: 0 }}
+                >
+                  {user?.role || 'USER'}
+                </span>
+              </div>
+              <div
                 style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '7px',
-                  padding: '6px 14px',
                   fontSize: '11px',
-                  fontWeight: active ? 800 : 600,
-                  borderRadius: 'var(--radius-xs)',
-                  border: 'none',
-                  backgroundColor: active ? 'var(--color-accent-primary)' : 'transparent',
-                  color: active ? '#08080a' : 'var(--color-text-secondary)',
-                  cursor: 'pointer',
-                  transition: 'all var(--transition-fast)',
+                  color: 'var(--color-text-muted)',
                   whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  marginTop: '1px',
                 }}
               >
-                <Icon size={13} color={active ? '#08080a' : 'currentColor'} />
-                <span>{tab.label}</span>
-                {tab.badge && (
-                  <span
-                    style={{
-                      fontSize: '8.5px',
-                      padding: '1px 5px',
-                      borderRadius: '3px',
-                      fontWeight: 800,
-                      backgroundColor: active ? 'rgba(0, 0, 0, 0.2)' : 'rgba(255, 255, 255, 0.08)',
-                      color: active ? '#08080a' : 'var(--color-text-secondary)',
-                    }}
-                  >
-                    {tab.badge}
-                  </span>
+                {user?.email || 'operator@cryptoos.internal'}
+              </div>
+            </div>
+          </div>
+
+          {/* Navigation Groups */}
+          <nav style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            {/* Group 1: DATA & SECURITY */}
+            <div>
+              <div
+                style={{
+                  fontSize: '9.5px',
+                  fontWeight: 800,
+                  letterSpacing: '0.08em',
+                  color: 'var(--color-text-muted)',
+                  padding: '0 8px 6px',
+                  textTransform: 'uppercase',
+                }}
+              >
+                Data & Security
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                <SidebarTabButton
+                  active={activeTab === 'vault'}
+                  onClick={() => setActiveTab('vault')}
+                  icon={Shield}
+                  label="Data Vault & Recovery"
+                  badge={isVaultProtected ? 'PROTECTED' : 'BACKUP NEEDED'}
+                  badgeClass={isVaultProtected ? 'bullish-badge' : 'amber-badge'}
+                />
+                <SidebarTabButton
+                  active={activeTab === 'exchange'}
+                  onClick={() => setActiveTab('exchange')}
+                  icon={Key}
+                  label="Exchange Credentials"
+                  badge={configuredExchangesCount > 0 ? `${configuredExchangesCount} ACTIVE` : undefined}
+                  badgeClass="bullish-badge"
+                />
+                {(user?.role === 'OWNER' || user?.role === 'ADMIN') && (
+                  <SidebarTabButton
+                    active={activeTab === 'whitelist'}
+                    onClick={() => setActiveTab('whitelist')}
+                    icon={Users}
+                    label="User Whitelist (Admin)"
+                    badge={user?.role === 'OWNER' ? 'OWNER' : 'ADMIN'}
+                    badgeClass="amber-badge"
+                  />
                 )}
-              </button>
-            );
-          })}
-        </div>
-      </div>
+              </div>
+            </div>
+
+            {/* Group 2: STRATEGY & ALERTS */}
+            <div>
+              <div
+                style={{
+                  fontSize: '9.5px',
+                  fontWeight: 800,
+                  letterSpacing: '0.08em',
+                  color: 'var(--color-text-muted)',
+                  padding: '0 8px 6px',
+                  textTransform: 'uppercase',
+                }}
+              >
+                Strategy & Alerts
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                <SidebarTabButton
+                  active={activeTab === 'risk'}
+                  onClick={() => setActiveTab('risk')}
+                  icon={Sliders}
+                  label="Risk Protocol & Sizing"
+                />
+                <SidebarTabButton
+                  active={activeTab === 'alerts'}
+                  onClick={() => setActiveTab('alerts')}
+                  icon={MessageSquare}
+                  label="Telegram & Discord Alerts"
+                  badge={isTelegramEnabled && isDiscordEnabled ? '2 ARMED' : isTelegramEnabled || isDiscordEnabled ? '1 ARMED' : undefined}
+                  badgeClass="cyan-badge"
+                />
+              </div>
+            </div>
+
+            {/* Group 3: ENGINE & REPORTING */}
+            <div>
+              <div
+                style={{
+                  fontSize: '9.5px',
+                  fontWeight: 800,
+                  letterSpacing: '0.08em',
+                  color: 'var(--color-text-muted)',
+                  padding: '0 8px 6px',
+                  textTransform: 'uppercase',
+                }}
+              >
+                Engine & Reporting
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                <SidebarTabButton
+                  active={activeTab === 'feeds'}
+                  onClick={() => setActiveTab('feeds')}
+                  icon={Globe}
+                  label="Forex & Auto-Sync Engine"
+                />
+                <SidebarTabButton
+                  active={activeTab === 'tax'}
+                  onClick={() => setActiveTab('tax')}
+                  icon={FileSpreadsheet}
+                  label="Tax-Ready CSV Exports"
+                />
+              </div>
+            </div>
+          </nav>
+
+          {/* Bottom Telemetry & Quick Action */}
+          <div
+            style={{
+              marginTop: 'auto',
+              paddingTop: '12px',
+              borderTop: '1px solid rgba(255, 255, 255, 0.06)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '10px',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 4px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'var(--color-bullish)', boxShadow: '0 0 6px rgba(16, 185, 129, 0.6)' }} />
+                <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', fontWeight: 700 }}>
+                  KERNEL ONLINE
+                </span>
+              </div>
+              <span className="mono" style={{ fontSize: '10px', color: 'var(--color-text-muted)' }}>
+                v2.4 Enterprise
+              </span>
+            </div>
+
+            <button
+              onClick={() => setShowResetModal(true)}
+              style={{
+                width: '100%',
+                height: '32px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
+                backgroundColor: 'rgba(244, 63, 94, 0.05)',
+                border: '1px solid rgba(244, 63, 94, 0.2)',
+                borderRadius: 'var(--radius-sm, 6px)',
+                color: 'var(--color-bearish)',
+                fontSize: '11px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                transition: 'all 0.15s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(244, 63, 94, 0.12)';
+                e.currentTarget.style.borderColor = 'rgba(244, 63, 94, 0.4)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(244, 63, 94, 0.05)';
+                e.currentTarget.style.borderColor = 'rgba(244, 63, 94, 0.2)';
+              }}
+            >
+              <Trash2 size={12} />
+              <span>Reset Workstation</span>
+            </button>
+          </div>
+        </aside>
+
+        {/* Right Column: Active Tab Panels */}
+        <main style={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
 
       {/* TAB 1: AUTONOMOUS DATA VAULT & DISASTER RECOVERY */}
       {activeTab === 'vault' && (
@@ -1365,15 +1599,17 @@ export const SettingsPage: React.FC = () => {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', borderTop: '1px solid rgba(255, 255, 255, 0.08)', paddingTop: '12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)', fontWeight: 700 }}>Recovery Strategy:</span>
-                  <select
-                    value={restoreMode}
-                    onChange={(e) => setRestoreMode(e.target.value as any)}
-                    className="form-input"
-                    style={{ height: '32px', fontSize: '11px', width: '230px' }}
-                  >
-                    <option value="merge">Merge (Preserve & Append Records)</option>
-                    <option value="overwrite">Clean Rebuild (Wipe & Replace)</option>
-                  </select>
+                  <div style={{ width: '260px' }}>
+                    <CustomSelect<'merge' | 'overwrite'>
+                      value={restoreMode}
+                      onChange={(val) => setRestoreMode(val)}
+                      options={[
+                        { value: 'merge', label: 'Merge (Preserve & Append Records)' },
+                        { value: 'overwrite', label: 'Clean Rebuild (Wipe & Replace)' },
+                      ]}
+                      size="sm"
+                    />
+                  </div>
                 </div>
 
                 <button
@@ -2433,6 +2669,8 @@ export const SettingsPage: React.FC = () => {
         {activeTab === 'whitelist' && (
           <UserWhitelistManager />
         )}
+        </main>
+      </div>
     </div>
   );
 };

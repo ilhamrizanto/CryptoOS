@@ -8,10 +8,19 @@
 [![Vite](https://img.shields.io/badge/Vite-6.0-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
 [![Node.js](https://img.shields.io/badge/Node.js-26%2B_LTS-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
 [![SQLite](https://img.shields.io/badge/SQLite-LibSQL_Engine-003B57?style=for-the-badge&logo=sqlite&logoColor=white)](https://www.sqlite.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-D4AF37?style=for-the-badge)](LICENSE)
+[![License: Source-Available / Evaluation](https://img.shields.io/badge/License-Source--Available%20%2F%20Evaluation-D4AF37?style=for-the-badge)](LICENSE.md)
 
 <p align="center">
   <strong>A private, Bloomberg Terminal-grade crypto intelligence engine, macro cycle workstation, asymmetric risk sizer, behavioral journal, and autonomous disaster recovery vault.</strong>
+</p>
+
+### ⚡ Commercial & Services Gateway
+<p align="center">
+  <a href="mailto:ilhamgb11@gmail.com?subject=[CryptoOS]%20Live%20Demo%20%26%20Walkthrough%20Request"><strong>[ 🔴 Request Live Demo & Access ]</strong></a>
+  &nbsp;&bull;&nbsp;
+  <a href="#-layanan--kustomisasi-hire-the-author"><strong>[ 💼 Sewa Jasa (Hire the Author) ]</strong></a>
+  &nbsp;&bull;&nbsp;
+  <a href="#-lisensi-komersial--pembelian-source-code"><strong>[ 🛒 Beli Lisensi Komersial ]</strong></a>
 </p>
 
 [Key Features](#-key-capabilities) •
@@ -19,8 +28,9 @@
 [Quickstart](#-quickstart-guide) •
 [Modules](#-core-terminal-modules) •
 [API Specification](#-api-endpoints) •
-[Contributing](#-contributing) •
-[License](#-license)
+[Commercial License](#-lisensi-komersial--pembelian-source-code) •
+[Hire the Author](#-layanan--kustomisasi-hire-the-author) •
+[License](#-lisensi--hak-cipta)
 
 </div>
 
@@ -108,6 +118,11 @@ graph TD
 ---
 
 ## 🚀 Quickstart Guide
+
+> [!IMPORTANT]
+> **Evaluation & Demo Notice (`LICENSE.md`)**  
+> Menjalankan repositori ini di lingkungan lokal diberikan secara eksklusif untuk kebutuhan **evaluasi teknis, pengujian fitur, pembelajaran, dan peninjauan arsitektur sistem**.  
+> Seluruh kode sumber tunduk pada ketentuan [LICENSE.md](LICENSE.md) dan **dilarang keras** digunakan untuk operasional produksi (*production deployment*), tujuan komersial, di-*white-label*, atau didistribusikan ulang tanpa izin resmi atau [Lisensi Komersial](#-lisensi-komersial--pembelian-source-code) dari pemilik hak cipta.
 
 ### System Requirements
 * **Node.js**: `v26.0.0` or higher (Active LTS recommended)
@@ -244,10 +259,65 @@ We welcome contributions from quantitative analysts, traders, and software engin
 
 ---
 
-## 📄 License
+## 💼 Layanan & Kustomisasi (Hire the Author)
 
-This project is open-source software licensed under the [MIT License](LICENSE).
+Apakah Anda, *trading firm*, atau institusi Anda membutuhkan platform analitik quantitative kustom, terminal eksekusi trading proprietary, atau integrasi data pasar real-time berkinerja tinggi?
+
+Sebagai Lead Architect dan pengembang dari **CryptoOS**, saya (**Ilham Rizanto**) menyediakan jasa rekayasa perangkat lunak finansial profesional (*bespoke development & consulting*):
+
+### Portfolio Keahlian & Penawaran Jasa:
+* **Custom Quantitative Terminal Development**: Membangun antarmuka dashboard analitik dengan standar institusional (Pure Black `#000000` OLED, Zero-Clutter Architecture, dual-currency real-time rates).
+* **Exchange Connectivity & Algorithmic Bridges**: Integrasi koneksi read-only atau automated trade execution via REST & WebSocket (Binance, Bybit, OKX, Hyperliquid, DEX protocols) dengan standar *zero-withdrawal security*.
+* **Risk Engine & Mathematical Sizing**: Implementasi kalkulator Kelly Criterion, Dynamic Stop-Loss trailing, Liquidation buffer alerts, dan Portfolio Drift Balancer.
+* **Macro Telemetry & Data Aggregation**: Pipeline otomatis penarik data Federal Reserve (FRED), sentimen Fear & Greed, likuiditas stablecoin, dan rasio dominasi.
+* **Notification Bridges**: Bot Telegram institusional dan Discord Webhook Dispatcher dengan format rich-embed & latency rendah.
+* **Architecture Consultation & Code Review**: Audit keamanan stack React 19 / Node.js 26 LTS / SQLite LibSQL, optimasi query, dan perencanaan *zero-ops disaster recovery vault*.
+
+> 📬 **Mulai Diskusi Proyek:**  
+> Untuk konsultasi kebutuhan teknis, proposal proyek, atau kustomisasi fitur, hubungi langsung melalui email:  
+> **👉 [ilhamgb11@gmail.com](mailto:ilhamgb11@gmail.com?subject=[CryptoOS]%20Consulting%20%26%20Custom%20Development%20Inquiry)**
+
+---
+
+## 🛒 Lisensi Komersial & Pembelian Source Code
+
+Repositori publik ini dirilis di bawah skema lisensi **Source-Available Evaluation & Demo License** (khusus pengujian lokal dan evaluasi arsitektur). Apabila Anda ingin mengadopsi atau meluncurkan CryptoOS untuk tujuan bisnis, tersedia dua pilihan skema lisensi komersial resmi:
+
+### 1. Commercial Standard License (Non-Exclusive)
+*Pilihan ideal bagi Startup Fintech, Prop Firm, Crypto Hedge Fund, atau Komunitas Trading yang membutuhkan sistem siap pakai untuk operasional internal atau produk klien.*
+* **Hak Penggunaan**: Izin legal non-eksklusif untuk mengompilasi, men-deploy, dan mengoperasikan CryptoOS pada 1 (satu) entitas bisnis atau proyek komersial.
+* **White-Labeling & Rebranding**: Bebas menghapus atau mengganti nama, logo, skema warna, dan branding sistem sesuai merek Anda.
+* **Akses Source Code Penuh**: Menyerahkan repositori lengkap (Backend Node.js 26 + Frontend React 19 Vite) tanpa proteksi DRM atau obfuscation.
+* **Dukungan Awal**: 14 hari bantuan teknis instalasi dan konfigurasi deployment server (Docker/VPS/Nginx).
+
+### 2. Full IP & Code Buyout (Exclusive Ownership)
+*Pilihan tepat bagi Korporasi, Venture Capital, atau Investor yang ingin mengakuisisi kepemilikan aset intelektual penuh untuk dijadikan produk SaaS berbayar atau dipatenkan.*
+* **Pengalihan Hak Cipta Mutlak (*IP Assignment*)**: Pengalihan penuh hak kekayaan intelektual atas nama pembeli secara legal.
+* **Hak Komersialisasi Tanpa Batas**: Hak untuk menjual ulang (*resell*), melisensikan kembali (*sublicense*), merilis varian SaaS berbayar, atau memodifikasi tanpa batasan apa pun.
+* **Penyerahan Total**: Seluruh riwayat komit git, master branch, desain token arsitektur, dan dokumentasi internal diserahkan secara privat dan eksklusif.
+* **Sesi Handover & Mentoring**: Workshop transfer arsitektur 1-on-1 bersama Lead Architect untuk onboarding tim engineering internal Anda.
+
+---
+
+### 📩 Prosedur Pembelian Lisensi:
+Kirimkan surat permohonan lisensi resmi ke:
+* **Kontak**: **[ilhamgb11@gmail.com](mailto:ilhamgb11@gmail.com?subject=[CryptoOS]%20Commercial%20License%20Inquiry)**
+* **Subjek**: `[CryptoOS] Commercial License Inquiry - [Nama Perusahaan / Inisial Anda]`
+* **Format Pesan**: Cantumkan skema lisensi yang diinginkan (*Standard* atau *Full IP Buyout*) beserta gambaran singkat skala penerapan sistem Anda.
+
+---
+
+## 📄 Lisensi & Hak Cipta
+
+**Copyright (c) 2026 Ilham Rizanto. All rights reserved.**
+
+Seluruh hak cipta dan kepemilikan intelektual atas kode sumber, arsitektur sistem, dan materi desain **CryptoOS** adalah sah milik **Ilham Rizanto**.
+
+Repositori ini berstatus *source-available* secara ketat untuk kebutuhan evaluasi, review kode, demonstrasi arsitektur, dan pengujian personal. Dilarang keras menggunakan sebagian atau seluruh isi repositori ini dalam lingkungan produksi, memperjualbelikan, melisensikan kembali, atau mengklaim kepemilikan tanpa perjanjian lisensi tertulis dari pemilik hak cipta.
+
+Untuk ketentuan hukum selengkapnya, silakan merujuk pada berkas [LICENSE.md](LICENSE.md).
 
 <div align="center">
-  <sub>Built for quantitative discipline, capital preservation, and asymmetric upside.</sub>
+  <sub>Architected with institutional rigor, quantitative discipline, and uncompromised financial sovereignty.</sub>
 </div>
+

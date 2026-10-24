@@ -1,21 +1,21 @@
-MIT License
+Copyright (c) 2026 Ilham Rizanto. All rights reserved.
 
-Copyright (c) 2026 CryptoOS Quantitative Technologies & Contributors
+EVALUATION & DEMO LICENSE
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+This source code and software are provided strictly for evaluation, testing, 
+educational review, and demonstration purposes.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+PERMITTED USES:
+- Viewing, downloading, and running the codebase locally for evaluation.
+- Testing features to assess technical architecture and quality.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+STRICTLY PROHIBITED:
+- Using this codebase (or any part thereof) in production or commercial environments.
+- Distributing, sublicensing, publishing, white-labeling, or selling the software.
+- Removing or altering copyright notices, authorship headers, or metadata.
+- Claiming authorship or ownership of this intellectual property.
+
+COMMERCIAL RIGHTS & INQUIRIES:
+To obtain a commercial license, purchase the full production codebase, or hire 
+the author for custom implementation/consulting, please contact:
+- Contact: ilhamgb11@gmail.com

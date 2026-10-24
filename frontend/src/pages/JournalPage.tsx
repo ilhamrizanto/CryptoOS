@@ -27,6 +27,7 @@ import { DualCurrencyValue } from '../components/ui/DualCurrencyValue';
 import { JournalEntry, TradeDirection } from '../types/trade.types';
 import { TokenIcon } from '../components/common/TokenIcon';
 import { MonteCarloEngine } from '../components/montecarlo/MonteCarloEngine';
+import { CustomSelect } from '../components/common/CustomSelect';
 
 /**
  * Helper to parse psychological tags and notes.
@@ -1050,18 +1051,17 @@ export const JournalPage: React.FC = () => {
               <label style={{ fontSize: '10px', color: 'var(--color-text-muted)', display: 'block', marginBottom: '4px', fontWeight: 700 }}>
                 EXIT REASON & RATIONALE
               </label>
-              <select
+              <CustomSelect
                 value={exitReason}
-                onChange={(e) => setExitReason(e.target.value)}
-                className="form-input"
-                style={{ height: '36px', fontSize: '12px', backgroundColor: '#111' }}
-              >
-                <option value="TP_HIT">Take Profit Target Reached (TP Hit)</option>
-                <option value="SL_HIT">Stop Loss Triggered (SL Hit)</option>
-                <option value="TRAILING_SL">Trailing Stop Triggered</option>
-                <option value="MANUAL_EXIT">Manual Discretionary Exit</option>
-                <option value="TIME_STOP">Time Invalidation / Reversal Signal</option>
-              </select>
+                onChange={(val) => setExitReason(String(val))}
+                options={[
+                  { value: 'TP_HIT', label: 'Take Profit Target Reached (TP Hit)' },
+                  { value: 'SL_HIT', label: 'Stop Loss Triggered (SL Hit)' },
+                  { value: 'TRAILING_SL', label: 'Trailing Stop Triggered' },
+                  { value: 'MANUAL_EXIT', label: 'Manual Discretionary Exit' },
+                  { value: 'TIME_STOP', label: 'Time Invalidation / Reversal Signal' },
+                ]}
+              />
             </div>
 
             {/* Lessons Learned */}
@@ -1306,19 +1306,17 @@ export const JournalPage: React.FC = () => {
               <label style={{ fontSize: '10px', color: 'var(--color-text-muted)', display: 'block', marginBottom: '4px', fontWeight: 700 }}>
                 ENTRY EMOTION & PSYCHOLOGICAL CONVICTION
               </label>
-              <select
-                id="select-psychology"
+              <CustomSelect
                 value={newPsychology}
-                onChange={(e) => setNewPsychology(e.target.value)}
-                className="form-input"
-                style={{ height: '36px', fontSize: '12px', backgroundColor: '#111' }}
-              >
-                <option value="CALM">😌 Calm & Following Trading Plan (Disciplined)</option>
-                <option value="FOMO">⚡ Fear of Missing Out (FOMO / Impulsive)</option>
-                <option value="REVENGE">🔥 Revenge Trading (Seeking Quick Recovery)</option>
-                <option value="HESITANT">🤔 Hesitant / Low Conviction</option>
-                <option value="OVERCONFIDENT">🚀 Overconfident / Aggressive</option>
-              </select>
+                onChange={(val) => setNewPsychology(String(val))}
+                options={[
+                  { value: 'CALM', label: '😌 Calm & Following Trading Plan (Disciplined)' },
+                  { value: 'FOMO', label: '⚡ Fear of Missing Out (FOMO / Impulsive)' },
+                  { value: 'REVENGE', label: '🔥 Revenge Trading (Seeking Quick Recovery)' },
+                  { value: 'HESITANT', label: '🤔 Hesitant / Low Conviction' },
+                  { value: 'OVERCONFIDENT', label: '🚀 Overconfident / Aggressive' },
+                ]}
+              />
             </div>
 
             {/* Setup Notes */}
@@ -2400,27 +2398,18 @@ export const JournalPage: React.FC = () => {
         </div>
 
         {/* Search Ticker & Emotion Filter */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <select
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: '190px' }}>
+          <CustomSelect
             value={emotionFilter}
-            onChange={(e) => setEmotionFilter(e.target.value)}
-            style={{
-              height: '32px',
-              fontSize: '11px',
-              backgroundColor: 'rgba(255, 255, 255, 0.04)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              borderRadius: 'var(--radius-xs)',
-              color: '#fff',
-              padding: '0 8px',
-              outline: 'none',
-              cursor: 'pointer',
-            }}
-          >
-            <option value="ALL">All Psychological States</option>
-            <option value="CALM">😌 Calm & Planned Only</option>
-            <option value="FOMO">⚡ FOMO Only</option>
-            <option value="REVENGE">🔥 Revenge Only</option>
-          </select>
+            onChange={(val) => setEmotionFilter(String(val))}
+            options={[
+              { value: 'ALL', label: 'All Psychological States' },
+              { value: 'CALM', label: '😌 Calm & Planned Only' },
+              { value: 'FOMO', label: '⚡ FOMO Only' },
+              { value: 'REVENGE', label: '🔥 Revenge Only' },
+            ]}
+            size="sm"
+          />
 
           <div style={{ position: 'relative' }}>
             <Search size={13} style={{ position: 'absolute', left: '10px', top: '10px', color: 'var(--color-text-muted)' }} />

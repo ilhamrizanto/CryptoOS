@@ -878,7 +878,7 @@ export const RebalancingPage: React.FC = () => {
                   })()}
                 </div>
                 <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', textAlign: 'center' }}>
-                  Klik irisan lingkaran untuk memilih kategori
+                  Click slice to select category
                 </span>
               </div>
 
@@ -1058,7 +1058,7 @@ export const RebalancingPage: React.FC = () => {
                   padding: 0,
                 }}
               >
-                <span>{showGranularTargets ? '▼ Sembunyikan Target Koin Spesifik' : '▶ Buka Target Koin Spesifik (Opsional)'}</span>
+                <span>{showGranularTargets ? '▼ Hide Specific Coin Targets' : '▶ Configure Specific Coin Targets (Optional)'}</span>
                 <span style={{ fontSize: '10px', color: 'var(--color-text-muted)' }}>({summary?.holdings?.length || 0} holdings)</span>
               </button>
 
@@ -1111,7 +1111,7 @@ export const RebalancingPage: React.FC = () => {
                     ))}
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 6px', fontSize: '10px' }}>
-                    <span style={{ color: 'var(--color-text-muted)' }}>Total Target Koin Spesifik:</span>
+                    <span style={{ color: 'var(--color-text-muted)' }}>Total Specific Coin Target:</span>
                     <span className="mono" style={{ color: totalTargetSum === 100 ? 'var(--color-bullish)' : 'var(--color-text-secondary)', fontWeight: 700 }}>
                       {totalTargetSum}%
                     </span>
@@ -1122,7 +1122,7 @@ export const RebalancingPage: React.FC = () => {
 
             <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', paddingTop: '4px', borderTop: '1px solid rgba(255, 255, 255, 0.08)' }}>
               <button className="btn btn-secondary" onClick={() => setShowTargetModal(false)} style={{ height: '34px', fontSize: '12px' }}>
-                Batal
+                Cancel
               </button>
               <button
                 className="btn btn-primary"
@@ -1130,7 +1130,7 @@ export const RebalancingPage: React.FC = () => {
                 disabled={isSavingTargets}
                 style={{ height: '34px', fontSize: '12px', fontWeight: 800 }}
               >
-                {isSavingTargets ? 'Menyimpan...' : 'Simpan Target Portofolio'}
+                {isSavingTargets ? 'Saving...' : 'Save Portfolio Targets'}
               </button>
             </div>
           </div>
@@ -2047,7 +2047,7 @@ export const RebalancingPage: React.FC = () => {
                                   targetWeight: 0,
                                   category: asset.category,
                                   exchange: asset.holdings?.[0]?.exchange || 'Binance',
-                                  reason: `Rebalance Trim Untargeted: Jual $${trimAmount.toLocaleString()} dari koin untargeted untuk rotasi ke BTC / Cash.`,
+                                  reason: `Rebalance Trim Untargeted: Trim $${trimAmount.toLocaleString()} from untargeted holding to fund rotation into BTC / Cash.`,
                                 },
                               });
                             }}

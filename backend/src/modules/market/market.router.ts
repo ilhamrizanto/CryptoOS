@@ -49,7 +49,7 @@ marketRouter.patch('/fedwatch', requireAuth, async (req, res, next) => {
   try {
     const parsed = fedwatchSchema.safeParse(req.body);
     if (!parsed.success) {
-      throw new ValidationError('Format data FedWatch tidak valid', parsed.error.format());
+      throw new ValidationError('Invalid FedWatch data format', parsed.error.format());
     }
 
     const updated = await marketService.saveFedWatchData(parsed.data);
@@ -57,7 +57,7 @@ marketRouter.patch('/fedwatch', requireAuth, async (req, res, next) => {
       success: true,
       data: updated,
       meta: {
-        message: 'Probabilitas FedWatch berhasil diperbarui',
+        message: 'FedWatch probability updated successfully',
         timestamp: Date.now(),
       },
     });

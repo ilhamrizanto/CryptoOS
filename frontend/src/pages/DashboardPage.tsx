@@ -245,7 +245,7 @@ export const DashboardPage: React.FC = () => {
                 }}
                 className={isDriftHigh ? "bearish-badge" : "neutral-badge"}
                 style={{ fontSize: '9px', padding: '1px 5px', cursor: 'pointer' }}
-                title="Buka Rebalancing Matrix"
+                title="Open Rebalancing Matrix"
               >
                 {isDriftHigh ? `±${maxCategoryDrift}% DRIFT` : 'BALANCED'}
               </span>
@@ -700,7 +700,7 @@ export const DashboardPage: React.FC = () => {
                     <Check size={13} color="var(--color-bullish)" />
                   )}
                   <span style={{ fontWeight: 800, color: isDriftHigh ? 'var(--color-amber)' : 'var(--color-bullish)' }}>
-                    {isDriftHigh ? `Deviasi ±${maxCategoryDrift}% Terdeteksi` : 'Alokasi Portofolio Seimbang'}
+                    {isDriftHigh ? `±${maxCategoryDrift}% Drift Detected` : 'Portfolio Allocation Balanced'}
                   </span>
                 </div>
                 <span style={{ fontSize: '9px', color: 'var(--color-text-muted)' }}>
@@ -710,8 +710,8 @@ export const DashboardPage: React.FC = () => {
 
               <span style={{ color: 'var(--color-text-secondary)', fontSize: '10.5px' }}>
                 {isDriftHigh
-                  ? `Eksposur Altcoin ${altcoinsActualPercent}% (Target ${categoryTargets.altcoins}%). Rotasikan ke BTC & Cash untuk melindungi modal.`
-                  : `Proporsi Bitcoin, Cash, dan Altcoin berada dalam koridor risiko terukur.`}
+                  ? `Altcoin exposure at ${altcoinsActualPercent}% (Target ${categoryTargets.altcoins}%). Rotate into BTC & Cash reserves to protect capital.`
+                  : `Proportions of Bitcoin, Cash, and Altcoins are within calibrated risk corridors.`}
               </span>
 
               {isDriftHigh && (
@@ -733,7 +733,7 @@ export const DashboardPage: React.FC = () => {
                   }}
                 >
                   <ArrowRightLeft size={11} />
-                  <span>Buka Rebalance Matrix & Eksekusi &rarr;</span>
+                  <span>Open Rebalance Matrix & Execute &rarr;</span>
                 </button>
               )}
             </div>
@@ -742,12 +742,12 @@ export const DashboardPage: React.FC = () => {
             {topHoldings.length > 0 && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', paddingTop: '2px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '10px', color: 'var(--color-text-muted)', fontWeight: 700 }}>
-                  <span>KONTRIBUTOR ASET UTAMA:</span>
+                  <span>PRIMARY ASSET CONTRIBUTORS:</span>
                   <button
                     onClick={() => navigate('/portfolio')}
                     style={{ background: 'none', border: 'none', color: 'var(--color-text-muted)', fontSize: '10px', cursor: 'pointer' }}
                   >
-                    Lihat Semua ({sortedHoldings.length}) &rarr;
+                    View All ({sortedHoldings.length}) &rarr;
                   </button>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>

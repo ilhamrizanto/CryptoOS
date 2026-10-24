@@ -26,6 +26,7 @@ import { DualCurrencyValue } from '../components/ui/DualCurrencyValue';
 import { TradeIdea, TradeDirection, IdeaStatus } from '../types/trade.types';
 import { formatCompactUsd } from '../utils/formatters';
 import { TokenIcon } from '../components/common/TokenIcon';
+import { CustomSelect } from '../components/common/CustomSelect';
 
 export const PipelinePage: React.FC = () => {
   const navigate = useNavigate();
@@ -1051,22 +1052,22 @@ export const PipelinePage: React.FC = () => {
 
         {/* Status Pipeline & Readiness Indicator */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-          <div>
+          <div style={{ minWidth: '160px' }}>
             <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', display: 'block', marginBottom: '4px', fontWeight: 700, letterSpacing: '0.04em' }}>
               STATUS WORKFLOW
             </span>
-            <select
+            <CustomSelect<IdeaStatus>
               value={status}
-              onChange={(e) => setStatus(e.target.value as IdeaStatus)}
-              className="form-input mono"
-              style={{ width: '150px', height: '34px', fontSize: '11px', fontWeight: 700, padding: '4px 10px' }}
-            >
-              <option value="WATCHLIST">WATCHLIST</option>
-              <option value="READY">READY SETUP</option>
-              <option value="ACTIVE">ACTIVE IN JOURNAL</option>
-              <option value="CLOSED">CLOSED</option>
-              <option value="INVALIDATED">INVALIDATED</option>
-            </select>
+              onChange={(val) => setStatus(val)}
+              options={[
+                { value: 'WATCHLIST', label: 'WATCHLIST' },
+                { value: 'READY', label: 'READY SETUP' },
+                { value: 'ACTIVE', label: 'ACTIVE IN JOURNAL' },
+                { value: 'CLOSED', label: 'CLOSED' },
+                { value: 'INVALIDATED', label: 'INVALIDATED' },
+              ]}
+              size="sm"
+            />
           </div>
 
           <div>
@@ -1731,44 +1732,44 @@ export const PipelinePage: React.FC = () => {
           >
             <div>
               <span style={{ fontSize: '9px', color: 'var(--color-text-muted)', display: 'block', marginBottom: '2px' }}>OI TREND</span>
-              <select
+              <CustomSelect
                 value={oiTrend}
-                onChange={(e) => setOiTrend(e.target.value as any)}
-                className="pipeline-compact-select"
-                style={{ width: '100%' }}
-              >
-                <option value="INCREASING">Increasing</option>
-                <option value="DECREASING">Decreasing</option>
-                <option value="STABLE">Stable</option>
-              </select>
+                onChange={(val) => setOiTrend(val as any)}
+                options={[
+                  { value: 'INCREASING', label: 'Increasing' },
+                  { value: 'DECREASING', label: 'Decreasing' },
+                  { value: 'STABLE', label: 'Stable' },
+                ]}
+                size="sm"
+              />
             </div>
 
             <div>
               <span style={{ fontSize: '9px', color: 'var(--color-text-muted)', display: 'block', marginBottom: '2px' }}>FUNDING RATE</span>
-              <select
+              <CustomSelect
                 value={fundingRateStatus}
-                onChange={(e) => setFundingRateStatus(e.target.value as any)}
-                className="pipeline-compact-select"
-                style={{ width: '100%' }}
-              >
-                <option value="HEALTHY">Healthy (0.01%)</option>
-                <option value="POSITIVE_EXTREME">Extreme Longs</option>
-                <option value="NEGATIVE_EXTREME">Extreme Shorts</option>
-              </select>
+                onChange={(val) => setFundingRateStatus(val as any)}
+                options={[
+                  { value: 'HEALTHY', label: 'Healthy (0.01%)' },
+                  { value: 'POSITIVE_EXTREME', label: 'Extreme Longs' },
+                  { value: 'NEGATIVE_EXTREME', label: 'Extreme Shorts' },
+                ]}
+                size="sm"
+              />
             </div>
 
             <div>
               <span style={{ fontSize: '9px', color: 'var(--color-text-muted)', display: 'block', marginBottom: '2px' }}>CVD DELTA</span>
-              <select
+              <CustomSelect
                 value={cvdDivergence}
-                onChange={(e) => setCvdDivergence(e.target.value as any)}
-                className="pipeline-compact-select"
-                style={{ width: '100%' }}
-              >
-                <option value="BULLISH_DIV">Bullish Div</option>
-                <option value="BEARISH_DIV">Bearish Div</option>
-                <option value="CONVERGENT">Convergent</option>
-              </select>
+                onChange={(val) => setCvdDivergence(val as any)}
+                options={[
+                  { value: 'BULLISH_DIV', label: 'Bullish Div' },
+                  { value: 'BEARISH_DIV', label: 'Bearish Div' },
+                  { value: 'CONVERGENT', label: 'Convergent' },
+                ]}
+                size="sm"
+              />
             </div>
           </div>
 

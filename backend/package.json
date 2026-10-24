@@ -2,6 +2,8 @@
   "name": "cryptoos-backend",
   "version": "1.0.0",
   "private": true,
+  "author": "Ilham Rizanto <ilhamgb11@gmail.com>",
+  "license": "SEE LICENSE IN LICENSE.md",
   "main": "dist/server.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",

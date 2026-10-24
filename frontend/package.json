@@ -2,6 +2,8 @@
   "name": "cryptoos-frontend",
   "private": true,
   "version": "1.0.0",
+  "author": "Ilham Rizanto <ilhamgb11@gmail.com>",
+  "license": "SEE LICENSE IN LICENSE.md",
   "type": "module",
   "scripts": {
     "dev": "vite",

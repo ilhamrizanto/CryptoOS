@@ -27,6 +27,29 @@ export interface WhitelistUser {
   lastLogin?: number;
 }
 
+/**
+ * Determine if an email address is the configured system Owner in ENV
+ */
+export function isConfiguredOwner(email?: string): boolean {
+  if (!email) return false;
+  const owner = (env.OWNER_EMAIL || 'ilhamgb11@gmail.com').toLowerCase().trim();
+  const normalized = email.toLowerCase().trim();
+  return normalized === owner || (owner.includes('@') && normalized.startsWith(owner.split('@')[0] + '@'));
+}
+
+/**
+ * Determine if an email address is configured as Admin or Owner in ENV
+ */
+export function isConfiguredAdmin(email?: string): boolean {
+  if (!email) return false;
+  if (isConfiguredOwner(email)) return true;
+  const adminList = (env.ADMIN_EMAILS || '')
+    .split(',')
+    .map(e => e.toLowerCase().trim())
+    .filter(Boolean);
+  return adminList.includes(email.toLowerCase().trim());
+}
+
 export class AuthService {
   private static readonly DEFAULT_HASH =
     '$2b$10$Fz7oBbbyy5VP5tMm0vs7t.95VbCeA6xRBlKIY25zpe3k1yz59Bs3S'; // bcrypt for cryptoos2026
@@ -59,11 +82,15 @@ export class AuthService {
       throw new UnauthorizedError('Invalid master key password. Access denied.');
     }
 
+    const ownerEmail = (env.OWNER_EMAIL || 'ilhamgb11@gmail.com').toLowerCase().trim();
+    const ownerUsername = ownerEmail.split('@')[0] || 'Operator';
+    const capitalizedName = ownerUsername.charAt(0).toUpperCase() + ownerUsername.slice(1);
+
     const payload = isOwner
       ? {
-          userId: 'user-ilhamgb11',
-          username: 'Ilham',
-          email: 'ilhamgb11@gmail.com',
+          userId: `user-${ownerUsername}`,
+          username: capitalizedName,
+          email: ownerEmail,
           role: 'OWNER',
         }
       : {
@@ -147,9 +174,8 @@ export class AuthService {
     }
 
     const normalizedEmail = resolvedEmail.toLowerCase().trim();
-    const isOwner =
-      normalizedEmail.startsWith('ilhamgb11@') ||
-      normalizedEmail === 'ilhamgb11@gmail.com';
+    const isOwner = isConfiguredOwner(normalizedEmail);
+    const isAdmin = isConfiguredAdmin(normalizedEmail);
 
     // 3. Strict Whitelist Enforcement
     const wlQuery = await sqliteClient.execute({
@@ -157,27 +183,31 @@ export class AuthService {
       args: [normalizedEmail],
     });
 
-    if (!isOwner && wlQuery.rows.length === 0) {
+    if (!isOwner && !isAdmin && wlQuery.rows.length === 0) {
       throw new ForbiddenError(
-        `Akses Ditolak: Email (${normalizedEmail}) belum terdaftar di whitelist CryptoOS. Hubungi Administrator untuk didaftarkan.`
+        `Access Denied: Email (${normalizedEmail}) is not registered on the CryptoOS whitelist. Contact your Administrator.`
       );
     }
 
-    if (!isOwner && String(wlQuery.rows[0].status || '').toUpperCase() === 'REVOKED') {
+    if (!isOwner && String(wlQuery.rows[0]?.status || '').toUpperCase() === 'REVOKED') {
       throw new ForbiddenError(
-        `Akses Dinonaktifkan: Akses akun (${normalizedEmail}) telah dinonaktifkan oleh Administrator.`
+        `Access Revoked: Account (${normalizedEmail}) has been disabled by Administrator.`
       );
     }
 
     const determinedRole = isOwner
       ? 'OWNER'
+      : isAdmin
+      ? 'ADMIN'
       : (wlQuery.rows[0]?.role ? String(wlQuery.rows[0].role).toUpperCase() : 'USER');
 
-    const role = isOwner ? 'OWNER' : determinedRole;
+    const role = determinedRole;
 
-    // Owner retains existing historical records; any other user gets a unique deterministic ID
+    // Owner retains root operator records; any other user gets a unique deterministic ID
+    const ownerEmail = (env.OWNER_EMAIL || 'ilhamgb11@gmail.com').toLowerCase().trim();
+    const ownerUsername = ownerEmail.split('@')[0] || 'Operator';
     const userId = isOwner
-      ? 'user-ilhamgb11'
+      ? `user-${ownerUsername}`
       : `user-${crypto.createHash('sha256').update(normalizedEmail).digest('hex').slice(0, 12)}`;
 
     const username = resolvedName || normalizedEmail.split('@')[0];
@@ -238,9 +268,10 @@ export class AuthService {
    */
   public async getWhitelistUsers(): Promise<WhitelistUser[]> {
     const result = await sqliteClient.execute({
-      sql: `SELECT w.id, w.email, w.role, w.notes, w.status, w.created_at, w.updated_at, u.created_at as last_login
+      sql: `SELECT w.id, w.email, w.role, w.notes, w.status, w.created_at, w.updated_at, MAX(u.created_at) as last_login
             FROM user_whitelist w
             LEFT JOIN users u ON LOWER(u.email) = LOWER(w.email)
+            GROUP BY w.id
             ORDER BY w.id ASC`,
       args: [],
     });
@@ -262,7 +293,7 @@ export class AuthService {
    */
   public async addWhitelistUser(email: string, role = 'USER', notes = ''): Promise<WhitelistUser> {
     if (!email || !email.includes('@')) {
-      throw new ValidationError('Format alamat email tidak valid.');
+      throw new ValidationError('Invalid email address format.');
     }
 
     const normalizedEmail = email.toLowerCase().trim();
@@ -310,16 +341,16 @@ export class AuthService {
     });
 
     if (existing.rows.length === 0) {
-      throw new ValidationError('User whitelist tidak ditemukan.');
+      throw new ValidationError('Whitelisted user not found.');
     }
 
     const user = existing.rows[0];
     const isOwner =
-      String(user.email).toLowerCase() === 'ilhamgb11@gmail.com' ||
+      isConfiguredOwner(String(user.email)) ||
       String(user.role).toUpperCase() === 'OWNER';
 
     if (isOwner && data.status === 'REVOKED') {
-      throw new ForbiddenError('Akses akun Owner utama tidak dapat dinonaktifkan.');
+      throw new ForbiddenError('Primary Owner account access cannot be disabled.');
     }
 
     const updatedRole = isOwner ? 'OWNER' : (data.role ? data.role.toUpperCase() : String(user.role));
@@ -345,15 +376,15 @@ export class AuthService {
     });
 
     if (existing.rows.length === 0) {
-      throw new ValidationError('User whitelist tidak ditemukan.');
+      throw new ValidationError('Whitelisted user not found.');
     }
 
     const user = existing.rows[0];
     if (
-      String(user.email).toLowerCase() === 'ilhamgb11@gmail.com' ||
+      isConfiguredOwner(String(user.email)) ||
       String(user.role).toUpperCase() === 'OWNER'
     ) {
-      throw new ForbiddenError('Akun Owner utama tidak dapat dihapus dari whitelist.');
+      throw new ForbiddenError('Primary Owner account cannot be removed from whitelist.');
     }
 
     await sqliteClient.execute({

@@ -646,7 +646,7 @@ export class MarketService {
       previous: cpiData.previous,
       change: cpiData.change,
       expectation: 3.50,
-      status: cpiData.change > 0 ? `Memanas (+${cpiData.change}% MoM)` : 'Mendingin',
+      status: cpiData.change > 0 ? `Heating Up (+${cpiData.change}% MoM)` : 'Cooling Down',
       source: 'U.S. BLS via FRED',
       seriesId: 'CPIAUCSL',
       releaseDate: cpiData.date,
@@ -658,7 +658,7 @@ export class MarketService {
       value: coreCpiData.latest,
       previous: coreCpiData.previous,
       change: coreCpiData.change,
-      status: coreCpiData.change > 0 ? 'Sticky Core' : 'Mereda',
+      status: coreCpiData.change > 0 ? 'Sticky Core' : 'Easing',
       source: 'U.S. BLS via FRED',
       seriesId: 'CPILFESL',
       releaseDate: coreCpiData.date,
@@ -670,7 +670,7 @@ export class MarketService {
       value: pceData.latest,
       previous: pceData.previous,
       change: pceData.change,
-      status: pceData.change > 0 ? 'Re-akselerasi' : 'Stabil',
+      status: pceData.change > 0 ? 'Re-accelerating' : 'Stable',
       source: 'U.S. BEA via FRED',
       seriesId: 'PCEPI',
       releaseDate: pceData.date,
@@ -683,7 +683,7 @@ export class MarketService {
       previous: corePceData.previous,
       change: corePceData.change,
       target: 2.0,
-      status: `+${(corePceData.latest - 2.0).toFixed(2)}% di Atas Target 2%`,
+      status: `+${(corePceData.latest - 2.0).toFixed(2)}% Above 2% Target`,
       source: 'U.S. BEA via FRED',
       seriesId: 'PCEPILFE',
       releaseDate: corePceData.date,
@@ -703,8 +703,8 @@ export class MarketService {
       corePce: corePceMetric,
       coreInflation: corePceMetric, // Legacy link to Core PCE
       fomcCalendar,
-      macroRegime: 'Sticky Energy Inflation • Hawkish Pause 28 Okt -> Potensi Hike Des',
-      regimeExplanation: 'Headline CPI naik ke 3.72% akibat lonjakan minyak mentah WTI ($101). The Fed diproyeksikan tahan suku bunga di 3.75%-4.00% pada 28 Okt (84.5% Pause), namun pasar futures mem-price in 88.2% probabilitas kenaikan 25bps pada 9 Des 2026 jika disinflasi terhambat.',
+      macroRegime: 'Sticky Energy Inflation • Hawkish Pause Oct 28 -> Potential Dec Rate Hike',
+      regimeExplanation: 'Headline CPI rose to 3.72% driven by a surge in WTI crude oil ($101/bbl). The Federal Reserve is projected to hold rates at 3.75%-4.00% on Oct 28 (84.5% pause probability), but futures markets are pricing in an 88.2% probability of a 25 bps rate hike on Dec 9, 2026 if disinflation stalls.',
     };
 
     memoryCache.set('live_macro_data', macroResult, 600); // 10 mins TTL
@@ -758,7 +758,7 @@ export class MarketService {
       },
       manuallyUpdatedAt: Date.now(),
       source: 'CME 30-Day Fed Funds Futures (CME FedWatch Tool)',
-      notes: 'CME FedWatch: 84.5% Pause (3.75%-4.00%), 15.5% Hike pada 28 Okt 2026 • Forward Pricing 88.2% Hike 25bps pada 9 Des 2026 akibat lonjakan inflasi energi (WTI Oil $101)',
+      notes: 'CME FedWatch: 84.5% Pause (3.75%-4.00%), 15.5% Hike on Oct 28, 2026 • Forward Pricing 88.2% Hike 25 bps on Dec 9, 2026 due to energy inflation surge (WTI Crude $101)',
       cmeFedwatchUrl: 'https://www.cmegroup.com/markets/interest-rates/cme-fedwatch-tool.html',
     };
 
