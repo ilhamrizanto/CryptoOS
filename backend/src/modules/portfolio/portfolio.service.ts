@@ -482,11 +482,19 @@ export class PortfolioService {
       const bybitHosts = ['https://api.bybit-global.com', 'https://api.bybit.biz', 'https://api.bybit.com'];
       for (const host of bybitHosts) {
         try {
+          let bybitTimeOffset = 0;
+          try {
+            const timeRes = await axios.get(`${host}/v5/market/time`, { timeout: 3500, headers: { 'User-Agent': BROWSER_UA } });
+            if (timeRes.data?.time) {
+              bybitTimeOffset = Number(timeRes.data.time) - Date.now();
+            }
+          } catch {}
+
           const coinTotals = new Map<string, number>();
 
           const fetchBybitAccount = async (accountType: string) => {
-            const ts = Date.now().toString();
-            const recvWindow = '5000';
+            const ts = (Date.now() + bybitTimeOffset).toString();
+            const recvWindow = '30000';
             const qs = `accountType=${accountType}`;
             const prehash = ts + creds.apiKey! + recvWindow + qs;
             const sign = crypto.createHmac('sha256', creds.apiSecret!).update(prehash).digest('hex');
@@ -779,16 +787,20 @@ export class PortfolioService {
       } else if (ex === 'BYBIT') {
         // Bybit multi-region endpoints: api.bybit-global.com & api.bybit.biz & api.bybit.com
         const bybitEndpoints = ['https://api.bybit-global.com', 'https://api.bybit.biz', 'https://api.bybit.com'];
+        let bybitTimeOffset = 0;
         for (const ep of bybitEndpoints) {
           try {
             const t0 = Date.now();
-            await axios.get(ep + '/v5/market/time', {
+            const timeRes = await axios.get(ep + '/v5/market/time', {
               timeout: 4500,
               headers: { 'User-Agent': BROWSER_UA },
             });
             latencyMs = Date.now() - t0;
             endpoint = ep;
             isConnected = true;
+            if (timeRes.data?.time) {
+              bybitTimeOffset = Number(timeRes.data.time) - Date.now();
+            }
             break;
           } catch {
             // try next endpoint
@@ -801,8 +813,8 @@ export class PortfolioService {
 
         if (credentials?.apiKey && credentials?.apiSecret) {
           try {
-            const ts = Date.now().toString();
-            const recvWindow = '5000';
+            const ts = (Date.now() + bybitTimeOffset).toString();
+            const recvWindow = '30000';
             const qs = 'accountType=UNIFIED';
             const prehash = ts + credentials.apiKey + recvWindow + qs;
             const sign = crypto.createHmac('sha256', credentials.apiSecret).update(prehash).digest('hex');
@@ -945,7 +957,7 @@ export class PortfolioService {
             const body = new URLSearchParams({
               method: 'getInfo',
               timestamp: String(Date.now()),
-              recvWindow: '5000',
+              recvWindow: '30000',
             }).toString();
             const sign = crypto.createHmac('sha512', credentials.apiSecret).update(body).digest('hex');
             const authRes = await axios.post(`${endpoint}/tapi`, body, {

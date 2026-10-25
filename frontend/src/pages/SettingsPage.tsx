@@ -116,7 +116,7 @@ const SidebarTabButton: React.FC<{
         transition: 'all 0.15s ease',
         textAlign: 'left',
         position: 'relative',
-        gap: '8px',
+        gap: '10px',
       }}
       onMouseEnter={(e) => {
         if (!active) {
@@ -131,7 +131,7 @@ const SidebarTabButton: React.FC<{
         }
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: '9px', minWidth: 0, flex: 1 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '9px', minWidth: 0, flex: 1, overflow: 'hidden' }}>
         <Icon
           size={14}
           color={active ? 'var(--color-accent-primary)' : 'currentColor'}
@@ -142,13 +142,16 @@ const SidebarTabButton: React.FC<{
             fontSize: '12px',
             fontWeight: active ? 800 : 500,
             whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
           }}
+          title={label}
         >
           {label}
         </span>
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0, marginLeft: 'auto' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
         {badge && (
           <span
             className={badgeClass || 'neutral-badge'}

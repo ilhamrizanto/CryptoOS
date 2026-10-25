@@ -743,7 +743,7 @@ textarea:focus-visible {
 /* Settings Workstation Sidebar-Style Navigation Layout */
 .settings-layout-container {
   display: grid;
-  grid-template-columns: 310px 1fr;
+  grid-template-columns: 350px 1fr;
   gap: 20px;
   align-items: start;
 }
