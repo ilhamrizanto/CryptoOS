@@ -381,7 +381,7 @@ export class PortfolioService {
 
     // 2. Binance Multi-Wallet Aggregator (Spot + Simple Earn Flexible & Locked + Funding)
     if (ex === 'BINANCE' && creds?.apiKey && creds?.apiSecret) {
-      const binanceHosts = ['https://api.binance.com', 'https://data-api.binance.vision'];
+      const binanceHosts = ['https://api.binance.me', 'https://api.binance.com', 'https://data-api.binance.vision'];
       for (const host of binanceHosts) {
         try {
           let serverTime = Date.now();
@@ -829,7 +829,7 @@ export class PortfolioService {
           }
         }
       } else if (ex === 'BINANCE') {
-        const binanceEndpoints = ['https://api.binance.com', 'https://data-api.binance.vision'];
+        const binanceEndpoints = ['https://api.binance.me', 'https://api.binance.com', 'https://data-api.binance.vision'];
         for (const ep of binanceEndpoints) {
           try {
             const t0 = Date.now();

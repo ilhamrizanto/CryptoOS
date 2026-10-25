@@ -6,6 +6,7 @@ interface UserProfile {
   username: string;
   email?: string;
   role: string;
+  avatarUrl?: string;
 }
 
 interface AuthState {
@@ -15,7 +16,7 @@ interface AuthState {
   isLoading: boolean;
   error: string | null;
   login: (password: string) => Promise<boolean>;
-  loginWithGoogle: (email?: string, name?: string, idToken?: string, accessToken?: string) => Promise<boolean>;
+  loginWithGoogle: (email?: string, name?: string, idToken?: string, accessToken?: string, picture?: string) => Promise<boolean>;
   logout: () => void;
   verifySession: () => Promise<boolean>;
 }
@@ -27,15 +28,18 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   isLoading: false,
   error: null,
 
-  loginWithGoogle: async (email?: string, name?: string, idToken?: string, accessToken?: string) => {
+  loginWithGoogle: async (email?: string, name?: string, idToken?: string, accessToken?: string, picture?: string) => {
     set({ isLoading: true, error: null });
     try {
       const res = await api.post<{
         token: string;
         user: UserProfile;
-      }>('/auth/google', { email, name, idToken, accessToken });
+      }>('/auth/google', { email, name, idToken, accessToken, picture });
 
       localStorage.setItem('cryptoos_auth_token', res.token);
+      if (res.user?.avatarUrl) {
+        localStorage.setItem('cryptoos_user_avatar', res.user.avatarUrl);
+      }
       set({
         token: res.token,
         user: res.user,
@@ -63,9 +67,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       }>('/auth/login', { password });
 
       localStorage.setItem('cryptoos_auth_token', res.token);
+      const cachedAvatar = localStorage.getItem('cryptoos_user_avatar') || undefined;
       set({
         token: res.token,
-        user: res.user,
+        user: { ...res.user, avatarUrl: res.user.avatarUrl || cachedAvatar },
         isAuthenticated: true,
         isLoading: false,
         error: null,
@@ -83,6 +88,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   logout: () => {
     localStorage.removeItem('cryptoos_auth_token');
+    localStorage.removeItem('cryptoos_user_avatar');
     api.post('/auth/logout').catch(() => {});
     set({
       token: null,
@@ -105,13 +111,20 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         user: UserProfile;
       }>('/auth/verify');
 
+      const cachedAvatar = localStorage.getItem('cryptoos_user_avatar') || undefined;
+      const resolvedAvatar = res.user?.avatarUrl || cachedAvatar;
+      if (res.user?.avatarUrl) {
+        localStorage.setItem('cryptoos_user_avatar', res.user.avatarUrl);
+      }
+
       set({
         isAuthenticated: true,
-        user: res.user,
+        user: { ...res.user, avatarUrl: resolvedAvatar },
       });
       return true;
     } catch {
       localStorage.removeItem('cryptoos_auth_token');
+      localStorage.removeItem('cryptoos_user_avatar');
       set({
         token: null,
         user: null,

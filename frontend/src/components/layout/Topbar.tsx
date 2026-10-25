@@ -91,18 +91,15 @@ export const Topbar: React.FC = () => {
         >
           <div
             style={{
-              width: '28px',
-              height: '28px',
-              borderRadius: '6px',
-              overflow: 'hidden',
-              border: '1px solid var(--color-accent-border)',
+              width: '30px',
+              height: '30px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              backgroundColor: '#000000',
+              backgroundColor: 'transparent',
             }}
           >
-            <img src="/logo.png" alt="CryptoOS" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            <img src="/logo.png" alt="CryptoOS" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
           </div>
           <div>
             <span style={{ fontWeight: 900, fontSize: '16px', color: '#ffffff', letterSpacing: '-0.02em' }}>
@@ -381,32 +378,57 @@ export const Topbar: React.FC = () => {
       {/* Right: User Profile & Session Only */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', zIndex: 2 }}>
         {/* User Profile Chip & Logout */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <div
+            onClick={() => navigate('/settings')}
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '8px',
+              gap: '9px',
               padding: '3px 10px 3px 4px',
               backgroundColor: '#0a0a0c',
-              border: '1px solid #1a1a1a',
+              border: '1px solid rgba(255, 255, 255, 0.08)',
               borderRadius: 'var(--radius-md)',
+              cursor: 'pointer',
+              transition: 'border-color 0.15s ease, background-color 0.15s ease',
             }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = 'rgba(212, 175, 55, 0.35)';
+              e.currentTarget.style.backgroundColor = '#121216';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)';
+              e.currentTarget.style.backgroundColor = '#0a0a0c';
+            }}
+            title="System Settings & Operator Profile"
           >
             <div
               style={{
-                width: '24px',
-                height: '24px',
-                borderRadius: 'var(--radius-sm)',
-                backgroundColor: '#161616',
-                border: '1px solid var(--color-accent-primary)',
+                width: '28px',
+                height: '28px',
+                borderRadius: '50%',
+                backgroundColor: '#121216',
+                border: 'none',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 overflow: 'hidden',
+                flexShrink: 0,
               }}
             >
-              <User size={13} color="var(--color-accent-primary)" />
+              {user?.avatarUrl ? (
+                <img
+                  src={user.avatarUrl}
+                  alt={user.username || 'Operator'}
+                  referrerPolicy="no-referrer"
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                  }}
+                />
+              ) : (
+                <User size={14} color="var(--color-accent-primary)" />
+              )}
             </div>
             <div style={{ display: 'flex', flexDirection: 'column' }}>
               <span style={{ fontSize: '11px', fontWeight: 800, color: '#ffffff', lineHeight: 1.1 }}>

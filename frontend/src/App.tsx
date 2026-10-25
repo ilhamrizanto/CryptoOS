@@ -13,6 +13,12 @@ import { SettingsPage } from './pages/SettingsPage';
 import { LoginPage } from './pages/LoginPage';
 import { useAuthStore } from './store/auth.store';
 
+import { GoogleOAuthProvider } from '@react-oauth/google';
+
+const GOOGLE_CLIENT_ID =
+  (import.meta as any).env?.VITE_GOOGLE_CLIENT_ID ||
+  '973014592409-t4v36qps5lh2rrc7pqjv3ebtvuek4fb3.apps.googleusercontent.com';
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -49,8 +55,9 @@ export const App: React.FC = () => {
   }, [verifySession]);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
+    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
         <Routes>
           {/* Public / Auth Gate */}
           <Route path="/login" element={<LoginRoute />} />
@@ -79,6 +86,7 @@ export const App: React.FC = () => {
         </Routes>
       </BrowserRouter>
     </QueryClientProvider>
+    </GoogleOAuthProvider>
   );
 };
 

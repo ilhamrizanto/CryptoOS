@@ -13,6 +13,7 @@ export interface AuthSession {
     username: string;
     email?: string;
     role: string;
+    avatarUrl?: string;
   };
 }
 
@@ -86,12 +87,24 @@ export class AuthService {
     const ownerUsername = ownerEmail.split('@')[0] || 'Operator';
     const capitalizedName = ownerUsername.charAt(0).toUpperCase() + ownerUsername.slice(1);
 
+    let avatarUrl: string | undefined = undefined;
+    try {
+      const userRow = await sqliteClient.execute({
+        sql: 'SELECT avatar_url FROM users WHERE LOWER(email) = ? LIMIT 1',
+        args: [ownerEmail],
+      });
+      if (userRow.rows.length > 0 && userRow.rows[0].avatar_url) {
+        avatarUrl = String(userRow.rows[0].avatar_url);
+      }
+    } catch {}
+
     const payload = isOwner
       ? {
           userId: `user-${ownerUsername}`,
           username: capitalizedName,
           email: ownerEmail,
           role: 'OWNER',
+          avatarUrl,
         }
       : {
           userId: 'user-demo-clean',
@@ -111,6 +124,7 @@ export class AuthService {
         username: payload.username,
         email: payload.email,
         role: payload.role,
+        avatarUrl,
       },
     };
   }
@@ -118,12 +132,13 @@ export class AuthService {
   /**
    * Authorize user via Google Account with strict cryptographic token verification
    * and Whitelist validation
-   */
+    */
   public async loginWithGoogle(
     _email?: string,
     _name?: string,
     idToken?: string,
-    accessToken?: string
+    accessToken?: string,
+    clientPicture?: string
   ): Promise<AuthSession> {
     if (!accessToken && !idToken) {
       throw new UnauthorizedError('Cryptographic Google credential (access token or ID token) is required.');
@@ -131,6 +146,7 @@ export class AuthService {
 
     let resolvedEmail: string | undefined;
     let resolvedName: string | undefined;
+    let resolvedPicture: string | undefined = clientPicture;
 
     // 1. Verify via Google OAuth2 UserInfo if access token provided
     if (accessToken) {
@@ -142,6 +158,9 @@ export class AuthService {
         if (userinfoRes.data?.email && userinfoRes.data?.email_verified !== false) {
           resolvedEmail = userinfoRes.data.email;
           resolvedName = userinfoRes.data.name;
+          if (userinfoRes.data.picture) {
+            resolvedPicture = userinfoRes.data.picture;
+          }
         }
       } catch (e) {
         console.warn('[AuthService] Google access token verification failed:', (e as Error).message);
@@ -163,6 +182,9 @@ export class AuthService {
           }
           resolvedEmail = tokenRes.data.email;
           resolvedName = tokenRes.data.name;
+          if (tokenRes.data.picture) {
+            resolvedPicture = tokenRes.data.picture;
+          }
         }
       } catch (e) {
         console.warn('[AuthService] Google ID token verification failed:', (e as Error).message);
@@ -212,12 +234,12 @@ export class AuthService {
 
     const username = resolvedName || normalizedEmail.split('@')[0];
 
-    // Upsert into users table
+    // Upsert into users table with avatar_url
     await sqliteClient.execute({
-      sql: `INSERT INTO users (username, password, email, role, created_at)
-            VALUES (?, ?, ?, ?, ?)
-            ON CONFLICT(username) DO UPDATE SET email = excluded.email, role = excluded.role`,
-      args: [username, 'oauth-google', normalizedEmail, role, Date.now()],
+      sql: `INSERT INTO users (username, password, email, role, avatar_url, created_at)
+            VALUES (?, ?, ?, ?, ?, ?)
+            ON CONFLICT(username) DO UPDATE SET email = excluded.email, role = excluded.role, avatar_url = COALESCE(excluded.avatar_url, users.avatar_url)`,
+      args: [username, 'oauth-google', normalizedEmail, role, resolvedPicture || null, Date.now()],
     }).catch(() => {});
 
     const payload = {
@@ -225,6 +247,7 @@ export class AuthService {
       username,
       email: normalizedEmail,
       role,
+      avatarUrl: resolvedPicture,
     };
 
     const token = jwt.sign(payload, env.JWT_SECRET, {
@@ -238,6 +261,7 @@ export class AuthService {
         username: payload.username,
         email: payload.email,
         role: payload.role,
+        avatarUrl: payload.avatarUrl,
       },
     };
   }
@@ -252,6 +276,7 @@ export class AuthService {
         username: string;
         email?: string;
         role: string;
+        avatarUrl?: string;
       };
       return decoded;
     } catch {

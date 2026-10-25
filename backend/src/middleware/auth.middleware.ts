@@ -8,6 +8,7 @@ export interface AuthenticatedUser {
   username: string;
   email?: string;
   role?: string;
+  avatarUrl?: string;
 }
 
 declare global {

@@ -1,6 +1,8 @@
 import { Router } from 'express';
+import axios from 'axios';
 import { authService } from './auth.service.js';
 import { requireAuth, requireAdmin } from '../../middleware/auth.middleware.js';
+import { sqliteClient } from '../../db/index.js';
 
 export const authRouter = Router();
 
@@ -21,8 +23,8 @@ authRouter.post('/login', async (req, res, next) => {
 // POST /api/auth/google
 authRouter.post('/google', async (req, res, next) => {
   try {
-    const { email, name, idToken, credential, accessToken } = req.body;
-    const session = await authService.loginWithGoogle(email, name, idToken || credential, accessToken);
+    const { email, name, idToken, credential, accessToken, picture } = req.body;
+    const session = await authService.loginWithGoogle(email, name, idToken || credential, accessToken, picture);
     res.json({
       success: true,
       data: session,
@@ -33,14 +35,91 @@ authRouter.post('/google', async (req, res, next) => {
 });
 
 // GET /api/auth/verify
-authRouter.get('/verify', requireAuth, (req, res) => {
-  res.json({
-    success: true,
-    data: {
-      valid: true,
-      user: req.user,
-    },
-  });
+authRouter.get('/verify', requireAuth, async (req, res, next) => {
+  try {
+    let avatarUrl = req.user?.avatarUrl;
+    if (!avatarUrl && req.user?.email) {
+      const row = await sqliteClient.execute({
+        sql: 'SELECT avatar_url FROM users WHERE LOWER(email) = ? LIMIT 1',
+        args: [req.user.email.toLowerCase()],
+      });
+      if (row.rows.length > 0 && row.rows[0].avatar_url) {
+        avatarUrl = String(row.rows[0].avatar_url);
+      }
+    }
+    res.json({
+      success: true,
+      data: {
+        valid: true,
+        user: {
+          ...req.user,
+          avatarUrl,
+        },
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /api/auth/sync-google-avatar
+authRouter.post('/sync-google-avatar', requireAuth, async (req, res, next) => {
+  try {
+    const { accessToken, avatarUrl } = req.body;
+    let resolvedPicture: string | undefined = avatarUrl;
+
+    if (!resolvedPicture && accessToken) {
+      try {
+        const userinfoRes = await axios.get('https://www.googleapis.com/oauth2/v3/userinfo', {
+          headers: { Authorization: `Bearer ${accessToken}` },
+          timeout: 6000,
+        });
+        resolvedPicture = userinfoRes.data?.picture;
+      } catch (e) {
+        console.warn('[AuthRouter] Failed to fetch Google userinfo:', (e as Error).message);
+      }
+    }
+
+    if (resolvedPicture && req.user?.email) {
+      await sqliteClient.execute({
+        sql: 'UPDATE users SET avatar_url = ? WHERE LOWER(email) = ?',
+        args: [resolvedPicture, req.user.email.toLowerCase()],
+      });
+    }
+
+    res.json({
+      success: true,
+      data: {
+        avatarUrl: resolvedPicture || null,
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /api/auth/upload-avatar
+authRouter.post('/upload-avatar', requireAuth, async (req, res, next) => {
+  try {
+    const { avatarUrl } = req.body;
+    if (!avatarUrl || typeof avatarUrl !== 'string') {
+      return res.status(400).json({ success: false, error: { message: 'avatarUrl is required' } });
+    }
+
+    if (req.user?.email) {
+      await sqliteClient.execute({
+        sql: 'UPDATE users SET avatar_url = ? WHERE LOWER(email) = ?',
+        args: [avatarUrl, req.user.email.toLowerCase()],
+      });
+    }
+
+    res.json({
+      success: true,
+      data: { avatarUrl },
+    });
+  } catch (err) {
+    next(err);
+  }
 });
 
 // POST /api/auth/logout

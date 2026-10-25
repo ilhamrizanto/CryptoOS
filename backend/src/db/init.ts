@@ -9,6 +9,7 @@ export async function initializeDatabase(): Promise<void> {
       password TEXT NOT NULL,
       email TEXT,
       role TEXT DEFAULT 'USER',
+      avatar_url TEXT,
       created_at INTEGER NOT NULL
     );
 
@@ -107,6 +108,11 @@ export async function initializeDatabase(): Promise<void> {
   for (const statement of statements) {
     await sqliteClient.execute(statement);
   }
+
+  // Ensure avatar_url column exists in users table (safe migration)
+  try {
+    await sqliteClient.execute('ALTER TABLE users ADD COLUMN avatar_url TEXT;');
+  } catch {}
 
   // Ensure primary Owner is seeded in whitelist
   const now = Date.now();

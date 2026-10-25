@@ -1,13 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AlertCircle, Shield, Key, ArrowRight } from 'lucide-react';
-import { GoogleOAuthProvider, useGoogleLogin } from '@react-oauth/google';
+import { useGoogleLogin } from '@react-oauth/google';
 import { useAuthStore } from '../store/auth.store';
-
-// Google OAuth 2.0 Web Client ID from CryptoOS-GAService.json
-const GOOGLE_CLIENT_ID =
-  (import.meta as any).env?.VITE_GOOGLE_CLIENT_ID ||
-  '973014592409-t4v36qps5lh2rrc7pqjv3ebtvuek4fb3.apps.googleusercontent.com';
 
 /**
  * Single Sleek Google Sign-In Action Component using official OAuth2 hook
@@ -105,7 +100,7 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+    <>
       <div
         style={{
           minHeight: '100vh',
@@ -138,21 +133,20 @@ export const LoginPage: React.FC = () => {
           <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '14px' }}>
             <div
               style={{
-                width: '56px',
-                height: '56px',
+                width: '64px',
+                height: '64px',
                 borderRadius: '16px',
                 overflow: 'hidden',
-                border: '1px solid var(--color-border)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                backgroundColor: '#000000',
+                backgroundColor: 'transparent',
               }}
             >
               <img
                 src="/logo.png"
                 alt="CryptoOS"
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                style={{ width: '100%', height: '100%', objectFit: 'contain' }}
               />
             </div>
 
@@ -309,6 +303,6 @@ export const LoginPage: React.FC = () => {
           </div>
         </div>
       </div>
-    </GoogleOAuthProvider>
+    </>
   );
 };
