@@ -5,6 +5,14 @@
   "author": "Ilham Rizanto <ilhamgb11@gmail.com>",
   "license": "SEE LICENSE IN LICENSE.md",
   "description": "CryptoOS — Personal Crypto Investment & Trading Intelligence Operating System",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ilhamrizanto/CryptoOS.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ilhamrizanto/CryptoOS/issues"
+  },
+  "homepage": "https://github.com/ilhamrizanto/CryptoOS#readme",
   "workspaces": [
     "backend",
     "frontend"

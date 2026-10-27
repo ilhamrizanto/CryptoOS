@@ -134,11 +134,10 @@ graph TD
 * **Node.js**: `v26.0.0` or higher (Active LTS recommended)
 * **NPM**: `v11.0.0` or higher
 * **Git**: `2.30+`
-
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/your-username/cryptoos.git
-cd cryptoos
+git clone https://github.com/ilhamrizanto/CryptoOS.git
+cd CryptoOS
 ```
 
 ### 2. Install Dependencies

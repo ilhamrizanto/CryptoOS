@@ -4,6 +4,11 @@
   "private": true,
   "author": "Ilham Rizanto <ilhamgb11@gmail.com>",
   "license": "SEE LICENSE IN LICENSE.md",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ilhamrizanto/CryptoOS.git",
+    "directory": "backend"
+  },
   "main": "dist/server.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",

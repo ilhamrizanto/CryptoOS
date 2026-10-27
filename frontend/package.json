@@ -4,6 +4,11 @@
   "version": "1.0.0",
   "author": "Ilham Rizanto <ilhamgb11@gmail.com>",
   "license": "SEE LICENSE IN LICENSE.md",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ilhamrizanto/CryptoOS.git",
+    "directory": "frontend"
+  },
   "type": "module",
   "scripts": {
     "dev": "vite",

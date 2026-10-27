@@ -25,8 +25,8 @@ All contributors and participants are expected to adhere to our [Code of Conduct
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/your-org/cryptoos.git
-   cd cryptoos
+   git clone https://github.com/ilhamrizanto/CryptoOS.git
+   cd CryptoOS
    ```
 
 2. **Install all dependencies (Root, Backend, and Frontend)**:
