@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AlertCircle, Shield, Key, ArrowRight } from 'lucide-react';
+import { AlertCircle, Shield, Key, ArrowRight, Sparkles, Crown, Zap, Eye } from 'lucide-react';
 import { useGoogleLogin } from '@react-oauth/google';
 import { useAuthStore } from '../store/auth.store';
+import { useDemoStore } from '../store/demo.store';
 
 /**
  * Single Sleek Google Sign-In Action Component using official OAuth2 hook
@@ -84,11 +85,29 @@ const GoogleSignInButton: React.FC = () => {
 };
 
 export const LoginPage: React.FC = () => {
-  const { login, error, isLoading } = useAuthStore();
+  const { login, loginDemoRole, error, isLoading } = useAuthStore();
+  const { isDemoMode, checkDemoStatus } = useDemoStore();
   const navigate = useNavigate();
 
   const [password, setPassword] = useState('');
   const [showKeyLogin, setShowKeyLogin] = useState(false);
+  const [demoLoadingRole, setDemoLoadingRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    checkDemoStatus();
+  }, [checkDemoStatus]);
+
+  const handleDemoLogin = async (role: string) => {
+    setDemoLoadingRole(role);
+    try {
+      const ok = await loginDemoRole(role);
+      if (ok) {
+        navigate('/');
+      }
+    } finally {
+      setDemoLoadingRole(null);
+    }
+  };
 
   const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -116,7 +135,7 @@ export const LoginPage: React.FC = () => {
         <div
           style={{
             width: '100%',
-            maxWidth: '380px',
+            maxWidth: '430px',
             padding: '36px 30px',
             backgroundColor: 'var(--color-bg-surface, #0e0e13)',
             border: '1px solid var(--color-border, #1c1c22)',
@@ -189,7 +208,192 @@ export const LoginPage: React.FC = () => {
           )}
 
           {/* Authentication Actions */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            {/* Portfolio Guest Demo Mode Panel (1-Click Instant Access) */}
+            {isDemoMode && (
+              <div
+                style={{
+                  backgroundColor: 'rgba(212, 175, 55, 0.04)',
+                  border: '1px solid rgba(212, 175, 55, 0.25)',
+                  borderRadius: 'var(--radius-lg, 12px)',
+                  padding: '16px 14px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '12px',
+                  position: 'relative',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+                    <Sparkles size={14} color="var(--color-accent-primary)" />
+                    <span style={{ fontSize: '11px', fontWeight: 800, color: '#ffffff', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                      Akses Demo Portofolio
+                    </span>
+                  </div>
+                  <span
+                    style={{
+                      fontSize: '9px',
+                      fontWeight: 800,
+                      padding: '2px 6px',
+                      borderRadius: '4px',
+                      backgroundColor: 'rgba(212, 175, 55, 0.15)',
+                      color: 'var(--color-accent-primary)',
+                      letterSpacing: '0.05em',
+                    }}
+                  >
+                    ⚡ 1-CLICK INSTANT
+                  </span>
+                </div>
+                <p style={{ fontSize: '11px', color: 'var(--color-text-secondary)', margin: 0, lineHeight: 1.4 }}>
+                  Eksplorasi seluruh fitur & peran terminal secara instan tanpa perlu password. Data otomatis di-reset berkala.
+                </p>
+
+                {/* 3 Instant Role Buttons */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {/* 1. Admin */}
+                  <button
+                    type="button"
+                    disabled={!!demoLoadingRole || isLoading}
+                    onClick={() => handleDemoLogin('admin')}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '9px 12px',
+                      backgroundColor: '#0a0a0d',
+                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                      borderRadius: 'var(--radius-md, 8px)',
+                      cursor: demoLoadingRole ? 'wait' : 'pointer',
+                      transition: 'all 0.15s ease',
+                      textAlign: 'left',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.borderColor = 'rgba(212, 175, 55, 0.5)';
+                      e.currentTarget.style.backgroundColor = 'rgba(212, 175, 55, 0.08)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                      e.currentTarget.style.backgroundColor = '#0a0a0d';
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <div style={{ width: '28px', height: '28px', borderRadius: '6px', backgroundColor: 'rgba(212, 175, 55, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Crown size={14} color="var(--color-accent-primary)" />
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <span style={{ fontSize: '12px', fontWeight: 700, color: '#ffffff' }}>
+                          {demoLoadingRole === 'admin' ? 'Mengotentikasi...' : 'Portfolio Lead (Admin)'}
+                        </span>
+                        <span style={{ fontSize: '9.5px', color: 'var(--color-text-muted)' }}>
+                          Kontrol penuh, whitelist & parameter risiko
+                        </span>
+                      </div>
+                    </div>
+                    <span className="amber-badge" style={{ fontSize: '9px', padding: '1px 6px', fontWeight: 800 }}>
+                      👑 ADMIN
+                    </span>
+                  </button>
+
+                  {/* 2. Operator / Trader */}
+                  <button
+                    type="button"
+                    disabled={!!demoLoadingRole || isLoading}
+                    onClick={() => handleDemoLogin('operator')}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '9px 12px',
+                      backgroundColor: '#0a0a0d',
+                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                      borderRadius: 'var(--radius-md, 8px)',
+                      cursor: demoLoadingRole ? 'wait' : 'pointer',
+                      transition: 'all 0.15s ease',
+                      textAlign: 'left',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.5)';
+                      e.currentTarget.style.backgroundColor = 'rgba(16, 185, 129, 0.08)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                      e.currentTarget.style.backgroundColor = '#0a0a0d';
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <div style={{ width: '28px', height: '28px', borderRadius: '6px', backgroundColor: 'rgba(16, 185, 129, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Zap size={14} color="#10B981" />
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <span style={{ fontSize: '12px', fontWeight: 700, color: '#ffffff' }}>
+                          {demoLoadingRole === 'operator' ? 'Mengotentikasi...' : 'Quant Trader (Operator)'}
+                        </span>
+                        <span style={{ fontSize: '9.5px', color: 'var(--color-text-muted)' }}>
+                          Eksekusi trade, 4-pillars pipeline & jurnal
+                        </span>
+                      </div>
+                    </div>
+                    <span className="bullish-badge" style={{ fontSize: '9px', padding: '1px 6px', fontWeight: 800 }}>
+                      ✍️ TRADER
+                    </span>
+                  </button>
+
+                  {/* 3. Viewer */}
+                  <button
+                    type="button"
+                    disabled={!!demoLoadingRole || isLoading}
+                    onClick={() => handleDemoLogin('viewer')}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '9px 12px',
+                      backgroundColor: '#0a0a0d',
+                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                      borderRadius: 'var(--radius-md, 8px)',
+                      cursor: demoLoadingRole ? 'wait' : 'pointer',
+                      transition: 'all 0.15s ease',
+                      textAlign: 'left',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.borderColor = 'rgba(148, 163, 184, 0.5)';
+                      e.currentTarget.style.backgroundColor = 'rgba(148, 163, 184, 0.08)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                      e.currentTarget.style.backgroundColor = '#0a0a0d';
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <div style={{ width: '28px', height: '28px', borderRadius: '6px', backgroundColor: 'rgba(148, 163, 184, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Eye size={14} color="#94A3B8" />
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <span style={{ fontSize: '12px', fontWeight: 700, color: '#ffffff' }}>
+                          {demoLoadingRole === 'viewer' ? 'Mengotentikasi...' : 'Client Auditor (Viewer)'}
+                        </span>
+                        <span style={{ fontSize: '9.5px', color: 'var(--color-text-muted)' }}>
+                          Audit performa portofolio & analitik (Read-Only)
+                        </span>
+                      </div>
+                    </div>
+                    <span className="neutral-badge" style={{ fontSize: '9px', padding: '1px 6px', fontWeight: 800 }}>
+                      👁️ VIEWER
+                    </span>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Divider between Demo and Real Auth */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: '2px 0' }}>
+              <div style={{ flex: 1, height: '1px', backgroundColor: 'rgba(255, 255, 255, 0.08)' }} />
+              <span style={{ fontSize: '9px', color: 'var(--color-text-muted)', fontWeight: 700, letterSpacing: '0.06em' }}>
+                {isDemoMode ? 'ATAU MASUK DENGAN AKUN ASLI' : 'AUTHENTICATION'}
+              </span>
+              <div style={{ flex: 1, height: '1px', backgroundColor: 'rgba(255, 255, 255, 0.08)' }} />
+            </div>
+
             <GoogleSignInButton />
 
             {/* Divider */}

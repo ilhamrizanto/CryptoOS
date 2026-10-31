@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { sqliteClient } from '../../db/index.js';
 import { ValidationError } from '../../utils/errors.js';
+import { env } from '../../env.js';
 
 export interface TelegramTestPayload {
   botToken: string;
@@ -36,6 +37,18 @@ export class SettingsService {
 
     if (!botToken || !chatId) {
       throw new ValidationError('Telegram Bot Token and Chat ID are both required.');
+    }
+
+    // Sandbox & Mocking in Demo Mode (Pillar 4: Zero External Abuse & Leaks)
+    if (env.DEMO_MODE) {
+      return {
+        isConnected: true,
+        latencyMs: 38 + Math.floor(Math.random() * 15),
+        messageId: Math.floor(Math.random() * 90000) + 10000,
+        chatTitle: 'Demo Telegram Channel (Sandbox Simulated)',
+        simulated: true,
+        message: '[Demo Mode] Simulasi pengiriman Telegram berhasil. API eksternal dinonaktifkan demi keamanan portofolio.',
+      };
     }
 
     const cleanedToken = botToken.trim();
@@ -86,6 +99,16 @@ export class SettingsService {
 
     if (!webhookUrl) {
       throw new ValidationError('Discord Webhook URL is required.');
+    }
+
+    // Sandbox & Mocking in Demo Mode (Pillar 4: Zero External Abuse & Leaks)
+    if (env.DEMO_MODE) {
+      return {
+        isConnected: true,
+        latencyMs: 34 + Math.floor(Math.random() * 15),
+        simulated: true,
+        message: '[Demo Mode] Simulasi pengiriman Discord Webhook berhasil. API eksternal dinonaktifkan demi keamanan portofolio.',
+      };
     }
 
     const cleanedUrl = webhookUrl.trim();

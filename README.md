@@ -177,6 +177,31 @@ npm run dev
 
 ---
 
+## 🎮 Safe & Self-Healing Portfolio Demo Mode
+
+CryptoOS includes an enterprise-grade **Portfolio Guest Demo Mode** engineered specifically for public portfolio deployments, recruiters, and prospective clients. It allows full interactive exploration of all roles and capabilities with **zero VPS resource exploitation risk** and **zero external API leakage**.
+
+### 🌟 Key Architecture Pillars
+1. **Global Configuration Toggle**: Controlled globally via `DEMO_MODE=True` in `.env` (backend) and `VITE_DEMO_MODE=True` (frontend). When enabled, all sandbox mocking and demo login endpoints are activated.
+2. **1-Click Role-Based Quick Login**: The login screen (`/login`) features an institutional "Akses Demo Portofolio" instant access panel with 3 pre-configured roles:
+   * 👑 **Admin / Portfolio Lead**: Full access to Whitelist management, Master Vault backups, and System Risk protocols.
+   * ✍️ **Quant Trader / Operator**: Active trading execution, Trade Journal, Kelly lot sizer, and Pipeline incubation.
+   * 👁️ **Client Auditor / Viewer**: Read-only oversight with strict mutation locks (`POST`/`PUT`/`DELETE` blocked).
+3. **Realistic Quantitative Seed Generator**: Built-in CLI command generating realistic institutional trading records, treasury cashflows, 4-pillar setups, and multi-exchange spot balances:
+   ```bash
+   # Re-seed demo database with fresh baseline records
+   npm run seed:demo -- --reset
+   ```
+4. **Zero External Abuse & Leaks Sandbox**: All outbound integrations (Telegram bot tests, Discord webhooks, CEX latency checks, and live exchange balance fetches) are intercepted in backend middleware. They return simulated success payloads without contacting real third-party APIs or exposing API keys.
+5. **In-App Lazy Auto-Reset (Zero-Cron Architecture)**: Uses request-intercepting middleware (`demoAutoReset.middleware.ts`) and a `.demo_last_reset` timestamp marker. If 1 hour (3600 seconds) has elapsed since the last reset, incoming requests atomically trigger a clean re-seed with a concurrency lock—**eliminating the need for RAM-heavy VPS cron jobs or background daemons**.
+6. **Self-Service Navbar "↺ Reset Demo"**: Active demo sessions display a `⚡ DEMO MODE` pill and a `[ ↺ Reset Demo ]` button in the top navigation bar. Clicking it opens a confirmation modal and triggers `POST /api/demo/reset`, restoring a fresh baseline with automatic browser reload.
+7. **Ephemeral Sessions & Anti-Bloat Defense**:
+   * Short 2-hour JWT expiration for demo accounts.
+   * Hardened demo credentials (`user-demo-admin`, `user-demo-operator`, `user-demo-viewer`) protected against deletion or modification in User Whitelist.
+   * Strict anti-bloat rate limiting capping guest record creation at a maximum of 50 entries per module.
+
+---
+
 ## 📂 Project Directory Structure
 
 ```text

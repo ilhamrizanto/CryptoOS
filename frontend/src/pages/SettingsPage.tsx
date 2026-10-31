@@ -107,16 +107,18 @@ const SidebarTabButton: React.FC<{
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: '9px 12px',
+        padding: '8px 11px',
         borderRadius: '6px',
-        border: active ? '1px solid rgba(212, 175, 55, 0.35)' : '1px solid transparent',
+        border: active ? '1px solid rgba(212, 175, 55, 0.4)' : '1px solid transparent',
         backgroundColor: active ? 'rgba(212, 175, 55, 0.08)' : 'transparent',
         color: active ? '#ffffff' : 'var(--color-text-secondary)',
         cursor: 'pointer',
         transition: 'all 0.15s ease',
         textAlign: 'left',
         position: 'relative',
-        gap: '10px',
+        gap: '8px',
+        minHeight: '36px',
+        boxSizing: 'border-box',
       }}
       onMouseEnter={(e) => {
         if (!active) {
@@ -131,7 +133,7 @@ const SidebarTabButton: React.FC<{
         }
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: '9px', minWidth: 0, flex: 1, overflow: 'hidden' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flex: 1, overflow: 'hidden' }}>
         <Icon
           size={14}
           color={active ? 'var(--color-accent-primary)' : 'currentColor'}
@@ -139,8 +141,9 @@ const SidebarTabButton: React.FC<{
         />
         <span
           style={{
-            fontSize: '12px',
-            fontWeight: active ? 800 : 500,
+            fontSize: '11.5px',
+            fontWeight: active ? 600 : 500,
+            letterSpacing: '-0.01em',
             whiteSpace: 'nowrap',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
@@ -151,11 +154,18 @@ const SidebarTabButton: React.FC<{
         </span>
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '5px', flexShrink: 0 }}>
         {badge && (
           <span
             className={badgeClass || 'neutral-badge'}
-            style={{ fontSize: '8.5px', padding: '1px 5px', fontWeight: 800, whiteSpace: 'nowrap' }}
+            style={{
+              fontSize: '8px',
+              padding: '1.5px 5.5px',
+              fontWeight: 700,
+              whiteSpace: 'nowrap',
+              letterSpacing: '0.02em',
+              lineHeight: 1.2,
+            }}
           >
             {badge}
           </span>
@@ -1289,7 +1299,7 @@ export const SettingsPage: React.FC = () => {
               ACCOUNT DATA VAULT
             </span>
             <span className={isVaultProtected ? 'bullish-badge' : 'amber-badge'} style={{ fontSize: '9px', padding: '1px 5px' }}>
-              {isVaultProtected ? 'PROTECTED' : 'BACKUP NEEDED'}
+              {isVaultProtected ? 'PROTECTED' : 'BACKUP'}
             </span>
           </div>
           <div style={{ marginTop: '2px', display: 'flex', alignItems: 'baseline', gap: '6px' }}>
@@ -1512,7 +1522,7 @@ export const SettingsPage: React.FC = () => {
                   onClick={() => setActiveTab('vault')}
                   icon={Shield}
                   label="Data Vault & Recovery"
-                  badge={isVaultProtected ? 'PROTECTED' : 'BACKUP NEEDED'}
+                  badge={isVaultProtected ? 'PROTECTED' : 'BACKUP'}
                   badgeClass={isVaultProtected ? 'bullish-badge' : 'amber-badge'}
                 />
                 <SidebarTabButton

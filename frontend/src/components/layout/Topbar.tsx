@@ -7,17 +7,27 @@ import {
   Clock,
   Wifi,
   Globe2,
+  Zap,
+  RotateCcw,
 } from 'lucide-react';
 import { useUiStore } from '../../store/ui.store';
 import { useAuthStore } from '../../store/auth.store';
+import { useDemoStore } from '../../store/demo.store';
 
 export const Topbar: React.FC = () => {
   const navigate = useNavigate();
   const { mobileMenuOpen, setMobileMenuOpen } = useUiStore();
   const { logout, user } = useAuthStore();
+  const { isDemoMode, checkDemoStatus, resetDemo, isResetting } = useDemoStore();
 
   const [currentTime, setCurrentTime] = useState(new Date());
   const [latency, setLatency] = useState(28);
+  const [showResetModal, setShowResetModal] = useState(false);
+
+  // Check demo status on initial mount
+  useEffect(() => {
+    checkDemoStatus();
+  }, [checkDemoStatus]);
 
   // Update clock every second
   useEffect(() => {
@@ -377,6 +387,66 @@ export const Topbar: React.FC = () => {
 
       {/* Right: User Profile & Session Only */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', zIndex: 2 }}>
+        {/* Demo Mode Indicator & Quick Self-Reset */}
+        {isDemoMode && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <div
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+                padding: '3px 8px',
+                borderRadius: '4px',
+                backgroundColor: 'rgba(212, 175, 55, 0.1)',
+                border: '1px solid rgba(212, 175, 55, 0.3)',
+                color: 'var(--color-accent-primary)',
+                fontSize: '10px',
+                fontWeight: 800,
+                letterSpacing: '0.04em',
+              }}
+              title="Portfolio Safe Guest Demo Mode Active"
+            >
+              <Zap size={11} fill="currentColor" />
+              <span>DEMO MODE</span>
+            </div>
+
+            <button
+              onClick={() => setShowResetModal(true)}
+              disabled={isResetting}
+              title="Reset sandbox dummy database back to clean baseline"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '5px',
+                padding: '3px 9px',
+                borderRadius: '4px',
+                backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                border: '1px solid rgba(255, 255, 255, 0.15)',
+                color: '#ffffff',
+                fontSize: '10.5px',
+                fontWeight: 700,
+                cursor: isResetting ? 'not-allowed' : 'pointer',
+                transition: 'all 0.15s ease',
+              }}
+              onMouseEnter={(e) => {
+                if (!isResetting) {
+                  e.currentTarget.style.backgroundColor = 'rgba(212, 175, 55, 0.15)';
+                  e.currentTarget.style.borderColor = 'rgba(212, 175, 55, 0.4)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isResetting) {
+                  e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.05)';
+                  e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.15)';
+                }
+              }}
+            >
+              <RotateCcw size={11} style={{ animation: isResetting ? 'spin 1s linear infinite' : 'none' }} />
+              <span>{isResetting ? 'Resetting...' : '↺ Reset Demo'}</span>
+            </button>
+          </div>
+        )}
+
         {/* User Profile Chip & Logout */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <div
@@ -459,6 +529,117 @@ export const Topbar: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {/* DEMO RESET CONFIRMATION MODAL */}
+      {showResetModal && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.85)',
+            backdropFilter: 'blur(6px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 99999,
+            padding: '16px',
+          }}
+        >
+          <div
+            style={{
+              width: '100%',
+              maxWidth: '440px',
+              backgroundColor: '#0e0f13',
+              border: '1px solid rgba(212, 175, 55, 0.4)',
+              borderRadius: '12px',
+              padding: '24px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '16px',
+              boxShadow: '0 20px 40px rgba(0, 0, 0, 0.8), 0 0 30px rgba(212, 175, 55, 0.1)',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div
+                style={{
+                  width: '38px',
+                  height: '38px',
+                  borderRadius: '50%',
+                  backgroundColor: 'rgba(212, 175, 55, 0.15)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                }}
+              >
+                <RotateCcw size={18} color="var(--color-accent-primary)" />
+              </div>
+              <div>
+                <h3 style={{ fontSize: '15px', fontWeight: 800, color: '#ffffff', margin: 0 }}>
+                  Reset Demo Database?
+                </h3>
+                <span style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>
+                  Self-healing sandbox database re-seeder
+                </span>
+              </div>
+            </div>
+
+            <p style={{ fontSize: '12.5px', color: 'var(--color-text-secondary)', lineHeight: 1.5, margin: 0 }}>
+              Tindakan ini akan membersihkan semua modifikasi data sesi tamu dan mengembalikan database ke data percontohan institusional awal (trades, cashflow, ide pipeline, dan alokasi portofolio).
+            </p>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '6px' }}>
+              <button
+                type="button"
+                onClick={() => setShowResetModal(false)}
+                disabled={isResetting}
+                style={{
+                  padding: '8px 14px',
+                  borderRadius: '6px',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  backgroundColor: 'transparent',
+                  color: 'var(--color-text-secondary)',
+                  fontSize: '11.5px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                }}
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                disabled={isResetting}
+                onClick={async () => {
+                  const success = await resetDemo();
+                  if (success) {
+                    setShowResetModal(false);
+                    window.location.reload();
+                  }
+                }}
+                style={{
+                  padding: '8px 18px',
+                  borderRadius: '6px',
+                  backgroundColor: 'var(--color-accent-primary)',
+                  color: '#000000',
+                  fontSize: '11.5px',
+                  fontWeight: 800,
+                  border: 'none',
+                  cursor: isResetting ? 'not-allowed' : 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                }}
+              >
+                <RotateCcw size={13} style={{ animation: isResetting ? 'spin 1s linear infinite' : 'none' }} />
+                <span>{isResetting ? 'Mereset Database...' : 'Konfirmasi Reset'}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <style>{`
         @media (max-width: 960px) {

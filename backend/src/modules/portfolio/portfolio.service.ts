@@ -4,6 +4,7 @@ import { sqliteClient } from '../../db/index.js';
 import { NotFoundError } from '../../utils/errors.js';
 import { memoryCache } from '../../utils/cache.js';
 import { marketService } from '../market/market.service.js';
+import { env } from '../../env.js';
 
 export interface ExchangeCredentials {
   apiKey?: string;
@@ -300,6 +301,35 @@ export class PortfolioService {
     creds?: ExchangeCredentials
   ): Promise<Array<{ symbol: string; amount: number; avgBuyPrice?: number }>> {
     const ex = exchange.toUpperCase();
+
+    // Sandbox & Mocking in Demo Mode (Pillar 4: Zero External Abuse & Leaks)
+    if (env.DEMO_MODE) {
+      if (ex === 'BINANCE') {
+        return [
+          { symbol: 'BTC', amount: 0.85, avgBuyPrice: 61200.0 },
+          { symbol: 'LINK', amount: 450.0, avgBuyPrice: 11.20 },
+          { symbol: 'USDT', amount: 15250.0, avgBuyPrice: 1.0 },
+        ];
+      }
+      if (ex === 'BYBIT') {
+        return [
+          { symbol: 'ETH', amount: 8.40, avgBuyPrice: 2420.0 },
+          { symbol: 'SUI', amount: 3200.0, avgBuyPrice: 1.65 },
+          { symbol: 'USDT', amount: 8400.0, avgBuyPrice: 1.0 },
+        ];
+      }
+      if (ex === 'OKX') {
+        return [
+          { symbol: 'SOL', amount: 95.0, avgBuyPrice: 138.5 },
+          { symbol: 'TON', amount: 340.0, avgBuyPrice: 5.2 },
+          { symbol: 'USDT', amount: 4200.0, avgBuyPrice: 1.0 },
+        ];
+      }
+      return [
+        { symbol: 'BTC', amount: 0.15, avgBuyPrice: 62000.0 },
+        { symbol: 'USDT', amount: 2500.0, avgBuyPrice: 1.0 },
+      ];
+    }
 
     // 1. OKX Multi-Wallet Aggregator (Trading + Funding + Simple Earn/Savings)
     if (ex === 'OKX' && creds?.apiKey && creds?.apiSecret) {
@@ -731,6 +761,22 @@ export class PortfolioService {
     let latencyMs = 0;
     let authStatus: 'VERIFIED' | 'FAILED' | 'SKIPPED' = 'SKIPPED';
     let errorMessage: string | null = null;
+
+    // Sandbox & Mocking in Demo Mode (Pillar 4: Zero External Abuse & Leaks)
+    if (env.DEMO_MODE) {
+      const simulatedLatency = 32 + Math.floor(Math.random() * 25);
+      return {
+        exchange: ex,
+        endpoint: `https://api.${ex.toLowerCase()}.com (Demo Sandbox)`,
+        isConnected: true,
+        latencyMs: simulatedLatency,
+        authStatus: (credentials?.apiKey ? 'VERIFIED' : 'SKIPPED') as 'VERIFIED' | 'FAILED' | 'SKIPPED',
+        errorMessage: null,
+        simulated: true,
+        message: `[Demo Mode] Simulasi koneksi ${ex} berhasil (${simulatedLatency}ms). Zero-withdrawal sandbox terverifikasi.`,
+        timestamp: Date.now(),
+      };
+    }
 
     try {
       if (ex === 'OKX') {

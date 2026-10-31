@@ -7,6 +7,7 @@ interface UserProfile {
   email?: string;
   role: string;
   avatarUrl?: string;
+  isDemoUser?: boolean;
 }
 
 interface AuthState {
@@ -16,6 +17,7 @@ interface AuthState {
   isLoading: boolean;
   error: string | null;
   login: (password: string) => Promise<boolean>;
+  loginDemoRole: (role: string) => Promise<boolean>;
   loginWithGoogle: (email?: string, name?: string, idToken?: string, accessToken?: string, picture?: string) => Promise<boolean>;
   logout: () => void;
   verifySession: () => Promise<boolean>;
@@ -80,6 +82,36 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set({
         isLoading: false,
         error: err?.message || 'Incorrect master key or failed to connect to terminal server',
+        isAuthenticated: false,
+      });
+      return false;
+    }
+  },
+
+  loginDemoRole: async (role: string) => {
+    set({ isLoading: true, error: null });
+    try {
+      const res = await api.post<{
+        token: string;
+        user: UserProfile;
+      }>(`/demo/login/${role}`, {});
+
+      localStorage.setItem('cryptoos_auth_token', res.token);
+      if (res.user?.avatarUrl) {
+        localStorage.setItem('cryptoos_user_avatar', res.user.avatarUrl);
+      }
+      set({
+        token: res.token,
+        user: res.user,
+        isAuthenticated: true,
+        isLoading: false,
+        error: null,
+      });
+      return true;
+    } catch (err: any) {
+      set({
+        isLoading: false,
+        error: err?.message || 'Demo login failed. Could not authenticate role.',
         isAuthenticated: false,
       });
       return false;

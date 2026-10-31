@@ -56,6 +56,8 @@ Thumbs.db
 .stylelintcache
 *.tsbuildinfo
 .turbo/
+.demo_last_reset
+.demo_last_reset.*
 
 # Local runners & Desktop shortcuts (Local only - never push)
 *.bat

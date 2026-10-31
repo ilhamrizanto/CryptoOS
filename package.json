@@ -22,7 +22,8 @@
     "dev:backend": "npm run dev --workspace=backend",
     "dev:frontend": "npm run dev --workspace=frontend",
     "build": "npm run build --workspace=backend && npm run build --workspace=frontend",
-    "lint": "npm run lint --workspaces"
+    "lint": "npm run lint --workspaces",
+    "seed:demo": "npm run seed:demo --workspace=backend"
   },
   "devDependencies": {
     "concurrently": "^9.1.2"

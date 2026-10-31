@@ -14,6 +14,17 @@ const envSchema = z.object({
   JWT_SECRET: z.string().default('cryptoos-dev-insecure-secret-key-change-in-production-12345'),
   MASTER_PASSWORD_HASH: z.string().optional(),
 
+  // Public Portfolio Guest Demo Mode (Safe & Self-Healing Showcase Sandbox)
+  DEMO_MODE: z
+    .union([z.boolean(), z.string()])
+    .optional()
+    .default(false)
+    .transform((val) => {
+      if (typeof val === 'boolean') return val;
+      const str = String(val).toLowerCase().trim();
+      return str === 'true' || str === '1' || str === 'yes';
+    }),
+
   // Administrative Access Configuration (Configured via ENV)
   OWNER_EMAIL: z.string().default('ilhamgb11@gmail.com'),
   ADMIN_EMAILS: z.string().default('ilhamgb11@gmail.com'),

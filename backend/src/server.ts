@@ -13,6 +13,10 @@ import { journalRouter } from './modules/journal/journal.router.js';
 import { portfolioRouter } from './modules/portfolio/portfolio.router.js';
 import { cashflowRouter } from './modules/cashflow/cashflow.router.js';
 import { settingsRouter } from './modules/settings/settings.router.js';
+import { demoRouter } from './modules/demo/demo.router.js';
+import { demoAutoResetMiddleware } from './middleware/demoAutoReset.middleware.js';
+import { demoProtectionMiddleware } from './middleware/demoProtection.middleware.js';
+import { seedDemoData } from './db/seedDemoData.js';
 
 const app = express();
 
@@ -94,6 +98,7 @@ app.get('/api/health', (_req, res) => {
       uptime: process.uptime(),
       timestamp: Date.now(),
       env: env.NODE_ENV,
+      demoMode: env.DEMO_MODE,
     },
   });
 });
@@ -104,14 +109,25 @@ app.get('/api', (_req, res) => {
     success: true,
     data: {
       name: 'CryptoOS API Engine',
-      modules: ['auth', 'market', 'exchange', 'ideas', 'journal', 'portfolio', 'cashflow', 'settings'],
+      demoMode: env.DEMO_MODE,
+      modules: ['auth', 'demo', 'market', 'exchange', 'ideas', 'journal', 'portfolio', 'cashflow', 'settings'],
       documentation: '/docs/API_SPEC.md',
     },
   });
 });
 
+// In-App Lazy Auto-Reset (Pillar 5: Hourly Auto-Cleanup without OS Cron Jobs)
+app.use(demoAutoResetMiddleware);
+
+// Demo Showcase & Quick Login Router (Pillars 1, 2, 6)
+app.use('/api/demo', demoRouter);
+app.use('/api/reset-demo-data', demoRouter);
+
 // Authentication Router (Milestone 1)
 app.use('/api/auth', authRouter);
+
+// Database Anti-Bloat & Role-Based Protection Middleware (Pillar 7)
+app.use(demoProtectionMiddleware);
 
 // Market Intelligence Router (Milestone 2)
 app.use('/api/market', marketRouter);
@@ -139,6 +155,19 @@ async function startServer() {
   try {
     await initializeDatabase();
     console.log('✅ SQLite Database schema verified');
+
+    if (env.DEMO_MODE) {
+      console.log('⚡ [DEMO_MODE=True] Safe & Self-Healing Showcase Sandbox enabled.');
+      try {
+        const demoCheck = await sqliteClient.execute('SELECT COUNT(*) as count FROM journal_entries LIMIT 1');
+        if (Number(demoCheck.rows[0]?.count || 0) === 0) {
+          console.log('[DemoMode] Empty database detected. Seeding initial institutional demo dataset...');
+          await seedDemoData({ reset: false });
+        }
+      } catch (err) {
+        console.warn('[DemoMode] Initial seed check warning:', err);
+      }
+    }
 
     const server = app.listen(env.PORT, () => {
       console.log(`🚀 CryptoOS Backend running on http://localhost:${env.PORT} [${env.NODE_ENV}]`);
