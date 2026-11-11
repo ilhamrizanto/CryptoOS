@@ -30,6 +30,10 @@ export const tradeIdeas = sqliteTable('trade_ideas', {
   tp2Price: real('tp2_price'),
   tp3Price: real('tp3_price'),
   riskPercent: real('risk_percent'),
+  confidenceScore: real('confidence_score').default(8),
+  playstyle: text('playstyle').default('SWING'),
+  strategy: text('strategy').default('PRICE_ACTION'),
+  confluences: text('confluences'),
   notes: text('notes'),
 });
 
@@ -46,6 +50,9 @@ export const journalEntries = sqliteTable('journal_entries', {
   stopLossPrice: real('stop_loss_price').notNull(),
   takeProfitPrice: real('take_profit_price'),
   status: text('status').notNull(), // 'OPEN' | 'CLOSED' | 'CANCELLED'
+  confidenceScore: real('confidence_score').default(8),
+  playstyle: text('playstyle').default('SWING'),
+  strategy: text('strategy').default('PRICE_ACTION'),
   pnlUsd: real('pnl_usd'),
   pnlIdr: real('pnl_idr'),
   pnlPercent: real('pnl_percent'),

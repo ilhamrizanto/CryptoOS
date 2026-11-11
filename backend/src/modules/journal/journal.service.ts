@@ -9,6 +9,9 @@ export interface CreateJournalDto {
   positionSize: number;
   stopLossPrice: number;
   takeProfitPrice?: number;
+  confidenceScore?: number;
+  playstyle?: string;
+  strategy?: string;
   psychologicalState?: string;
   screenshotsMeta?: string[];
   openedAt?: number;
@@ -67,8 +70,9 @@ export class JournalService {
       sql: `INSERT INTO journal_entries (
         id, user_id, idea_id, symbol, direction, entry_price, position_size,
         stop_loss_price, take_profit_price, status, opened_at,
+        confidence_score, playstyle, strategy,
         psychological_state, screenshots_meta
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'OPEN', ?, ?, ?)`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'OPEN', ?, ?, ?, ?, ?, ?)`,
       args: [
         id,
         userId,
@@ -80,6 +84,9 @@ export class JournalService {
         dto.stopLossPrice,
         dto.takeProfitPrice ?? null,
         now,
+        dto.confidenceScore ?? 8,
+        dto.playstyle || 'SWING',
+        dto.strategy || 'PRICE_ACTION',
         dto.psychologicalState ?? null,
         dto.screenshotsMeta ? JSON.stringify(dto.screenshotsMeta) : null,
       ],
@@ -176,6 +183,18 @@ export class JournalService {
       fields.push('stop_loss_price = ?');
       args.push(dto.stopLossPrice);
     }
+    if (dto.confidenceScore !== undefined) {
+      fields.push('confidence_score = ?');
+      args.push(dto.confidenceScore);
+    }
+    if (dto.playstyle !== undefined) {
+      fields.push('playstyle = ?');
+      args.push(dto.playstyle);
+    }
+    if (dto.strategy !== undefined) {
+      fields.push('strategy = ?');
+      args.push(dto.strategy);
+    }
 
     if (fields.length > 0) {
       args.push(id);
@@ -266,6 +285,30 @@ export class JournalService {
     const averageRMultiple = parseFloat((totalR / totalTrades).toFixed(2));
     const expectancyUsd = parseFloat((totalPnlUsd / totalTrades).toFixed(2));
 
+    // Behavioral Confidence Breakdown: High (8-10), Mid (5-7), Low (1-4)
+    let highConfWins = 0, highConfTotal = 0, highConfPnl = 0;
+    let midConfWins = 0, midConfTotal = 0, midConfPnl = 0;
+    let lowConfWins = 0, lowConfTotal = 0, lowConfPnl = 0;
+
+    for (const trade of entries) {
+      const conf = (trade as any).confidenceScore ?? 8;
+      const isWin = (trade.pnlUsd || 0) > 0;
+      const pnl = trade.pnlUsd || 0;
+      if (conf >= 8) {
+        highConfTotal++;
+        if (isWin) highConfWins++;
+        highConfPnl += pnl;
+      } else if (conf >= 5) {
+        midConfTotal++;
+        if (isWin) midConfWins++;
+        midConfPnl += pnl;
+      } else {
+        lowConfTotal++;
+        if (isWin) lowConfWins++;
+        lowConfPnl += pnl;
+      }
+    }
+
     return {
       totalTrades,
       winCount,
@@ -279,6 +322,11 @@ export class JournalService {
       bestTradeUsd: bestTradeUsd === -Infinity ? 0 : bestTradeUsd,
       worstTradeUsd: worstTradeUsd === Infinity ? 0 : worstTradeUsd,
       equityCurve: equityCurve.reverse(),
+      confidenceBreakdown: {
+        high: { total: highConfTotal, wins: highConfWins, winRate: highConfTotal > 0 ? parseFloat(((highConfWins / highConfTotal) * 100).toFixed(1)) : 0, pnlUsd: parseFloat(highConfPnl.toFixed(2)) },
+        mid: { total: midConfTotal, wins: midConfWins, winRate: midConfTotal > 0 ? parseFloat(((midConfWins / midConfTotal) * 100).toFixed(1)) : 0, pnlUsd: parseFloat(midConfPnl.toFixed(2)) },
+        low: { total: lowConfTotal, wins: lowConfWins, winRate: lowConfTotal > 0 ? parseFloat(((lowConfWins / lowConfTotal) * 100).toFixed(1)) : 0, pnlUsd: parseFloat(lowConfPnl.toFixed(2)) },
+      },
     };
   }
 
@@ -294,6 +342,9 @@ export class JournalService {
       stopLossPrice: row.stop_loss_price as number,
       takeProfitPrice: row.take_profit_price as number | null,
       status: row.status as 'OPEN' | 'CLOSED' | 'CANCELLED',
+      confidenceScore: (row.confidence_score as number) ?? 8,
+      playstyle: (row.playstyle as string) || 'SWING',
+      strategy: (row.strategy as string) || 'PRICE_ACTION',
       pnlUsd: row.pnl_usd as number | null,
       pnlIdr: row.pnl_idr as number | null,
       pnlPercent: row.pnl_percent as number | null,

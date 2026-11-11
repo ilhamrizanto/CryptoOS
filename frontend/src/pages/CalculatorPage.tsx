@@ -60,6 +60,9 @@ export const CalculatorPage: React.FC = () => {
   const [ideas, setIdeas] = useState<TradeIdea[]>([]);
   const [notification, setNotification] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [importedConfidence, setImportedConfidence] = useState<number>(8);
+  const [importedPlaystyle, setImportedPlaystyle] = useState<string>('SWING');
+  const [importedStrategy, setImportedStrategy] = useState<string>('PRICE_ACTION');
 
   // Clean symbol for TokenIcon (e.g. SOLUSDT -> SOL)
   const cleanSymbol = ticker.replace(/(USDT|BUSD|USDC|USD|PERP)$/i, '') || ticker;
@@ -125,6 +128,9 @@ export const CalculatorPage: React.FC = () => {
         if (state.stopLossPrice) setStopLossPrice(Number(state.stopLossPrice));
         if (state.takeProfitPrice) setTakeProfitPrice(Number(state.takeProfitPrice));
         if (state.riskPercent) setRiskPercent(Number(state.riskPercent));
+        if (state.confidenceScore) setImportedConfidence(Number(state.confidenceScore));
+        if (state.playstyle) setImportedPlaystyle(state.playstyle);
+        if (state.strategy) setImportedStrategy(state.strategy);
 
         showToast(`Setup ${state.ticker || ''} (${state.direction || 'LONG'}) imported from Pipeline!`);
       }
@@ -143,6 +149,9 @@ export const CalculatorPage: React.FC = () => {
     if (idea.stopLossPrice) setStopLossPrice(Number(idea.stopLossPrice));
     if (idea.tp1Price) setTakeProfitPrice(Number(idea.tp1Price));
     if (idea.riskPercent) setRiskPercent(Number(idea.riskPercent));
+    if (idea.confidenceScore) setImportedConfidence(idea.confidenceScore);
+    if (idea.playstyle) setImportedPlaystyle(idea.playstyle);
+    if (idea.strategy) setImportedStrategy(idea.strategy);
     showToast(`Setup ${idea.symbol} (${idea.direction}) loaded into Sizer!`);
   };
 
@@ -280,6 +289,9 @@ Portfolio Allocation Shift: ${rebalanceData.currentWeight}% ➔ ${rebalanceData.
         positionSize: Number(activeCoins.toFixed(4)),
         stopLossPrice: stopLossPrice,
         takeProfitPrice: takeProfitPrice,
+        confidenceScore: importedConfidence,
+        playstyle: importedPlaystyle,
+        strategy: importedStrategy,
         notes: isRebalance
           ? `[REBALANCE ROTATION] ${rebalanceData.action} ${ticker} ($${activeUsd.toFixed(2)} USD • ${rebalanceTranche}% Tranche). Portfolio allocation: ${rebalanceData.currentWeight}% -> ${rebalanceData.targetWeight}%. ${rebalanceData.reason || 'Execute portfolio rebalance rotation'}.`
           : `Sized via Position Sizer. Risk: ${riskPercent}% ($${riskAmountUsd.toFixed(2)}), Lev: ${selectedLeverage}x, R:R: 1:${riskRewardRatio.toFixed(2)}.`,

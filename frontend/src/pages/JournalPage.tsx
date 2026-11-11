@@ -10,15 +10,11 @@ import {
   X,
   Layers,
   Search,
-  Activity,
   Compass,
   Calculator,
   Brain,
-  Zap,
-  Eye,
   ShieldCheck,
   AlertTriangle,
-  Dice5,
 } from 'lucide-react';
 import { api } from '../services/api';
 import { evidenceDb } from '../services/db';
@@ -26,7 +22,6 @@ import { useSettingsStore } from '../store/settings.store';
 import { DualCurrencyValue } from '../components/ui/DualCurrencyValue';
 import { JournalEntry, TradeDirection } from '../types/trade.types';
 import { TokenIcon } from '../components/common/TokenIcon';
-import { MonteCarloEngine } from '../components/montecarlo/MonteCarloEngine';
 import { CustomSelect } from '../components/common/CustomSelect';
 
 /**
@@ -68,11 +63,6 @@ export const JournalPage: React.FC = () => {
   const [searchFilter, setSearchFilter] = useState('');
   const [emotionFilter, setEmotionFilter] = useState<string>('ALL');
 
-  // Interactive Performance Analytics States
-  const [chartMode, setChartMode] = useState<'EQUITY' | 'DRAWDOWN' | 'R_MULTIPLE' | 'DISTRIBUTION' | 'MONTE_CARLO'>('EQUITY');
-  const [useBenchmark, setUseBenchmark] = useState<boolean>(false);
-  const [hoveredPointIndex, setHoveredPointIndex] = useState<number | null>(null);
-
   // Close Trade Modal State
   const [closingEntry, setClosingEntry] = useState<JournalEntry | null>(null);
   const [exitPrice, setExitPrice] = useState<number>(0);
@@ -88,6 +78,9 @@ export const JournalPage: React.FC = () => {
   const [newPositionSize, setNewPositionSize] = useState<number>(10);
   const [newStopLoss, setNewStopLoss] = useState<number>(177.6);
   const [newTakeProfit, setNewTakeProfit] = useState<number>(210);
+  const [newConfidence, setNewConfidence] = useState<number>(8); // 1-10 Scale
+  const [newPlaystyle, setNewPlaystyle] = useState<string>('SWING');
+  const [newStrategy, setNewStrategy] = useState<string>('PRICE_ACTION');
   const [newPsychology, setNewPsychology] = useState<string>('CALM');
   const [newNotes, setNewNotes] = useState<string>('');
   const [isSubmittingNew, setIsSubmittingNew] = useState(false);
@@ -130,6 +123,9 @@ export const JournalPage: React.FC = () => {
         if (state.positionSize) setNewPositionSize(Number(state.positionSize));
         if (state.stopLossPrice) setNewStopLoss(Number(state.stopLossPrice));
         if (state.takeProfitPrice) setNewTakeProfit(Number(state.takeProfitPrice));
+        if (state.confidenceScore) setNewConfidence(Number(state.confidenceScore));
+        if (state.playstyle) setNewPlaystyle(state.playstyle);
+        if (state.strategy) setNewStrategy(state.strategy);
         if (state.notes) setNewNotes(state.notes);
         showToast(`Setup for ${state.symbol || 'trade'} imported from Calculator!`);
       }
@@ -140,196 +136,9 @@ export const JournalPage: React.FC = () => {
   const openEntries = entries.filter((e) => e.status === 'OPEN');
   const closedEntries = entries.filter((e) => e.status === 'CLOSED');
 
-  // 10-Trade Realistic Benchmark Sequence for Strategy Demonstration
-  const benchmarkTrades: JournalEntry[] = useMemo(() => [
-    {
-      id: 'bm_1',
-      symbol: 'ETHUSDT',
-      direction: 'LONG',
-      entryPrice: 2650,
-      exitPrice: 2980,
-      positionSize: 5,
-      stopLossPrice: 2540,
-      pnlUsd: 1650,
-      pnlIdr: Math.round(1650 * (usdToIdrRate || 17956)),
-      pnlPercent: 12.45,
-      rMultiple: 3.0,
-      status: 'CLOSED',
-      openedAt: Date.now() - 86400000 * 18,
-      closedAt: Date.now() - 86400000 * 16,
-      psychologicalState: '[CALM] Disciplined 4H retest entry.',
-      lessonsLearned: 'Patience paid off on key support bounce.',
-    },
-    {
-      id: 'bm_2',
-      symbol: 'SOLUSDT',
-      direction: 'LONG',
-      entryPrice: 175,
-      exitPrice: 195.5,
-      positionSize: 40,
-      stopLossPrice: 165,
-      pnlUsd: 820,
-      pnlIdr: Math.round(820 * (usdToIdrRate || 17956)),
-      pnlPercent: 11.71,
-      rMultiple: 2.1,
-      status: 'CLOSED',
-      openedAt: Date.now() - 86400000 * 15,
-      closedAt: Date.now() - 86400000 * 13,
-      psychologicalState: '[CALM] High timeframe volume shelf breakout.',
-      lessonsLearned: 'Scaled out partial profit at TP1.',
-    },
-    {
-      id: 'bm_3',
-      symbol: 'BTCUSDT',
-      direction: 'SHORT',
-      entryPrice: 68500,
-      exitPrice: 69120,
-      positionSize: 0.5,
-      stopLossPrice: 69200,
-      pnlUsd: -310,
-      pnlIdr: Math.round(-310 * (usdToIdrRate || 17956)),
-      pnlPercent: -0.9,
-      rMultiple: -0.85,
-      status: 'CLOSED',
-      openedAt: Date.now() - 86400000 * 12,
-      closedAt: Date.now() - 86400000 * 11,
-      psychologicalState: '[HESITANT] Counter-trend short with low conviction.',
-      lessonsLearned: 'Did not wait for 15M structure break confirmation.',
-    },
-    {
-      id: 'bm_4',
-      symbol: 'DOGEUSDT',
-      direction: 'LONG',
-      entryPrice: 0.145,
-      exitPrice: 0.134,
-      positionSize: 49000,
-      stopLossPrice: 0.136,
-      pnlUsd: -540,
-      pnlIdr: Math.round(-540 * (usdToIdrRate || 17956)),
-      pnlPercent: -7.58,
-      rMultiple: -1.2,
-      status: 'CLOSED',
-      openedAt: Date.now() - 86400000 * 10,
-      closedAt: Date.now() - 86400000 * 9,
-      psychologicalState: '[FOMO] Chased green candle on social media hype.',
-      lessonsLearned: 'Break of discipline: bought top of pump without setup.',
-    },
-    {
-      id: 'bm_5',
-      symbol: 'PEPEUSDT',
-      direction: 'LONG',
-      entryPrice: 0.0000102,
-      exitPrice: 0.0000087,
-      positionSize: 500000000,
-      stopLossPrice: 0.0000094,
-      pnlUsd: -750,
-      pnlIdr: Math.round(-750 * (usdToIdrRate || 17956)),
-      pnlPercent: -14.7,
-      rMultiple: -1.8,
-      status: 'CLOSED',
-      openedAt: Date.now() - 86400000 * 8,
-      closedAt: Date.now() - 86400000 * 7,
-      psychologicalState: '[REVENGE] Tried to recover DOGE loss with oversized lot.',
-      lessonsLearned: 'Severe tilt mistake. Doubled position size without plan.',
-    },
-    {
-      id: 'bm_6',
-      symbol: 'INJUSDT',
-      direction: 'LONG',
-      entryPrice: 22.4,
-      exitPrice: 26.2,
-      positionSize: 326,
-      stopLossPrice: 21.0,
-      pnlUsd: 1240,
-      pnlIdr: Math.round(1240 * (usdToIdrRate || 17956)),
-      pnlPercent: 16.96,
-      rMultiple: 2.8,
-      status: 'CLOSED',
-      openedAt: Date.now() - 86400000 * 6,
-      closedAt: Date.now() - 86400000 * 5,
-      psychologicalState: '[CALM] Reset mindset. Waited for 4-Pillars confluence.',
-      lessonsLearned: 'Returning to trading plan immediately restored edge.',
-    },
-    {
-      id: 'bm_7',
-      symbol: 'NEARUSDT',
-      direction: 'LONG',
-      entryPrice: 5.15,
-      exitPrice: 5.83,
-      positionSize: 1000,
-      stopLossPrice: 4.8,
-      pnlUsd: 680,
-      pnlIdr: Math.round(680 * (usdToIdrRate || 17956)),
-      pnlPercent: 13.2,
-      rMultiple: 1.9,
-      status: 'CLOSED',
-      openedAt: Date.now() - 86400000 * 4,
-      closedAt: Date.now() - 86400000 * 3,
-      psychologicalState: '[CALM] Clean retest of daily value area high.',
-      lessonsLearned: 'Disciplined trailing stop protected profit.',
-    },
-    {
-      id: 'bm_8',
-      symbol: 'SUIUSDT',
-      direction: 'LONG',
-      entryPrice: 2.2,
-      exitPrice: 2.06,
-      positionSize: 3000,
-      stopLossPrice: 2.06,
-      pnlUsd: -420,
-      pnlIdr: Math.round(-420 * (usdToIdrRate || 17956)),
-      pnlPercent: -6.36,
-      rMultiple: -1.0,
-      status: 'CLOSED',
-      openedAt: Date.now() - 86400000 * 3,
-      closedAt: Date.now() - 86400000 * 2,
-      psychologicalState: '[OVERCONFIDENT] Increased risk to 4% after winning streak.',
-      lessonsLearned: 'Stick to max 2% risk limit regardless of recent wins.',
-    },
-    {
-      id: 'bm_9',
-      symbol: 'TAOUSDT',
-      direction: 'LONG',
-      entryPrice: 480,
-      exitPrice: 552.5,
-      positionSize: 20,
-      stopLossPrice: 452,
-      pnlUsd: 1450,
-      pnlIdr: Math.round(1450 * (usdToIdrRate || 17956)),
-      pnlPercent: 15.1,
-      rMultiple: 2.6,
-      status: 'CLOSED',
-      openedAt: Date.now() - 86400000 * 2,
-      closedAt: Date.now() - 86400000 * 1,
-      psychologicalState: '[CALM] Strong institutional accumulator footprint.',
-      lessonsLearned: 'Target TP hit with disciplined hold.',
-    },
-    {
-      id: 'bm_10',
-      symbol: 'BTCUSDT',
-      direction: 'LONG',
-      entryPrice: 66800,
-      exitPrice: 69866,
-      positionSize: 0.3,
-      stopLossPrice: 65400,
-      pnlUsd: 920,
-      pnlIdr: Math.round(920 * (usdToIdrRate || 17956)),
-      pnlPercent: 4.59,
-      rMultiple: 2.2,
-      status: 'CLOSED',
-      openedAt: Date.now() - 86400000 * 1,
-      closedAt: Date.now() - 3600000 * 4,
-      psychologicalState: '[CALM] Textbook break & retest on 1D swing.',
-      lessonsLearned: 'Patience and clean execution deliver consistency.',
-    },
-  ], [usdToIdrRate]);
-
-  // Active closed trades dataset (Live or Benchmark Simulation)
-  const activeClosedTrades = useBenchmark ? benchmarkTrades : closedEntries;
-
-  // Complete Performance Series for Equity Curve, Drawdown, and R-Multiple Progression
+  // Complete Performance Series for Edge Metrics and Psychological Correlation
   const performanceSeries = useMemo(() => {
-    const trades = [...activeClosedTrades].sort(
+    const trades = [...closedEntries].sort(
       (a, b) => (a.closedAt || a.openedAt) - (b.closedAt || b.openedAt)
     );
     if (trades.length === 0) return [];
@@ -428,7 +237,7 @@ export const JournalPage: React.FC = () => {
     });
 
     return points;
-  }, [activeClosedTrades]);
+  }, [closedEntries]);
 
   // Quantitative Performance & Edge Metrics
   const quantMetrics = useMemo(() => {
@@ -617,6 +426,9 @@ export const JournalPage: React.FC = () => {
         positionSize: newPositionSize,
         stopLossPrice: newStopLoss,
         takeProfitPrice: newTakeProfit,
+        confidenceScore: newConfidence,
+        playstyle: newPlaystyle,
+        strategy: newStrategy,
         psychologicalState: `[${newPsychology}] ${newNotes}`,
       });
 
@@ -671,84 +483,6 @@ export const JournalPage: React.FC = () => {
   const previewPnlPercent = closingEntry && closingEntry.entryPrice > 0
     ? (previewPnlUsd / (closingEntry.entryPrice * closingEntry.positionSize)) * 100
     : 0;
-
-  // Interactive Chart Dimensions & Coordinate Scales
-  const chartWidth = 920;
-  const chartHeight = 220;
-  const padLeft = 65;
-  const padRight = 35;
-  const padTop = 30;
-  const padBottom = 35;
-  const plotWidth = chartWidth - padLeft - padRight;
-  const plotHeight = chartHeight - padTop - padBottom;
-
-  // Extract active series based on selected chartMode
-  const chartDataPoints = useMemo(() => {
-    if (performanceSeries.length === 0) return [];
-    return performanceSeries.map((p) => {
-      let val = 0;
-      if (chartMode === 'EQUITY') val = p.cumulativePnl;
-      else if (chartMode === 'DRAWDOWN') val = -p.drawdownPercent; // negative value for underwater profile
-      else if (chartMode === 'R_MULTIPLE') val = p.cumulativeR;
-      else if (chartMode === 'DISTRIBUTION') val = p.tradePnl;
-      return { ...p, chartValue: val };
-    });
-  }, [performanceSeries, chartMode]);
-
-  // Coordinate scales calculations
-  const values = chartDataPoints.map((d) => d.chartValue);
-  const minVal = values.length > 0 ? Math.min(0, ...values) : 0;
-  const maxVal = values.length > 0 ? Math.max(0, ...values) : 100;
-  const valRange = maxVal - minVal || 1;
-
-  const getX = (idx: number) => {
-    if (chartDataPoints.length <= 1) return padLeft + plotWidth / 2;
-    return padLeft + (idx / (chartDataPoints.length - 1)) * plotWidth;
-  };
-
-  const getY = (val: number) => {
-    return padTop + plotHeight - ((val - minVal) / valRange) * plotHeight;
-  };
-
-  const zeroY = getY(0);
-
-  // SVG Line & Fill Area Paths
-  const chartLinePath = useMemo(() => {
-    if (chartDataPoints.length === 0) return '';
-    return chartDataPoints.map((d, i) => `${i === 0 ? 'M' : 'L'} ${getX(i).toFixed(1)} ${getY(d.chartValue).toFixed(1)}`).join(' ');
-  }, [chartDataPoints, minVal, maxVal]);
-
-  const chartAreaPath = useMemo(() => {
-    if (chartDataPoints.length === 0) return '';
-    const firstX = getX(0).toFixed(1);
-    const lastX = getX(chartDataPoints.length - 1).toFixed(1);
-    const baselineY = Math.min(chartHeight - padBottom, Math.max(padTop, zeroY)).toFixed(1);
-    const linePath = chartDataPoints.map((d, i) => `${i === 0 ? 'M' : 'L'} ${getX(i).toFixed(1)} ${getY(d.chartValue).toFixed(1)}`).join(' ');
-    return `${linePath} L ${lastX} ${baselineY} L ${firstX} ${baselineY} Z`;
-  }, [chartDataPoints, zeroY, minVal, maxVal]);
-
-  const handleSvgMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
-    if (chartDataPoints.length === 0) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    const mouseX = ((e.clientX - rect.left) / rect.width) * chartWidth;
-    let closestIdx = 0;
-    let closestDist = Infinity;
-    chartDataPoints.forEach((_, i) => {
-      const dist = Math.abs(getX(i) - mouseX);
-      if (dist < closestDist) {
-        closestDist = dist;
-        closestIdx = i;
-      }
-    });
-    setHoveredPointIndex(closestIdx);
-  };
-
-  // Inspect target point (defaults to the latest trade if not hovering)
-  const inspectedPoint = hoveredPointIndex !== null && chartDataPoints[hoveredPointIndex]
-    ? chartDataPoints[hoveredPointIndex]
-    : chartDataPoints.length > 0
-    ? chartDataPoints[chartDataPoints.length - 1]
-    : null;
 
   return (
     <div
@@ -1301,6 +1035,96 @@ export const JournalPage: React.FC = () => {
               </div>
             </div>
 
+            {/* Confidence Score & Playstyle */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '10px' }}>
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                  <label style={{ fontSize: '10px', color: 'var(--color-text-muted)', fontWeight: 700 }}>
+                    PRE-ENTRY CONFIDENCE SCORE
+                  </label>
+                  <span
+                    style={{
+                      fontSize: '11px',
+                      fontWeight: 800,
+                      color: newConfidence >= 8 ? 'var(--color-bullish)' : newConfidence >= 5 ? 'var(--color-cyan)' : 'var(--color-amber)',
+                    }}
+                  >
+                    ⭐ {newConfidence}/10 {newConfidence >= 9 ? '• A+ Setup' : newConfidence >= 7 ? '• High Conviction' : newConfidence >= 5 ? '• Moderate' : '• Low'}
+                  </span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((score) => (
+                    <button
+                      key={score}
+                      type="button"
+                      onClick={() => setNewConfidence(score)}
+                      style={{
+                        flex: 1,
+                        height: '28px',
+                        border: 'none',
+                        borderRadius: '3px',
+                        fontSize: '10px',
+                        fontWeight: 800,
+                        cursor: 'pointer',
+                        backgroundColor:
+                          newConfidence === score
+                            ? score >= 8
+                              ? 'var(--color-bullish)'
+                              : score >= 5
+                              ? 'var(--color-cyan)'
+                              : 'var(--color-amber)'
+                            : score <= newConfidence
+                            ? 'rgba(255, 255, 255, 0.12)'
+                            : 'rgba(255, 255, 255, 0.03)',
+                        color: newConfidence === score ? '#000' : 'var(--color-text-secondary)',
+                        transition: 'all 0.12s ease',
+                      }}
+                    >
+                      {score}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label style={{ fontSize: '10px', color: 'var(--color-text-muted)', display: 'block', marginBottom: '4px', fontWeight: 700 }}>
+                  PLAYSTYLE
+                </label>
+                <CustomSelect
+                  value={newPlaystyle}
+                  onChange={(val) => setNewPlaystyle(String(val))}
+                  options={[
+                    { value: 'SCALP', label: '⚡ Scalping (1m - 15m)' },
+                    { value: 'DAY_TRADE', label: '⏱️ Day Trade (15m - 4H)' },
+                    { value: 'SWING', label: '🌊 Swing Trade (4H - 1D)' },
+                    { value: 'POSITION', label: '🏦 Position / Invest (1D+)' },
+                  ]}
+                  size="sm"
+                />
+              </div>
+            </div>
+
+            {/* Strategy Model Selector */}
+            <div>
+              <label style={{ fontSize: '10px', color: 'var(--color-text-muted)', display: 'block', marginBottom: '4px', fontWeight: 700 }}>
+                STRATEGY / SETUP FRAMEWORK
+              </label>
+              <CustomSelect
+                value={newStrategy}
+                onChange={(val) => setNewStrategy(String(val))}
+                options={[
+                  { value: 'PRICE_ACTION', label: '📊 Classic Price Action & S/R' },
+                  { value: 'SMC_ICT', label: '🎯 Smart Money Concepts (SMC / ICT Liquidity)' },
+                  { value: 'BREAKOUT', label: '🚀 Breakout & Retest' },
+                  { value: 'TREND_FOLLOWING', label: '📈 Trend Following Pullback' },
+                  { value: 'RANGE_BOUND', label: '↔️ Range Bound / Mean Reversion' },
+                  { value: 'ORDER_FLOW', label: '🌊 Volume Profile & Order Flow' },
+                  { value: 'CUSTOM', label: '🛠️ Custom Playbook Strategy' },
+                ]}
+                size="sm"
+              />
+            </div>
+
             {/* Entry Emotion & Psychology */}
             <div>
               <label style={{ fontSize: '10px', color: 'var(--color-text-muted)', display: 'block', marginBottom: '4px', fontWeight: 700 }}>
@@ -1389,22 +1213,6 @@ export const JournalPage: React.FC = () => {
           >
             <Calculator size={14} />
             <span>Position Sizer</span>
-          </button>
-          <button
-            id="btn-nav-monte-carlo"
-            className="btn btn-secondary"
-            onClick={() => setChartMode('MONTE_CARLO')}
-            style={{
-              height: '34px',
-              fontSize: '12px',
-              padding: '0 12px',
-              backgroundColor: 'rgba(212, 175, 55, 0.08)',
-              borderColor: 'rgba(212, 175, 55, 0.3)',
-              color: 'var(--color-accent-primary)',
-            }}
-          >
-            <Dice5 size={14} color="var(--color-accent-primary)" />
-            <span>Monte Carlo Engine</span>
           </button>
           <button
             id="btn-log-manual-trade"
@@ -1558,544 +1366,6 @@ export const JournalPage: React.FC = () => {
             Peak-to-trough: -${quantMetrics.maxDrawdownUsd.toLocaleString()} (Curr: -{quantMetrics.currentDrawdownPercent}%)
           </span>
         </div>
-      </div>
-
-      {/* Interactive Equity Trajectory & Drawdown Dynamics Console */}
-      <div
-        style={{
-          backgroundColor: '#050507',
-          borderTop: '1px solid rgba(255, 255, 255, 0.08)',
-          borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-          padding: '16px 20px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '14px',
-        }}
-      >
-        {/* Console Header & Mode Switcher Bar */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <Activity size={16} color="var(--color-accent-primary)" />
-            <div>
-              <span style={{ fontSize: '11px', color: '#ffffff', fontWeight: 900, letterSpacing: '0.04em' }}>
-                EQUITY TRAJECTORY & DRAWDOWN DYNAMICS
-              </span>
-              <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', marginLeft: '8px' }}>
-                Trade-by-trade portfolio equity progression, underwater risk, and R-multiple velocity
-              </span>
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-            {/* Multi-mode switcher tabs */}
-            <div
-              style={{
-                display: 'flex',
-                background: 'rgba(255, 255, 255, 0.04)',
-                border: '1px solid rgba(255, 255, 255, 0.08)',
-                borderRadius: 'var(--radius-sm)',
-                padding: '2px',
-                gap: '2px',
-              }}
-            >
-              <button
-                id="btn-mode-equity"
-                type="button"
-                onClick={() => setChartMode('EQUITY')}
-                style={{
-                  padding: '5px 10px',
-                  borderRadius: 'var(--radius-xs)',
-                  border: 'none',
-                  fontSize: '10px',
-                  fontWeight: 800,
-                  cursor: 'pointer',
-                  backgroundColor: chartMode === 'EQUITY' ? 'var(--color-accent-primary)' : 'transparent',
-                  color: chartMode === 'EQUITY' ? '#08080a' : 'var(--color-text-secondary)',
-                  transition: 'all var(--transition-fast)',
-                }}
-              >
-                📈 Cumulative P&L ($)
-              </button>
-              <button
-                id="btn-mode-drawdown"
-                type="button"
-                onClick={() => setChartMode('DRAWDOWN')}
-                style={{
-                  padding: '5px 10px',
-                  borderRadius: 'var(--radius-xs)',
-                  border: 'none',
-                  fontSize: '10px',
-                  fontWeight: 800,
-                  cursor: 'pointer',
-                  backgroundColor: chartMode === 'DRAWDOWN' ? 'rgba(244, 63, 94, 0.25)' : 'transparent',
-                  color: chartMode === 'DRAWDOWN' ? 'var(--color-bearish)' : 'var(--color-text-secondary)',
-                  transition: 'all var(--transition-fast)',
-                }}
-              >
-                📉 Underwater DD (%)
-              </button>
-              <button
-                id="btn-mode-rmultiple"
-                type="button"
-                onClick={() => setChartMode('R_MULTIPLE')}
-                style={{
-                  padding: '5px 10px',
-                  borderRadius: 'var(--radius-xs)',
-                  border: 'none',
-                  fontSize: '10px',
-                  fontWeight: 800,
-                  cursor: 'pointer',
-                  backgroundColor: chartMode === 'R_MULTIPLE' ? 'rgba(59, 130, 246, 0.25)' : 'transparent',
-                  color: chartMode === 'R_MULTIPLE' ? '#60a5fa' : 'var(--color-text-secondary)',
-                  transition: 'all var(--transition-fast)',
-                }}
-              >
-                🎯 Cumulative R
-              </button>
-              <button
-                id="btn-mode-distribution"
-                type="button"
-                onClick={() => setChartMode('DISTRIBUTION')}
-                style={{
-                  padding: '5px 10px',
-                  borderRadius: 'var(--radius-xs)',
-                  border: 'none',
-                  fontSize: '10px',
-                  fontWeight: 800,
-                  cursor: 'pointer',
-                  backgroundColor: chartMode === 'DISTRIBUTION' ? 'rgba(16, 185, 129, 0.25)' : 'transparent',
-                  color: chartMode === 'DISTRIBUTION' ? 'var(--color-bullish)' : 'var(--color-text-secondary)',
-                  transition: 'all var(--transition-fast)',
-                }}
-              >
-                📊 P&L Distribution
-              </button>
-              <button
-                id="btn-mode-montecarlo"
-                type="button"
-                onClick={() => setChartMode('MONTE_CARLO')}
-                style={{
-                  padding: '5px 10px',
-                  borderRadius: 'var(--radius-xs)',
-                  border: 'none',
-                  fontSize: '10px',
-                  fontWeight: 800,
-                  cursor: 'pointer',
-                  backgroundColor: chartMode === 'MONTE_CARLO' ? 'var(--color-accent-primary)' : 'rgba(212, 175, 55, 0.1)',
-                  color: chartMode === 'MONTE_CARLO' ? '#08080a' : 'var(--color-accent-primary)',
-                  transition: 'all var(--transition-fast)',
-                }}
-              >
-                🎲 Monte Carlo Ruin Engine
-              </button>
-            </div>
-
-            {/* Benchmark vs Live toggle */}
-            <button
-              id="btn-toggle-benchmark"
-              type="button"
-              onClick={() => setUseBenchmark((prev) => !prev)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '5px 12px',
-                borderRadius: 'var(--radius-sm)',
-                border: useBenchmark ? '1px solid rgba(212, 175, 55, 0.6)' : '1px solid rgba(255, 255, 255, 0.12)',
-                backgroundColor: useBenchmark ? 'rgba(212, 175, 55, 0.12)' : 'rgba(255, 255, 255, 0.04)',
-                color: useBenchmark ? 'var(--color-accent-primary)' : 'var(--color-text-secondary)',
-                fontSize: '10px',
-                fontWeight: 800,
-                cursor: 'pointer',
-                transition: 'all var(--transition-fast)',
-              }}
-            >
-              {useBenchmark ? <Eye size={13} color="var(--color-accent-primary)" /> : <Zap size={13} />}
-              <span>{useBenchmark ? '10-Trade Benchmark Simulation' : `Live Records (${closedEntries.length} Closed)`}</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Conditional View: Monte Carlo Engine Studio vs Trajectory SVG Canvas */}
-        {chartMode === 'MONTE_CARLO' ? (
-          <div style={{ marginTop: '4px' }}>
-            <MonteCarloEngine
-              isEmbedded={true}
-              initialWinRate={quantMetrics.totalTrades >= 3 ? Math.min(80, quantMetrics.winRate) : 60}
-              initialPayoff={quantMetrics.totalTrades >= 3 && quantMetrics.payoffRatio < 10 ? quantMetrics.payoffRatio : 2.23}
-              initialAccountSize={25000}
-              initialRiskPercent={2.0}
-              sourceLabel={useBenchmark ? 'Benchmark 10-Trade Edge' : quantMetrics.totalTrades >= 3 ? `Live Journal (${quantMetrics.totalTrades} Trades)` : 'Benchmark Baseline (Min 3 Trades)'}
-            />
-          </div>
-        ) : (
-          <>
-            {/* SVG Interactive Canvas */}
-        <div
-          style={{
-            position: 'relative',
-            width: '100%',
-            height: `${chartHeight}px`,
-            backgroundColor: '#000000',
-            borderRadius: 'var(--radius-sm)',
-            border: '1px solid rgba(255, 255, 255, 0.06)',
-            overflow: 'hidden',
-          }}
-        >
-          <svg
-            width="100%"
-            height={chartHeight}
-            viewBox={`0 0 ${chartWidth} ${chartHeight}`}
-            preserveAspectRatio="none"
-            onMouseMove={handleSvgMouseMove}
-            onMouseLeave={() => setHoveredPointIndex(null)}
-            style={{ cursor: 'crosshair', display: 'block' }}
-          >
-            <defs>
-              {/* Gradient for Equity Curve */}
-              <linearGradient id="eqGlow" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="var(--color-accent-primary)" stopOpacity="0.35" />
-                <stop offset="100%" stopColor="var(--color-accent-primary)" stopOpacity="0.0" />
-              </linearGradient>
-
-              {/* Gradient for Drawdown Underwater */}
-              <linearGradient id="ddGlow" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="rgba(244, 63, 94, 0.0)" />
-                <stop offset="100%" stopColor="rgba(244, 63, 94, 0.35)" />
-              </linearGradient>
-
-              {/* Gradient for Cumulative R */}
-              <linearGradient id="rGlow" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.35" />
-                <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.0" />
-              </linearGradient>
-            </defs>
-
-            {/* Horizontal Gridlines */}
-            {[0.25, 0.5, 0.75].map((pct, gIdx) => {
-              const yPos = padTop + plotHeight * pct;
-              return (
-                <line
-                  key={`grid-${gIdx}`}
-                  x1={padLeft}
-                  y1={yPos}
-                  x2={chartWidth - padRight}
-                  y2={yPos}
-                  stroke="rgba(255, 255, 255, 0.04)"
-                  strokeDasharray="4 4"
-                  strokeWidth="1"
-                />
-              );
-            })}
-
-            {/* Zero Baseline */}
-            <line
-              x1={padLeft}
-              y1={zeroY}
-              x2={chartWidth - padRight}
-              y2={zeroY}
-              stroke="rgba(255, 255, 255, 0.2)"
-              strokeDasharray="2 2"
-              strokeWidth="1"
-            />
-            <text
-              x={padLeft - 8}
-              y={zeroY + 3}
-              textAnchor="end"
-              fill="rgba(255, 255, 255, 0.4)"
-              fontSize="9"
-              fontFamily="monospace"
-            >
-              0
-            </text>
-
-            {/* Top watermark value */}
-            <text
-              x={padLeft - 8}
-              y={padTop + 4}
-              textAnchor="end"
-              fill="rgba(255, 255, 255, 0.5)"
-              fontSize="9"
-              fontFamily="monospace"
-            >
-              {chartMode === 'DRAWDOWN' ? '0%' : chartMode === 'R_MULTIPLE' ? `+${maxVal.toFixed(1)}R` : `+$${maxVal.toLocaleString()}`}
-            </text>
-
-            {/* Bottom watermark value */}
-            <text
-              x={padLeft - 8}
-              y={padTop + plotHeight}
-              textAnchor="end"
-              fill="rgba(255, 255, 255, 0.5)"
-              fontSize="9"
-              fontFamily="monospace"
-            >
-              {chartMode === 'DRAWDOWN' ? `${minVal.toFixed(1)}%` : chartMode === 'R_MULTIPLE' ? `${minVal.toFixed(1)}R` : `${minVal >= 0 ? '+' : ''}$${minVal.toLocaleString()}`}
-            </text>
-
-            {/* Render Area & Path for continuous series */}
-            {chartMode !== 'DISTRIBUTION' && chartAreaPath && (
-              <polygon
-                points={chartAreaPath.replace(/^[MLZ\s]+/, '').replace(/[MLZ\s]+$/, '')}
-                fill={chartMode === 'DRAWDOWN' ? 'url(#ddGlow)' : chartMode === 'R_MULTIPLE' ? 'url(#rGlow)' : 'url(#eqGlow)'}
-              />
-            )}
-
-            {chartMode !== 'DISTRIBUTION' && chartLinePath && (
-              <path
-                d={chartLinePath}
-                fill="none"
-                stroke={chartMode === 'DRAWDOWN' ? 'var(--color-bearish)' : chartMode === 'R_MULTIPLE' ? '#60a5fa' : 'var(--color-accent-primary)'}
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            )}
-
-            {/* Render Bars for DISTRIBUTION mode */}
-            {chartMode === 'DISTRIBUTION' &&
-              chartDataPoints.map((d, i) => {
-                if (i === 0) return null; // skip origin
-                const x = getX(i);
-                const barY = d.chartValue >= 0 ? getY(d.chartValue) : zeroY;
-                const barH = Math.max(2, Math.abs(getY(d.chartValue) - zeroY));
-                const barColor = d.chartValue >= 0 ? 'var(--color-bullish)' : 'var(--color-bearish)';
-                const barW = Math.max(12, Math.min(32, plotWidth / (chartDataPoints.length * 1.5)));
-                return (
-                  <rect
-                    key={`bar-${d.id}`}
-                    x={x - barW / 2}
-                    y={barY}
-                    width={barW}
-                    height={barH}
-                    fill={barColor}
-                    opacity={inspectedPoint?.id === d.id ? 1 : 0.75}
-                    rx="2"
-                  />
-                );
-              })}
-
-            {/* Render Data Point Nodes (circles) */}
-            {chartDataPoints.map((d, i) => {
-              const x = getX(i);
-              const y = getY(d.chartValue);
-              const isInspected = inspectedPoint?.id === d.id;
-
-              return (
-                <g key={`point-${d.id}-${i}`}>
-                  {/* Subtle date/trade label along bottom */}
-                  {i > 0 && (
-                    <text
-                      x={x}
-                      y={chartHeight - 12}
-                      textAnchor="middle"
-                      fill={isInspected ? '#ffffff' : 'rgba(255, 255, 255, 0.35)'}
-                      fontSize="9"
-                      fontFamily="monospace"
-                    >
-                      #{d.index}
-                    </text>
-                  )}
-
-                  {/* Circle Node */}
-                  {chartMode !== 'DISTRIBUTION' && (
-                    <circle
-                      cx={x}
-                      cy={y}
-                      r={isInspected ? 6 : i === 0 ? 3 : 4}
-                      fill={i === 0 ? '#666' : d.color}
-                      stroke={isInspected ? '#ffffff' : '#000000'}
-                      strokeWidth={isInspected ? 2 : 1.5}
-                      style={{ transition: 'r 0.15s ease' }}
-                    />
-                  )}
-                </g>
-              );
-            })}
-
-            {/* Crosshair Guideline when hovering */}
-            {inspectedPoint && (
-              <g>
-                <line
-                  x1={getX(inspectedPoint.index)}
-                  y1={padTop}
-                  x2={getX(inspectedPoint.index)}
-                  y2={chartHeight - padBottom}
-                  stroke="rgba(255, 255, 255, 0.4)"
-                  strokeDasharray="2 2"
-                  strokeWidth="1"
-                />
-                {chartMode !== 'DISTRIBUTION' && (
-                  <circle
-                    cx={getX(inspectedPoint.index)}
-                    cy={getY(inspectedPoint.chartValue)}
-                    r={8}
-                    fill="none"
-                    stroke={inspectedPoint.color}
-                    strokeWidth="1.5"
-                    opacity="0.8"
-                  />
-                )}
-              </g>
-            )}
-          </svg>
-        </div>
-
-        {/* Dynamic HUD Inspector Card */}
-        {inspectedPoint && (
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              flexWrap: 'wrap',
-              gap: '12px',
-              padding: '12px 16px',
-              backgroundColor: 'rgba(255, 255, 255, 0.02)',
-              borderRadius: 'var(--radius-sm)',
-              border: '1px solid rgba(255, 255, 255, 0.08)',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span
-                  style={{
-                    fontSize: '11px',
-                    fontWeight: 900,
-                    padding: '2px 8px',
-                    borderRadius: 'var(--radius-xs)',
-                    backgroundColor: inspectedPoint.tradePnl >= 0 ? 'rgba(16, 185, 129, 0.2)' : 'rgba(244, 63, 94, 0.2)',
-                    color: inspectedPoint.tradePnl >= 0 ? 'var(--color-bullish)' : 'var(--color-bearish)',
-                    border: `1px solid ${inspectedPoint.tradePnl >= 0 ? 'rgba(16, 185, 129, 0.3)' : 'rgba(244, 63, 94, 0.3)'}`,
-                  }}
-                >
-                  {inspectedPoint.index === 0 ? 'BASELINE' : `TRADE #${inspectedPoint.index}: ${inspectedPoint.symbol} ${inspectedPoint.direction}`}
-                </span>
-                <span style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>
-                  {inspectedPoint.dateStr}
-                </span>
-              </div>
-
-              {inspectedPoint.index > 0 && (
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-                  <span className="mono" style={{ fontSize: '14px', fontWeight: 900, color: inspectedPoint.tradePnl >= 0 ? 'var(--color-bullish)' : 'var(--color-bearish)' }}>
-                    {inspectedPoint.tradePnl >= 0 ? '+' : ''}${inspectedPoint.tradePnl.toLocaleString()} USD
-                  </span>
-                  <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)', fontWeight: 700 }}>
-                    ({inspectedPoint.tradePnlPercent >= 0 ? '+' : ''}{inspectedPoint.tradePnlPercent}% • {inspectedPoint.rMultiple >= 0 ? '+' : ''}{inspectedPoint.rMultiple} R)
-                  </span>
-                </div>
-              )}
-            </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <span style={{ fontSize: '10px', color: 'var(--color-text-muted)' }}>
-                  CUMULATIVE: <strong style={{ color: '#fff' }}>${inspectedPoint.cumulativePnl.toLocaleString()}</strong>
-                </span>
-                <span style={{ fontSize: '10px', color: 'var(--color-text-muted)' }}>
-                  EQUITY: <strong style={{ color: 'var(--color-accent-primary)' }}>${inspectedPoint.runningEquity.toLocaleString()}</strong>
-                </span>
-                <span style={{ fontSize: '10px', color: 'var(--color-text-muted)' }}>
-                  DRAWDOWN: <strong style={{ color: inspectedPoint.drawdownPercent > 0 ? 'var(--color-bearish)' : '#fff' }}>-{inspectedPoint.drawdownPercent}%</strong>
-                </span>
-              </div>
-
-              {inspectedPoint.index > 0 && (
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    padding: '3px 8px',
-                    borderRadius: 'var(--radius-xs)',
-                    backgroundColor: 'rgba(255, 255, 255, 0.04)',
-                    border: `1px solid ${inspectedPoint.color}40`,
-                  }}
-                >
-                  <span style={{ fontSize: '12px' }}>{inspectedPoint.emoji}</span>
-                  <span style={{ fontSize: '10px', fontWeight: 800, color: inspectedPoint.color }}>
-                    {inspectedPoint.emotionLabel}
-                  </span>
-                  {inspectedPoint.notes && (
-                    <span style={{ fontSize: '10px', color: 'var(--color-text-secondary)', maxWidth: '240px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      — "{inspectedPoint.notes}"
-                    </span>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* 4 Secondary Quant Metrics Dock */}
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-            gap: '8px',
-            borderTop: '1px solid rgba(255, 255, 255, 0.06)',
-            paddingTop: '10px',
-          }}
-        >
-          <div style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.02)', borderRadius: 'var(--radius-xs)' }}>
-            <span style={{ fontSize: '9px', color: 'var(--color-text-muted)', fontWeight: 800, display: 'block' }}>
-              PEAK DRAWDOWN (MDD)
-            </span>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginTop: '2px' }}>
-              <span className="mono bearish-text" style={{ fontSize: '14px', fontWeight: 900 }}>
-                -{quantMetrics.maxDrawdownPercent}%
-              </span>
-              <span style={{ fontSize: '10px', color: 'var(--color-text-secondary)' }}>
-                (-${quantMetrics.maxDrawdownUsd.toLocaleString()})
-              </span>
-            </div>
-          </div>
-
-          <div style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.02)', borderRadius: 'var(--radius-xs)' }}>
-            <span style={{ fontSize: '9px', color: 'var(--color-text-muted)', fontWeight: 800, display: 'block' }}>
-              PAYOFF RATIO (WIN / LOSS)
-            </span>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginTop: '2px' }}>
-              <span className="mono" style={{ fontSize: '14px', fontWeight: 900, color: '#ffffff' }}>
-                {quantMetrics.payoffRatio}x
-              </span>
-              <span style={{ fontSize: '10px', color: 'var(--color-text-secondary)' }}>
-                Avg Win ${Math.round(quantMetrics.avgWinUsd)} : Loss ${Math.round(quantMetrics.avgLossUsd)}
-              </span>
-            </div>
-          </div>
-
-          <div style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.02)', borderRadius: 'var(--radius-xs)' }}>
-            <span style={{ fontSize: '9px', color: 'var(--color-text-muted)', fontWeight: 800, display: 'block' }}>
-              MATHEMATICAL EXPECTANCY
-            </span>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginTop: '2px' }}>
-              <span className={`mono ${quantMetrics.expectancyUsd >= 0 ? 'bullish-text' : 'bearish-text'}`} style={{ fontSize: '14px', fontWeight: 900 }}>
-                {quantMetrics.expectancyUsd >= 0 ? '+' : ''}${quantMetrics.expectancyUsd}
-              </span>
-              <span style={{ fontSize: '10px', color: 'var(--color-text-secondary)' }}>
-                USD expected per trade
-              </span>
-            </div>
-          </div>
-
-          <div style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.02)', borderRadius: 'var(--radius-xs)' }}>
-            <span style={{ fontSize: '9px', color: 'var(--color-text-muted)', fontWeight: 800, display: 'block' }}>
-              DISCIPLINE INTEGRITY SCORE
-            </span>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginTop: '2px' }}>
-              <span className="mono" style={{ fontSize: '14px', fontWeight: 900, color: 'var(--color-bullish)' }}>
-                {quantMetrics.disciplineScore}%
-              </span>
-              <span style={{ fontSize: '10px', color: 'var(--color-text-secondary)' }}>
-                {quantMetrics.disciplineScore >= 80 ? 'Elite Plan Compliance' : 'Emotional Leak Warning'}
-              </span>
-            </div>
-          </div>
-        </div>
-          </>
-        )}
       </div>
 
       {/* Psychological Discipline Matrix & Emotional Leak Audit */}
@@ -2502,6 +1772,35 @@ export const JournalPage: React.FC = () => {
                             fontWeight: 800,
                             padding: '1px 6px',
                             borderRadius: '3px',
+                            backgroundColor: (trade.confidenceScore ?? 8) >= 8 ? 'rgba(16, 185, 129, 0.15)' : (trade.confidenceScore ?? 8) >= 5 ? 'rgba(56, 189, 248, 0.15)' : 'rgba(251, 191, 36, 0.15)',
+                            color: (trade.confidenceScore ?? 8) >= 8 ? 'var(--color-bullish)' : (trade.confidenceScore ?? 8) >= 5 ? 'var(--color-cyan)' : 'var(--color-amber)',
+                            border: (trade.confidenceScore ?? 8) >= 8 ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid rgba(255, 255, 255, 0.08)',
+                          }}
+                          title={`Pre-Entry Conviction Score: ${trade.confidenceScore ?? 8}/10`}
+                        >
+                          ⭐ {trade.confidenceScore ?? 8}/10
+                        </span>
+                        {(trade.strategy || trade.playstyle) && (
+                          <span
+                            style={{
+                              fontSize: '8.5px',
+                              fontWeight: 700,
+                              padding: '1px 5px',
+                              borderRadius: '3px',
+                              backgroundColor: 'rgba(212, 175, 55, 0.1)',
+                              color: 'var(--color-accent-primary)',
+                              border: '1px solid rgba(212, 175, 55, 0.25)',
+                            }}
+                          >
+                            {trade.strategy || trade.playstyle}
+                          </span>
+                        )}
+                        <span
+                          style={{
+                            fontSize: '9px',
+                            fontWeight: 800,
+                            padding: '1px 6px',
+                            borderRadius: '3px',
                             background: 'rgba(255, 255, 255, 0.05)',
                             color: 'var(--color-text-secondary)',
                           }}
@@ -2716,6 +2015,33 @@ export const JournalPage: React.FC = () => {
                                   >
                                     {trade.direction}
                                   </span>
+                                  <span
+                                    style={{
+                                      fontSize: '9px',
+                                      fontWeight: 800,
+                                      padding: '1px 5px',
+                                      borderRadius: '3px',
+                                      backgroundColor: (trade.confidenceScore ?? 8) >= 8 ? 'rgba(16, 185, 129, 0.15)' : (trade.confidenceScore ?? 8) >= 5 ? 'rgba(56, 189, 248, 0.15)' : 'rgba(251, 191, 36, 0.15)',
+                                      color: (trade.confidenceScore ?? 8) >= 8 ? 'var(--color-bullish)' : (trade.confidenceScore ?? 8) >= 5 ? 'var(--color-cyan)' : 'var(--color-amber)',
+                                    }}
+                                    title={`Pre-Entry Conviction: ${trade.confidenceScore ?? 8}/10`}
+                                  >
+                                    ⭐ {trade.confidenceScore ?? 8}/10
+                                  </span>
+                                  {(trade.strategy || trade.playstyle) && (
+                                    <span
+                                      style={{
+                                        fontSize: '8px',
+                                        fontWeight: 700,
+                                        padding: '1px 4px',
+                                        borderRadius: '3px',
+                                        backgroundColor: 'rgba(212, 175, 55, 0.08)',
+                                        color: 'var(--color-accent-primary)',
+                                      }}
+                                    >
+                                      {trade.strategy || trade.playstyle}
+                                    </span>
+                                  )}
                                 </div>
                                 <div style={{ fontSize: '10px', color: 'var(--color-text-muted)', marginTop: '2px' }}>
                                   {trade.closedAt ? new Date(trade.closedAt).toLocaleDateString() : '-'}

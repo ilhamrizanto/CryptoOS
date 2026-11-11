@@ -58,6 +58,10 @@ export interface TradeIdea {
   status: IdeaStatus;
   createdAt: number;
   updatedAt: number;
+  confidenceScore?: number; // 1 to 10 scale
+  playstyle?: string; // SCALP | DAY_TRADE | SWING | POSITION
+  strategy?: string; // SMC_ICT | BREAKOUT | TREND | etc.
+  confluences?: string[]; // Dynamic checklist of confirmation tags
   macroData?: MacroPillarData;
   fundamentalData?: FundamentalPillarData;
   priceActionData?: PriceActionPillarData;
@@ -82,6 +86,9 @@ export interface JournalEntry {
   stopLossPrice: number;
   takeProfitPrice?: number;
   status: JournalStatus;
+  confidenceScore?: number; // 1 to 10 scale recorded before entry
+  playstyle?: string;
+  strategy?: string;
   pnlUsd?: number;
   pnlIdr?: number;
   pnlPercent?: number;

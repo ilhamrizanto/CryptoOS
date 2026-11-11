@@ -30,7 +30,7 @@ const navSections: NavSection[] = [
     title: 'EXECUTION & IDEAS',
     items: [
       { name: 'Dashboard', path: '/', icon: LayoutDashboard },
-      { name: 'Pipeline Incubator', path: '/pipeline', icon: Compass, badge: '4-Pillars' },
+      { name: 'Pipeline Incubator', path: '/pipeline', icon: Compass, badge: 'Setups' },
       { name: 'Position Sizer', path: '/calculator', icon: Calculator },
       { name: 'Trade Journal', path: '/journal', icon: BookOpen },
     ],

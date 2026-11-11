@@ -6,6 +6,10 @@ export interface TradeIdeaDto {
   direction: 'LONG' | 'SHORT';
   timeframe: string;
   status?: 'WATCHLIST' | 'READY' | 'ACTIVE' | 'CLOSED' | 'INVALIDATED';
+  confidenceScore?: number;
+  playstyle?: string;
+  strategy?: string;
+  confluences?: string[];
   macroData?: Record<string, unknown>;
   fundamentalData?: Record<string, unknown>;
   priceActionData?: Record<string, unknown>;
@@ -64,10 +68,11 @@ export class IdeasService {
     await sqliteClient.execute({
       sql: `INSERT INTO trade_ideas (
         id, user_id, created_at, updated_at, symbol, direction, timeframe, status,
+        confidence_score, playstyle, strategy, confluences,
         macro_data, fundamental_data, price_action_data, evidence_data,
         entry_price, stop_loss_price, tp1_price, tp2_price, tp3_price,
         risk_percent, notes
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       args: [
         id,
         userId,
@@ -77,6 +82,10 @@ export class IdeasService {
         dto.direction,
         dto.timeframe || '4H',
         dto.status || 'WATCHLIST',
+        dto.confidenceScore ?? 8,
+        dto.playstyle || 'SWING',
+        dto.strategy || 'PRICE_ACTION',
+        dto.confluences ? JSON.stringify(dto.confluences) : null,
         dto.macroData ? JSON.stringify(dto.macroData) : null,
         dto.fundamentalData ? JSON.stringify(dto.fundamentalData) : null,
         dto.priceActionData ? JSON.stringify(dto.priceActionData) : null,
@@ -119,6 +128,22 @@ export class IdeasService {
     if (dto.status !== undefined) {
       fields.push('status = ?');
       args.push(dto.status);
+    }
+    if (dto.confidenceScore !== undefined) {
+      fields.push('confidence_score = ?');
+      args.push(dto.confidenceScore);
+    }
+    if (dto.playstyle !== undefined) {
+      fields.push('playstyle = ?');
+      args.push(dto.playstyle);
+    }
+    if (dto.strategy !== undefined) {
+      fields.push('strategy = ?');
+      args.push(dto.strategy);
+    }
+    if (dto.confluences !== undefined) {
+      fields.push('confluences = ?');
+      args.push(JSON.stringify(dto.confluences));
     }
     if (dto.macroData !== undefined) {
       fields.push('macro_data = ?');
@@ -206,8 +231,9 @@ export class IdeasService {
       sql: `INSERT INTO journal_entries (
         id, user_id, idea_id, symbol, direction, entry_price, position_size,
         stop_loss_price, take_profit_price, status, opened_at,
+        confidence_score, playstyle, strategy,
         psychological_state, screenshots_meta
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'OPEN', ?, ?, ?)`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'OPEN', ?, ?, ?, ?, ?, ?)`,
       args: [
         journalId,
         userId,
@@ -219,7 +245,10 @@ export class IdeasService {
         stopLossPrice,
         takeProfitPrice,
         now,
-        idea.notes || 'Executed from 4-Pillar Pipeline Incubator',
+        idea.confidenceScore ?? 8,
+        idea.playstyle || 'SWING',
+        idea.strategy || 'PRICE_ACTION',
+        idea.notes ? `[CONFIDENCE: ${idea.confidenceScore || 8}/10] ${idea.notes}` : `[CONFIDENCE: ${idea.confidenceScore || 8}/10] Executed from Setup Incubator`,
         idea.evidenceData ? JSON.stringify(idea.evidenceData) : null,
       ],
     });
@@ -245,6 +274,10 @@ export class IdeasService {
       direction: row.direction as 'LONG' | 'SHORT',
       timeframe: row.timeframe as string,
       status: row.status as string,
+      confidenceScore: (row.confidence_score as number) ?? 8,
+      playstyle: (row.playstyle as string) || 'SWING',
+      strategy: (row.strategy as string) || 'PRICE_ACTION',
+      confluences: row.confluences ? JSON.parse(row.confluences as string) : [],
       macroData: row.macro_data ? JSON.parse(row.macro_data as string) : null,
       fundamentalData: row.fundamental_data ? JSON.parse(row.fundamental_data as string) : null,
       priceActionData: row.price_action_data ? JSON.parse(row.price_action_data as string) : null,

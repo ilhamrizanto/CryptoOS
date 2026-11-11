@@ -290,7 +290,7 @@ export const DashboardPage: React.FC = () => {
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <span style={{ fontSize: '12px', fontWeight: 800, color: '#ffffff', letterSpacing: '0.04em' }}>
-                  PIPELINE INCUBATOR (ACTIVE 4-PILLARS ANALYSIS)
+                  PIPELINE INCUBATOR (ACTIVE TRADE SETUPS)
                 </span>
                 <span className="bullish-badge" style={{ fontSize: '9px', padding: '1px 5px' }}>
                   {ideas.length} READY
@@ -310,7 +310,7 @@ export const DashboardPage: React.FC = () => {
                   <tr>
                     <th>TOKEN</th>
                     <th>DIRECTION / TF</th>
-                    <th>4-PILLARS STATUS</th>
+                    <th>CONFIDENCE & STRATEGY</th>
                     <th style={{ textAlign: 'right' }}>ENTRY</th>
                     <th style={{ textAlign: 'right' }}>STOP LOSS</th>
                     <th style={{ textAlign: 'right' }}>TARGET (TP)</th>
@@ -339,9 +339,14 @@ export const DashboardPage: React.FC = () => {
                             </span>
                           </td>
                           <td>
-                            <span style={{ color: 'var(--color-text-secondary)', fontSize: '11px' }}>
-                              {item.notes || '4-Pillars Confluence Active'}
-                            </span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <span style={{ fontSize: '10px', fontWeight: 800, color: (item.confidenceScore ?? 8) >= 8 ? 'var(--color-bullish)' : 'var(--color-accent-primary)' }}>
+                                ⭐ {item.confidenceScore ?? 8}/10
+                              </span>
+                              <span className="neutral-badge" style={{ fontSize: '8.5px', padding: '0 4px' }}>
+                                {item.strategy || item.playstyle || 'PRICE_ACTION'}
+                              </span>
+                            </div>
                           </td>
                           <td style={{ textAlign: 'right' }} className="value-number">
                             ${item.entryPrice?.toLocaleString() || '-'}

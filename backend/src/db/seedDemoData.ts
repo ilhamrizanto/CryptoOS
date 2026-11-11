@@ -465,10 +465,11 @@ export async function seedDemoData(options?: {
       await sqliteClient.execute({
         sql: `INSERT INTO trade_ideas (
           id, user_id, created_at, updated_at, symbol, direction, timeframe,
-          status, macro_data, fundamental_data, price_action_data, evidence_data,
+          status, confidence_score, playstyle, strategy, confluences,
+          macro_data, fundamental_data, price_action_data, evidence_data,
           entry_price, stop_loss_price, tp1_price, tp2_price, tp3_price,
           risk_percent, notes
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         args: [
           ideaId,
           uid,
@@ -478,6 +479,10 @@ export async function seedDemoData(options?: {
           idea.direction,
           idea.timeframe,
           idea.status,
+          (idea as any).confidenceScore ?? 8.5,
+          (idea as any).playstyle || 'SWING',
+          (idea as any).strategy || 'PRICE_ACTION',
+          JSON.stringify(['Key Support/Resistance', 'Volume Breakout', 'Liquidity Sweep']),
           idea.macroData,
           idea.fundamentalData,
           idea.priceActionData,
@@ -500,10 +505,10 @@ export async function seedDemoData(options?: {
       await sqliteClient.execute({
         sql: `INSERT INTO journal_entries (
           id, user_id, symbol, direction, entry_price, exit_price, position_size,
-          stop_loss_price, take_profit_price, status, pnl_usd, pnl_idr,
-          pnl_percent, r_multiple, psychological_state, lessons_learned,
+          stop_loss_price, take_profit_price, status, confidence_score, playstyle, strategy,
+          pnl_usd, pnl_idr, pnl_percent, r_multiple, psychological_state, lessons_learned,
           opened_at, closed_at, screenshots_meta
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         args: [
           entryId,
           uid,
@@ -515,6 +520,9 @@ export async function seedDemoData(options?: {
           j.stopLossPrice,
           j.takeProfitPrice,
           j.status,
+          (j as any).confidenceScore ?? (j.pnlUsd && j.pnlUsd > 0 ? 9 : 6),
+          (j as any).playstyle || 'SWING',
+          (j as any).strategy || 'PRICE_ACTION',
           j.pnlUsd,
           j.pnlIdr,
           j.pnlPercent,

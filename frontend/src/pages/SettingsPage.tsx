@@ -89,7 +89,7 @@ const AppleToggle: React.FC<{
   );
 };
 
-// Sleek Vertical Sidebar Navigation Item Component (Fully visible labels without truncation)
+// Sleek Vertical Sidebar Navigation Item Component (Fully visible labels with reliable anti-collision ellipsis)
 const SidebarTabButton: React.FC<{
   active: boolean;
   onClick: () => void;
@@ -119,6 +119,7 @@ const SidebarTabButton: React.FC<{
         gap: '8px',
         minHeight: '36px',
         boxSizing: 'border-box',
+        overflow: 'hidden',
       }}
       onMouseEnter={(e) => {
         if (!active) {
@@ -147,6 +148,9 @@ const SidebarTabButton: React.FC<{
             whiteSpace: 'nowrap',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
+            display: 'inline-block',
+            minWidth: 0,
+            maxWidth: '100%',
           }}
           title={label}
         >
@@ -154,7 +158,7 @@ const SidebarTabButton: React.FC<{
         </span>
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: '5px', flexShrink: 0 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0, marginLeft: 'auto' }}>
         {badge && (
           <span
             className={badgeClass || 'neutral-badge'}
@@ -165,6 +169,7 @@ const SidebarTabButton: React.FC<{
               whiteSpace: 'nowrap',
               letterSpacing: '0.02em',
               lineHeight: 1.2,
+              flexShrink: 0,
             }}
           >
             {badge}
@@ -1433,7 +1438,8 @@ export const SettingsPage: React.FC = () => {
                 height: '38px',
                 borderRadius: '50%',
                 backgroundColor: '#121216',
-                border: 'none',
+                border: '2px solid rgba(212, 175, 55, 0.45)',
+                boxShadow: '0 0 10px rgba(212, 175, 55, 0.15)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -1521,7 +1527,7 @@ export const SettingsPage: React.FC = () => {
                   active={activeTab === 'vault'}
                   onClick={() => setActiveTab('vault')}
                   icon={Shield}
-                  label="Data Vault & Recovery"
+                  label="Data Vault"
                   badge={isVaultProtected ? 'PROTECTED' : 'BACKUP'}
                   badgeClass={isVaultProtected ? 'bullish-badge' : 'amber-badge'}
                 />

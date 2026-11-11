@@ -45,6 +45,9 @@ export const PipelinePage: React.FC = () => {
   const [direction, setDirection] = useState<TradeDirection>('LONG');
   const [timeframe, setTimeframe] = useState('4H');
   const [status, setStatus] = useState<IdeaStatus>('WATCHLIST');
+  const [confidenceScore, setConfidenceScore] = useState<number>(8); // 1-10 Pre-entry conviction
+  const [playstyle, setPlaystyle] = useState<string>('SWING'); // SCALP | DAY_TRADE | SWING | POSITION
+  const [strategy, setStrategy] = useState<string>('PRICE_ACTION'); // SMC_ICT | BREAKOUT | TREND | RANGE | CUSTOM
 
   // Search Token Dropdown
   const [searchQuery, setSearchQuery] = useState('');
@@ -122,6 +125,9 @@ export const PipelinePage: React.FC = () => {
     setDirection(idea.direction);
     setTimeframe(idea.timeframe || '4H');
     setStatus(idea.status || 'WATCHLIST');
+    setConfidenceScore(idea.confidenceScore ?? 8);
+    setPlaystyle(idea.playstyle || 'SWING');
+    setStrategy(idea.strategy || 'PRICE_ACTION');
     setEntryPrice(idea.entryPrice ?? 0);
     setStopLossPrice(idea.stopLossPrice ?? 0);
     setTp1Price(idea.tp1Price ?? 0);
@@ -129,6 +135,9 @@ export const PipelinePage: React.FC = () => {
     setTp3Price(idea.tp3Price ?? 0);
     setRiskPercent(idea.riskPercent ?? 2.0);
     setGeneralNotes(idea.notes ?? '');
+    if (idea.confluences && idea.confluences.length > 0) {
+      setConfluences(idea.confluences);
+    }
 
     if (idea.macroData) {
       setMacroRegime(idea.macroData.marketRegime || 'RISK_ON');
@@ -190,6 +199,9 @@ export const PipelinePage: React.FC = () => {
     setDirection('LONG');
     setTimeframe('4H');
     setStatus('WATCHLIST');
+    setConfidenceScore(8);
+    setPlaystyle('SWING');
+    setStrategy('PRICE_ACTION');
     setEntryPrice(95000);
     setStopLossPrice(92000);
     setTp1Price(104000);
@@ -464,6 +476,10 @@ export const PipelinePage: React.FC = () => {
         direction,
         timeframe,
         status,
+        confidenceScore,
+        playstyle,
+        strategy,
+        confluences,
         entryPrice,
         stopLossPrice,
         tp1Price,
@@ -577,6 +593,9 @@ export const PipelinePage: React.FC = () => {
         stopLossPrice,
         takeProfitPrice: tp1Price,
         riskPercent,
+        confidenceScore,
+        playstyle,
+        strategy,
       },
     });
   };
@@ -669,14 +688,14 @@ export const PipelinePage: React.FC = () => {
             </span>
             <span style={{ color: 'var(--color-border)' }}>&bull;</span>
             <span style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>
-              4-PILLAR QUANTITATIVE FRAMEWORK
+              UNIVERSAL TRADE SETUP & CONVICTION LAB
             </span>
           </div>
           <h1 style={{ fontSize: '24px', fontWeight: 900, color: '#ffffff', letterSpacing: '-0.025em', margin: '2px 0 0' }}>
             Trade Setup & Validation Lab
           </h1>
           <p style={{ color: 'var(--color-text-secondary)', fontSize: '12px', margin: '4px 0 0' }}>
-            Multi-dimensional pre-trade validation: Fed Macro, FDV Tokenomics, SMC Market Structure, & Coinglass CVD Confirmation.
+            Multi-strategy trade incubator: SMC, Breakout, Scalp & Swing with Pre-Entry Confidence scoring and visual R:R sizer.
           </p>
         </div>
 

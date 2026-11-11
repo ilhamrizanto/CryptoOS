@@ -32,6 +32,10 @@ export async function initializeDatabase(): Promise<void> {
       tp2_price REAL,
       tp3_price REAL,
       risk_percent REAL,
+      confidence_score REAL DEFAULT 8,
+      playstyle TEXT DEFAULT 'SWING',
+      strategy TEXT DEFAULT 'PRICE_ACTION',
+      confluences TEXT,
       notes TEXT
     );
 
@@ -47,6 +51,9 @@ export async function initializeDatabase(): Promise<void> {
       stop_loss_price REAL NOT NULL,
       take_profit_price REAL,
       status TEXT NOT NULL,
+      confidence_score REAL DEFAULT 8,
+      playstyle TEXT DEFAULT 'SWING',
+      strategy TEXT DEFAULT 'PRICE_ACTION',
       pnl_usd REAL,
       pnl_idr REAL,
       pnl_percent REAL,
@@ -112,6 +119,31 @@ export async function initializeDatabase(): Promise<void> {
   // Ensure avatar_url column exists in users table (safe migration)
   try {
     await sqliteClient.execute('ALTER TABLE users ADD COLUMN avatar_url TEXT;');
+  } catch {}
+
+  // Safe migrations for trade_ideas: confidence_score, playstyle, strategy, confluences
+  try {
+    await sqliteClient.execute('ALTER TABLE trade_ideas ADD COLUMN confidence_score REAL DEFAULT 8;');
+  } catch {}
+  try {
+    await sqliteClient.execute("ALTER TABLE trade_ideas ADD COLUMN playstyle TEXT DEFAULT 'SWING';");
+  } catch {}
+  try {
+    await sqliteClient.execute("ALTER TABLE trade_ideas ADD COLUMN strategy TEXT DEFAULT 'PRICE_ACTION';");
+  } catch {}
+  try {
+    await sqliteClient.execute('ALTER TABLE trade_ideas ADD COLUMN confluences TEXT;');
+  } catch {}
+
+  // Safe migrations for journal_entries: confidence_score, playstyle, strategy
+  try {
+    await sqliteClient.execute('ALTER TABLE journal_entries ADD COLUMN confidence_score REAL DEFAULT 8;');
+  } catch {}
+  try {
+    await sqliteClient.execute("ALTER TABLE journal_entries ADD COLUMN playstyle TEXT DEFAULT 'SWING';");
+  } catch {}
+  try {
+    await sqliteClient.execute("ALTER TABLE journal_entries ADD COLUMN strategy TEXT DEFAULT 'PRICE_ACTION';");
   } catch {}
 
   // Ensure primary Owner is seeded in whitelist
