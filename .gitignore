@@ -66,3 +66,8 @@ Thumbs.db
 run-local.*
 start-cryptoos.*
 
+
+# Security: never commit service account credentials (leak incident 2026-11-15)
+.agents/credentials.json
+**/credentials.json
+.agents/mcp_config.json
