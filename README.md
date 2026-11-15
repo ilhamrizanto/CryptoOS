@@ -6,31 +6,34 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7+-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19.0-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
 [![Vite](https://img.shields.io/badge/Vite-6.0-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
-[![Node.js](https://img.shields.io/badge/Node.js-26%2B_LTS-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-26%2B_LTS-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://www.nodejs.org/)
 [![SQLite](https://img.shields.io/badge/SQLite-LibSQL_Engine-003B57?style=for-the-badge&logo=sqlite&logoColor=white)](https://www.sqlite.org/)
-[![License: Source-Available / Evaluation](https://img.shields.io/badge/License-Source--Available%20%2F%20Evaluation-D4AF37?style=for-the-badge)](LICENSE.md)
+[![CI](https://img.shields.io/badge/CI-GitHub_Actions-2088FF?style=for-the-badge&logo=githubactions&logoColor=white)](.github/workflows/ci.yml)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg?style=for-the-badge)](LICENSE)
 
 <p align="center">
   <strong>A private, Bloomberg Terminal-grade crypto intelligence engine, macro cycle workstation, asymmetric risk sizer, behavioral journal, and autonomous disaster recovery vault.</strong>
 </p>
 
-### ⚡ Commercial & Services Gateway
+### ⚡ Get Involved
 <p align="center">
-  <a href="mailto:ilhamgb11@gmail.com?subject=[CryptoOS]%20Live%20Demo%20%26%20Walkthrough%20Request"><strong>[ 🔴 Request Live Demo & Access ]</strong></a>
-  &nbsp;&bull;&nbsp;
-  <a href="#-custom-development--consulting-hire-the-author"><strong>[ 💼 Hire the Author (Custom Development) ]</strong></a>
-  &nbsp;&bull;&nbsp;
-  <a href="#-commercial-licensing--code-buyout"><strong>[ 🛒 Commercial Licensing & Buyout ]</strong></a>
+  <a href="#-project-status--roadmap"><strong>[ 🧭 Roadmap & Help Wanted ]</strong></a>
+  &nbsp;•&nbsp;
+  <a href="CONTRIBUTING.md"><strong>[ 🤝 Contributing Guide ]</strong></a>
+  &nbsp;•&nbsp;
+  <a href="https://github.com/ilhamrizanto/CryptoOS/issues"><strong>[ 🐛 Report an Issue ]</strong></a>
+  &nbsp;•&nbsp;
+  <a href="#-support--services"><strong>[ 💼 Support & Services ]</strong></a>
 </p>
 
 [Key Features](#-key-capabilities) •
 [Architecture](#-architectural-overview) •
 [Quickstart](#-quickstart-guide) •
 [Modules](#-core-terminal-modules) •
-[API Specification](#-api-endpoints) •
-[Commercial Licensing](#-commercial-licensing--code-buyout) •
-[Hire the Author](#-custom-development--consulting-hire-the-author) •
-[License & Copyright](#-license--copyright-notice)
+[API Specification](#-api-endpoints-summary) •
+[Roadmap](#-project-status--roadmap) •
+[Contributing](#-contributing) •
+[License](#-license)
 
 </div>
 
@@ -41,6 +44,8 @@
 **CryptoOS** is an institutional-grade, personal quantitative trading terminal engineered to replace fragmented browser tabs with a unified, high-performance financial command center.
 
 Built with an unapologetic **Cardless Pure Black (`#000000`) OLED** design language, CryptoOS provides real-time macroeconomic synthesis, multi-timeframe trade ideation, mathematical lot sizing via the **Half-Kelly Criterion**, early liquidation defense, behavioral psychology journaling, and **self-contained disaster recovery snapshots**.
+
+The MVP roadmap (M0–M11) is **fully implemented** — authentication, market intelligence, trade pipeline, risk calculator, behavioral journal, multi-exchange portfolio, treasury ledger, analytics dashboard, PWA polish, and Docker deployment are all shipped. The project is now **open for community contributors** to drive the next phase of development.
 
 ---
 
@@ -118,6 +123,7 @@ graph TD
 | **Design System** | **Vanilla CSS (Design Tokens)** | Zero bloated utility libraries; bespoke Cardless Pure Black `#000000` OLED aesthetic. |
 | **Icons & Media** | **Lucide React** + **Multi-CDN Waterfall** | Clean terminal iconography and dynamic crypto logo resolution. |
 | **Backend Runtime** | **Node.js 26 LTS** + **Express 4** | Ultra-stable, high-performance runtime with latest security patches. |
+| **Validation & Security** | **Zod** + **Helmet** + **express-rate-limit** | Schema-validated payloads, hardened HTTP headers, and abuse throttling. |
 | **Database & ORM** | **Drizzle ORM** + **@libsql/client** | Embedded, zero-ops, file-based SQL database with ACID compliance and WAL mode. |
 | **Client Storage** | **IndexedDB** (`Dexie.js`) | Local storage of heavy trade screenshot files without remote server costs. |
 
@@ -125,15 +131,14 @@ graph TD
 
 ## 🚀 Quickstart Guide
 
-> [!IMPORTANT]
-> **Evaluation & Demo Notice (`LICENSE.md`)**  
-> Running this repository locally is permitted strictly for **technical evaluation, feature testing, educational review, and architectural assessment**.  
-> The entire codebase is governed by [LICENSE.md](LICENSE.md) and is **strictly prohibited** from production deployment, commercial operation, white-labeling, or unauthorized redistribution without obtaining a written commercial agreement or an official [Commercial License](#-commercial-licensing--code-buyout) from the copyright holder ([Ilham Rizanto](mailto:ilhamgb11@gmail.com)).
+> [!NOTE]
+> CryptoOS is free and open source under the [Apache License 2.0](LICENSE). You may use, modify, and distribute it — including commercially — as long as the license and copyright notice are preserved. Contributions are welcome!
 
 ### System Requirements
 * **Node.js**: `v26.0.0` or higher (Active LTS recommended)
 * **NPM**: `v11.0.0` or higher
 * **Git**: `2.30+`
+
 ### 1. Clone the Repository
 ```bash
 git clone https://github.com/ilhamrizanto/CryptoOS.git
@@ -221,7 +226,7 @@ CryptoOS/
 │   │   │   ├── cashflow/        # Treasury inflow/outflow ledger
 │   │   │   └── settings/        # Disaster recovery backup engine & webhooks
 │   │   ├── db/                  # Drizzle ORM schema & LibSQL client setup
-│   │   ├── middleware/          # JWT auth, error handling & security middleware
+│   │   ├── middleware/          # JWT auth, error handling & demo sandbox middleware
 │   │   └── server.ts            # Application bootstrapper
 │   └── tsconfig.json
 ├── docs/                        # Deep-dive architecture & engineering specs
@@ -229,6 +234,8 @@ CryptoOS/
 │   ├── ARCHITECTURE.md          # System design & component diagrams
 │   ├── DEPLOYMENT_GUIDE.md      # VPS & production deployment handbook
 │   ├── DESIGN.md                # Cardless Pure Black design tokens & guidelines
+│   ├── DEVELOPMENT_PLAN.md      # Milestone roadmap (M0–M11, all completed)
+│   ├── MARKET_DATA_API.md       # External market data feed integration guide
 │   └── PRD.md                   # Product Requirements Document
 ├── frontend/                    # Vite 6 + React 19 Client
 │   ├── src/
@@ -240,8 +247,10 @@ CryptoOS/
 │   │   ├── utils/               # Math calculations & UTF-8 BOM CSV exporters
 │   │   └── index.css            # OLED design tokens & global typography
 │   └── vite.config.ts
+├── docker-compose.yml           # Local container orchestration (frontend, backend, nginx)
+├── deploy.sh                    # VPS deployment helper script
 ├── package.json                 # Monorepo workspaces manifest (Node.js 26+ engine)
-└── README.md                    # Institutional Project Documentation
+└── LICENSE                      # Apache License 2.0
 ```
 
 ---
@@ -264,6 +273,8 @@ CryptoOS/
 | `POST` | `/api/settings/webhook/telegram` | Dispatch test ping to private Telegram bot chat. |
 | `POST` | `/api/settings/webhook/discord` | Dispatch test embed to Discord channel webhook. |
 
+> 📚 The complete request/response contract is documented in [`docs/API_SPEC.md`](docs/API_SPEC.md).
+
 ---
 
 ## 🎨 Design Philosophy: Cardless Pure Black OLED
@@ -279,77 +290,80 @@ CryptoOS adheres strictly to **Emil Kowalski's Design Engineering** and modern A
 
 ---
 
+## 🧭 Project Status & Roadmap
+
+### ✅ Current Status (November 2026)
+
+The complete MVP roadmap (`M0`–`M11`, see [`docs/DEVELOPMENT_PLAN.md`](docs/DEVELOPMENT_PLAN.md)) is **fully implemented and shipped**:
+
+| Milestone | Scope | Status |
+| :--- | :--- | :--- |
+| M0–M1 | Foundation, Auth & Security Layer | ✅ Completed |
+| M2 | Global Intelligence Panel (Fed Watch, Dominance, Sentiment) | ✅ Completed |
+| M3 | Pipeline & Idea Incubator | ✅ Completed |
+| M4 | Smart Position Size & Risk Calculator (Half-Kelly) | ✅ Completed |
+| M5 | Trading Journal & Execution Log | ✅ Completed |
+| M6–M7 | Real-Time Portfolio Tracker & Rebalancing Matrix | ✅ Completed |
+| M8 | Treasury & Cashflow Ledger | ✅ Completed |
+| M9 | Journal Analytics & Main Dashboard | ✅ Completed |
+| M10 | Mobile Polish & PWA | ✅ Completed |
+| M11 | Docker Compose & VPS Deployment | ✅ Completed |
+
+### 🚀 Where the Project Goes Next — Help Wanted
+
+The foundation is stable, and the next phase is intentionally **community-driven**. The directions below are *candidate proposals*, not commitments — open an issue or discussion to influence priorities, or pick anything up and run with it.
+
+| Area | Candidate Work | Good Fit For |
+| :--- | :--- | :--- |
+| 🧪 **Testing & Quality** | Expand CI beyond lint/typecheck: unit tests for the Kelly & risk math, integration tests for REST endpoints, E2E smoke tests | First-time contributors |
+| 📈 **Backtesting Engine** | Replay historical candles against Pipeline setups to validate strategy edge before risking capital | Quant-minded engineers |
+| ⚡ **Live Price Streaming** | WebSocket-based real-time market data feeds to complement the current REST polling | Backend / realtime systems |
+| 🔗 **Exchange Coverage** | Additional exchange integrations, on-chain wallet tracking, DeFi position import | API integration enthusiasts |
+| 🌍 **Internationalization (i18n)** | Multi-language UI (the terminal currently mixes English and Indonesian copy) | Frontend contributors |
+| 📱 **PWA & Desktop Hardening** | Offline-first behavior, installable desktop packaging, push notifications | Frontend / tooling |
+| 🗄️ **Optional Server Database** | Configurable Postgres / LibSQL-server backend for multi-instance deployments | Infrastructure / DevOps |
+| 🚢 **Release Engineering** | Automated Docker image publishing, semantic versioning, changelogs, tagged releases | DevOps contributors |
+
+**Ways to contribute**: pick an area above and open an issue to claim it, report bugs via the [issue templates](.github/ISSUE_TEMPLATE/bug_report.md), improve documentation, or propose your own idea — the roadmap belongs to its contributors now.
+
+---
+
 ## 🤝 Contributing
 
-We welcome contributions from quantitative analysts, traders, and software engineers!
+Contributions from quantitative analysts, traders, and software engineers are **welcome and encouraged**!
 
-1. Read our [Contributing Guidelines](CONTRIBUTING.md).
+1. Read the [Contributing Guidelines](CONTRIBUTING.md) — including the Developer Certificate of Origin (DCO) sign-off requirement.
 2. Follow our [Code of Conduct](CODE_OF_CONDUCT.md).
-3. Fork the repository, create your branch (`git checkout -b feature/amazing-feature`), and open a Pull Request using our [PR Template](.github/pull_request_template.md).
+3. Fork the repository, create your feature branch (`git checkout -b feature/amazing-feature`), and open a Pull Request using our [PR Template](.github/pull_request_template.md).
+4. Check the [Roadmap](#-project-status--roadmap) for high-impact areas that need help.
+
+All contributions are licensed under the [Apache License 2.0](LICENSE) alongside the project.
 
 ---
 
----
+## 💼 Support & Services
 
-## 💼 Custom Development & Consulting (Hire the Author)
+CryptoOS is maintained by **Ilham Rizanto**. If this project helps you, or you need professional engineering around it:
 
-Does your trading firm, crypto fund, prop desk, or fintech startup require a custom quantitative analytics dashboard, an institutional execution terminal, or high-performance real-time market data pipelines?
-
-As the Lead Architect and author of **CryptoOS**, I (**Ilham Rizanto**) provide bespoke software engineering, consulting, and end-to-end implementation services:
-
-### Core Expertise & Engineering Services:
-* **Custom Quantitative Terminal Architecture**: Engineering bespoke financial intelligence workstations featuring the signature Pure Black (`#000000`) OLED aesthetic, zero-clutter layout, and real-time dual-currency rates.
-* **Exchange Connectivity & Algorithmic Execution**: Read-only or automated trade execution connectivity via REST & WebSocket (Binance, Bybit, OKX, Hyperliquid, DEX protocols) adhering to strict *zero-withdrawal security* standards.
-* **Risk Engine & Mathematical Sizing**: Tailored implementations of Kelly Criterion sizing, Dynamic Stop-Loss trailing logic, liquidation margin buffers, and automated portfolio rebalancing.
-* **Macro Intelligence & Telemetry Pipelines**: Autonomous data aggregation engines for Federal Reserve (FRED) metrics, European Central Bank forex feeds, Fear & Greed indices, and stablecoin liquidity rotation.
-* **Realtime Notification Bridges**: Institutional Telegram bots and Discord Webhook dispatchers with low latency and structured embed payloads.
-* **Architecture Hardening & Code Reviews**: Comprehensive performance, concurrency, and security audits across modern full-stack architectures (React 19, TypeScript, Node.js 26 LTS, LibSQL/SQLite, and zero-ops disaster recovery vaults).
-
-> 📬 **Start a Project Discussion:**  
-> To discuss your technical scope, project timeline, or custom feature requirements, reach out directly via email:  
-> **👉 [ilhamgb11@gmail.com](mailto:ilhamgb11@gmail.com?subject=[CryptoOS]%20Consulting%20%26%20Custom%20Development%20Inquiry)**
+* 🐛 **Bug Reports & Feature Requests**: [GitHub Issues](https://github.com/ilhamrizanto/CryptoOS/issues) — the fastest and preferred channel.
+* 💼 **Custom Development & Consulting**: Bespoke quantitative terminals, exchange connectivity, risk engines, and deployment support. Reach out at **[ilhamgb11@gmail.com](mailto:ilhamgb11@gmail.com?subject=[CryptoOS]%20Consulting%20Inquiry)**.
+* ⭐ **Support the Project**: Star the repository, share it with fellow traders, or contribute code — every bit helps.
 
 ---
 
-## 🛒 Commercial Licensing & Code Buyout
+## 📄 License
 
-This public repository is distributed under a **Source-Available Evaluation & Demo License** (strictly for local testing and architectural review). Organizations, prop firms, or investment funds wishing to commercially deploy, white-label, or build upon the CryptoOS platform can acquire an official commercial license under two flexible models:
+CryptoOS is licensed under the **[Apache License, Version 2.0](LICENSE)**.
 
-### 1. Commercial Standard License (Non-Exclusive)
-*Ideal for: Fintech startups, prop firms, hedge funds, or private trading communities seeking a production-ready institutional operating system for internal operations or client-facing value.*
-* **Commercial Rights**: Non-exclusive legal license to build, deploy, and operate CryptoOS for 1 (one) business entity or commercial project.
-* **White-Labeling & Custom Branding**: Full authorization to rebrand, customize typography/logos, adapt visual color schemes, and host on your private corporate domains.
-* **Full Production Source Code**: Complete unminified source code (Express Node.js 26 backend + React 19 Vite frontend) with zero DRM, licensing dongles, or obfuscation.
-* **Deployment Support**: 14 days of dedicated technical onboarding and server configuration guidance (Docker, VPS, Nginx, SSL).
+In plain language:
+* ✅ **Free to use** — personal, commercial, or internal business use, at no cost.
+* ✅ **Free to modify and distribute** — fork it, build products on it, ship it.
+* ℹ️ **Patent protection** — contributors grant an explicit patent license to all users.
+* 📌 **Keep the notice** — retain the copyright and license notices in copies or substantial portions.
+* 🛡️ **No warranty** — the software is provided "as is", without warranty of any kind.
 
-### 2. Full IP & Code Buyout (Exclusive Ownership)
-*Ideal for: Financial corporations, venture capital funds, or acquisitions seeking complete and exclusive ownership of the intellectual property to launch proprietary global SaaS products or file patent claims.*
-* **Absolute IP Assignment**: Complete, legally binding assignment of all copyrights, trademarks, and intellectual property directly to the acquiring organization.
-* **Unrestricted Commercialization**: Full legal rights to resell, sublicense, distribute as proprietary closed-source SaaS, or modify the technology without any restrictions.
-* **Complete Asset Transfer**: Full git commit history, private repository transfers, architecture design tokens, and comprehensive internal engineering documentation.
-* **Architectural Mentoring**: In-depth 1-on-1 handover workshop and engineering mentorship directly with the Lead Architect for your engineering team.
-
----
-
-### 📩 Commercial Inquiries & Procurement:
-Submit your formal license acquisition request to:
-* **Contact**: **[ilhamgb11@gmail.com](mailto:ilhamgb11@gmail.com?subject=[CryptoOS]%20Commercial%20License%20Inquiry)**
-* **Subject**: `[CryptoOS] Commercial License Inquiry - [Your Organization / Name]`
-* **Message Details**: Specify your preferred license model (*Standard* or *Full IP Buyout*) and a brief outline of your target implementation scale.
-
----
-
-## 📄 License & Copyright Notice
-
-**Copyright (c) 2026 Ilham Rizanto. All rights reserved.**
-
-All intellectual property, proprietary software architecture, design systems, and source code of **CryptoOS** are the exclusive property of **Ilham Rizanto**.
-
-This software is distributed under a *source-available* model strictly for evaluation, testing, educational review, and demonstration purposes as outlined in [LICENSE.md](LICENSE.md). Any unauthorized commercial exploitation, production deployment, sublicensing, white-labeling, or copyright removal is strictly prohibited by law.
-
-For complete legal terms and conditions, please consult [LICENSE.md](LICENSE.md).
+Copyright 2026 **Ilham Rizanto**. All contributions are made under the [Apache License 2.0](LICENSE) (see [CONTRIBUTING.md](CONTRIBUTING.md) for the DCO process).
 
 <div align="center">
   <sub>Architected with institutional rigor, quantitative discipline, and uncompromised financial sovereignty.</sub>
 </div>
-

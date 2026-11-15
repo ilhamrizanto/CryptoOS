@@ -15,7 +15,7 @@ All contributors and participants are expected to adhere to our [Code of Conduct
 ## Architecture & Technology Stack
 
 - **Monorepo Structure**: Managed via **NPM Workspaces** (`backend` and `frontend`).
-- **Backend**: Node.js, Express, TypeScript, Better-SQLite3 / SQLite, Google Auth Library.
+- **Backend**: Node.js, Express, TypeScript, Drizzle ORM + @libsql/client (embedded SQLite), Zod validation, Google Auth Library.
 - **Frontend**: React 19, Vite, TypeScript, Lucide Icons, Vanilla CSS (Emil Kowalski Design Engineering & Cardless Pure Black OLED).
 - **Design Standard**: Cardless Pure Black (`#000000`) OLED architecture. **Tailwind CSS is strictly avoided** in favor of curated CSS design tokens and high-performance scoped styles.
 
@@ -83,6 +83,21 @@ We follow a structured Git feature branch workflow:
   - Bearish Rose: `#F43F5E` / `var(--color-bearish)`.
 - **Cardless Architecture**: Do not use heavy bordered container boxes with side edges (`border-left: none`, `border-right: none`). Use clean hairline top/bottom dividers (`1px solid rgba(255, 255, 255, 0.08)`).
 - **Responsive & Micro-Interactions**: Interactive elements must feature tactile hover states, smooth transitions (`150ms cubic-bezier(0.23, 1, 0.32, 1)`), and unambiguous visual feedback.
+
+---
+
+## Licensing of Contributions (DCO)
+
+CryptoOS is licensed under the [Apache License 2.0](LICENSE). By contributing code, documentation, or other material to this project, you agree that:
+
+1. Your contributions are licensed under the Apache License 2.0 alongside the project.
+2. You certify that you wrote the contribution or have the right to submit it under the [Developer Certificate of Origin (DCO)](https://developercertificate.org/).
+
+Sign off every commit with `git commit -s` (or add a `Signed-off-by: Your Name <your@email>` trailer) so your certification is recorded automatically.
+
+## Where to Start
+
+Not sure what to work on? Check the [Roadmap & Help Wanted](README.md#-project-status--roadmap) section in the README — it lists high-impact areas that explicitly need contributors, from beginner-friendly test coverage to backend infrastructure. Bugs and feature requests live in the [issue tracker](https://github.com/ilhamrizanto/CryptoOS/issues); look for the `good first issue` label.
 
 ---
 

@@ -19,7 +19,7 @@ If you believe you have discovered a vulnerability, security bug, or potential d
 
 1. **Do NOT publicly disclose the issue** in GitHub issues, discussions, Discord, or social media.
 2. Please privately disclose the issue by sending an email with detailed reproduction steps to:
-   - **Email:** `security@cryptoos.internal` (or reach out directly to the core maintainer).
+   - **Email:** `ilhamgb11@gmail.com` with the subject line `[CryptoOS] Security Report - [brief description]`.
 3. Include the following details in your report:
    - Type of vulnerability (e.g., Auth bypass, SQL injection, API key exposure, CSRF, XSS).
    - Step-by-step instructions or Proof of Concept (PoC) script to reproduce the issue.

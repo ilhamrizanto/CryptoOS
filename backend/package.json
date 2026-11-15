@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "author": "Ilham Rizanto <ilhamgb11@gmail.com>",
-  "license": "SEE LICENSE IN LICENSE.md",
+  "license": "Apache-2.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ilhamrizanto/CryptoOS.git",
